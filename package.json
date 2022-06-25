@@ -1,0 +1,12 @@
+{
+    "dependencies": {
+        "@types/node": "^18.0.0",
+        "@types/p5": "^1.4.2",
+        "browserify": "^17.0.0",
+        "p5": "^1.4.1",
+        "typescript": "^4.7.4"
+    },
+    "scripts": {
+        "compile": "tsc && browserify src/monster_battler_2.js -o dist/monster_battler_2.js"
+    }
+}
