@@ -7,6 +7,6 @@
         "typescript": "^4.7.4"
     },
     "scripts": {
-        "compile": "tsc && browserify src/monster_battler_2.js -o dist/monster_battler_2.js"
+        "compile": "tsc && browserify js/main.js -o dist/monster_battler_2.js"
     }
 }
