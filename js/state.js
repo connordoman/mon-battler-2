@@ -16,7 +16,7 @@ class BaseState {
     onExit() {
         console.log(`State "${this.name}" exited`);
     }
-    update(g) { }
+    draw(g) { }
 }
 exports.BaseState = BaseState;
 class StateMachine {
@@ -40,7 +40,7 @@ class StateMachine {
     }
     update() {
         if (!this.states.isEmpty()) {
-            this.currentState().update(this.g);
+            this.currentState().draw(this.g);
         }
         this.joypad.update(this.g);
     }

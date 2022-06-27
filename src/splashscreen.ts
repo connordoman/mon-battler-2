@@ -10,8 +10,8 @@ export class SplashScreenState extends BaseState {
         this.timer = 0;
     }
 
-    update(g: P5) {
-        super.update(g);
+    draw(g: P5) {
+        super.draw(g);
 
         g.background(0);
         if (this.timer % 60 < 30) {

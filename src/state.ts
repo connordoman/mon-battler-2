@@ -5,7 +5,7 @@ import { JoypadController } from "./joypad";
 export interface State {
     onEnter(): void;
     onExit(): void;
-    update(g: P5): void;
+    draw(g: P5): void;
     joypadDown(): void;
     joypadUp(): void;
 }
@@ -31,7 +31,7 @@ export abstract class BaseState implements State {
         console.log(`State "${this.name}" exited`);
     }
 
-    update(g: P5) {}
+    draw(g: P5) {}
 }
 
 export class StateMachine {
@@ -63,7 +63,7 @@ export class StateMachine {
 
     update() {
         if (!this.states.isEmpty()) {
-            this.currentState().update(this.g);
+            this.currentState().draw(this.g);
         }
 
         this.joypad.update(this.g);

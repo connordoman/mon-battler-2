@@ -9,8 +9,8 @@ class SplashScreenState extends state_1.BaseState {
         this.timer = 0;
         this.timer = 0;
     }
-    update(g) {
-        super.update(g);
+    draw(g) {
+        super.draw(g);
         g.background(0);
         if (this.timer % 60 < 30) {
             g.fill(255);
