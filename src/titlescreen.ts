@@ -1,4 +1,5 @@
 import * as P5 from "p5";
+import { print } from "./main";
 import { MainMenuState } from "./mainmenu";
 import { StateMachine, BaseState } from "./state";
 
@@ -11,8 +12,6 @@ export class TitleScreenState extends BaseState {
     }
 
     draw(g: P5) {
-        super.draw(g);
-
         g.background(0);
         g.fill(255);
         g.textSize(32);
@@ -26,16 +25,13 @@ export class TitleScreenState extends BaseState {
         this.timer++;
     }
 
-    joypadDown() {
-        super.joypadDown();
-        console.log("Checking buttons on title screen...");
-        if (
-            (this.parent.joypad.state.A ||
-                this.parent.joypad.state.B ||
-                this.parent.joypad.state.START) === true
-        ) {
-            this.parent.exit();
-            this.parent.enter(new MainMenuState(this.parent));
+    joypadDown(key: string) {
+        print("Checking buttons on title screen...");
+        if ((this.parent.joypad.state.A || this.parent.joypad.state.B || this.parent.joypad.state.START) === true) {
+            this.parent.exitState();
+            this.parent.enterState(new MainMenuState(this.parent));
         }
     }
+    update(g: P5): void {}
+    joypadUp(key: string): void {}
 }

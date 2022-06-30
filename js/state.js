@@ -3,49 +3,52 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StateMachine = exports.BaseState = void 0;
 const stack_1 = require("./stack");
 const joypad_1 = require("./joypad");
+const main_1 = require("./main");
 class BaseState {
     constructor(parent, name) {
         this.parent = parent;
         this.name = name;
     }
-    joypadDown() { }
-    joypadUp() { }
     onEnter() {
-        console.log(`State "${this.name}" entered`);
+        (0, main_1.print)(`State "${this.name}" entered`);
     }
     onExit() {
-        console.log(`State "${this.name}" exited`);
+        (0, main_1.print)(`State "${this.name}" exited`);
     }
-    draw(g) { }
+    toString() {
+        return this.name;
+    }
 }
 exports.BaseState = BaseState;
 class StateMachine {
     constructor(g) {
-        this.g = g;
         this.states = new stack_1.Stack();
         this.joypad = new joypad_1.JoypadController(this);
     }
-    enter(state) {
+    enterState(state) {
         this.states.push(state);
         this.currentState().onEnter();
     }
     currentState() {
         return this.states.peek();
     }
-    exit() {
+    exitState() {
         if (!this.states.isEmpty()) {
             this.currentState().onExit();
             this.states.pop();
         }
     }
-    update() {
-        if (!this.states.isEmpty()) {
-            this.currentState().draw(this.g);
-        }
-        this.joypad.update(this.g);
+    update(g) {
+        this.joypad.update(g);
+        this.currentState().update(g);
     }
     noStates() {
         return this.states.isEmpty();
+    }
+    draw(g) {
+        if (!this.states.isEmpty()) {
+            this.currentState().draw(g);
+        }
     }
     keyPressed(key) {
         if (!this.noStates()) {

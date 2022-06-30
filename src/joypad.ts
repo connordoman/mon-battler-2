@@ -1,6 +1,7 @@
 import * as P5 from "p5";
 import { Queue } from "./queue";
 import { StateMachine } from "./state";
+import { print } from "./main";
 
 const MAX_INPUTS = 10;
 
@@ -34,34 +35,8 @@ export type Joypad = {
     RIGHT: boolean;
 };
 
-export const JOYPAD_KEYS = [
-    "A",
-    "B",
-    "X",
-    "Y",
-    "L",
-    "R",
-    "START",
-    "SELECT",
-    "UP",
-    "DOWN",
-    "LEFT",
-    "RIGHT",
-];
-export const KEYBOARD_KEYS = [
-    "Z",
-    "X",
-    "C",
-    "V",
-    "Q",
-    "E",
-    "ENTER",
-    "SHIFT",
-    "W",
-    "S",
-    "A",
-    "D",
-];
+export const JOYPAD_KEYS = ["A", "B", "X", "Y", "L", "R", "START", "SELECT", "UP", "DOWN", "LEFT", "RIGHT"];
+export const KEYBOARD_KEYS = ["Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT", "W", "S", "A", "D"];
 
 export class JoypadController {
     parent: StateMachine;
@@ -84,10 +59,7 @@ export class JoypadController {
         if (this.keyTimer !== 0) return;
         keyboard = keyboard.toUpperCase();
         for (let i = 0; i < KEYBOARD_KEYS.length; i++) {
-            if (
-                KEYBOARD_KEYS[i] === keyboard &&
-                this.inputQueue.size < MAX_INPUTS
-            ) {
+            if (KEYBOARD_KEYS[i] === keyboard && this.inputQueue.size < MAX_INPUTS) {
                 this.inputQueue.push(JOYPAD_KEYS[i]);
                 break;
             }
@@ -117,17 +89,17 @@ export class JoypadController {
                 let key = this.inputQueue.pop();
                 if (key) {
                     (this.state as any)[key] = true;
-                    this.parent.currentState().joypadDown();
+                    this.parent.currentState().joypadDown(key);
                 }
-                console.log("KeyDown: " + key, this.state);
+                print("KeyDown: " + key, this.state);
             }
             if (!this.releaseQueue.isEmpty()) {
                 let key = this.releaseQueue.pop();
                 if (key) {
                     (this.state as any)[key] = false;
-                    this.parent.currentState().joypadUp();
+                    this.parent.currentState().joypadUp(key);
                 }
-                console.log("KeyUp: " + key, this.state);
+                print("KeyUp: " + key, this.state);
             }
         }
     }

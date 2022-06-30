@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Triangle = exports.Circle = exports.Rectangle = exports.Polygon = exports.Vector = void 0;
+const Color = require("./color");
 class Vector {
     constructor(x, y) {
         this.x = x;
@@ -38,7 +39,7 @@ class Polygon {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.color = 0;
+        this.color = Color.BLACK;
     }
     set position(pos) {
         this.x = pos.x;

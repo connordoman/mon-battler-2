@@ -2,16 +2,35 @@ import * as P5 from "p5";
 import { StateMachine } from "./state";
 import { SplashScreenState } from "./splashscreen";
 import { TitleScreenState } from "./titlescreen";
+import { OFF_WHITE } from "./color";
 
-export const WIDTH = 720;
-export const HEIGHT = 480;
-export const PIXEL_WIDTH = 3;
-export const PIXEL_HEIGHT = 3;
+export const DEBUG: boolean = true;
 
+export const WIDTH: number = 720;
+export const HEIGHT: number = 480;
+export const PIXEL_WIDTH: number = 3;
+export const PIXEL_HEIGHT: number = 3;
+export const TILE_WIDTH: number = 16 * PIXEL_WIDTH;
+export const TILE_HEIGHT: number = 16 * PIXEL_HEIGHT;
+export const TEXT_SIZE: number = PIXEL_HEIGHT * 10.6;
+
+// game object type
+export interface GameObject {
+    update(g: P5): void;
+    draw(g: P5): void;
+    joypadDown(key: string): void;
+    joypadUp(key: string): void;
+}
+
+// debug print function
+export function print(...args: any[]): void {
+    if (DEBUG) {
+        console.log(...args);
+    }
+}
+
+// main p5 logic
 export const MONSTER_BATTLER_2 = (p5: P5) => {
-    const LIGHT_GREEN = p5.color(155, 188, 15);
-    const OFF_WHITE = p5.color("#FAF9F6");
-
     let stateMachine = new StateMachine(p5);
 
     let randomNoiseOnce = false;
@@ -19,7 +38,7 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
     let keyTimer = 0;
 
     p5.setup = () => {
-        console.log("Monster Battler 2.0.0");
+        print("Monster Battler 2.0.0");
         p5.createCanvas(WIDTH, HEIGHT);
 
         p5.background(0);
@@ -27,11 +46,10 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         p5.stroke(255);
         p5.strokeWeight(1);
 
-        stateMachine.enter(new TitleScreenState(stateMachine));
+        stateMachine.enterState(new TitleScreenState(stateMachine));
     };
 
     p5.draw = () => {
-        p5.background(OFF_WHITE);
         p5.noStroke();
         // Random noise pattern (no loop only)
         // this.randomNoisePattern();
@@ -41,7 +59,8 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         } else if (keyTimer >= 60) {
             keyTimer = 0;
         }
-        stateMachine.update();
+        stateMachine.update(p5);
+        stateMachine.draw(p5);
     };
 
     p5.keyPressed = () => {
@@ -65,11 +84,7 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
     };
 
     let randomColor = () => {
-        return p5.color(
-            p5.random(0, 255),
-            p5.random(0, 255),
-            p5.random(0, 255)
-        );
+        return p5.color(p5.random(0, 255), p5.random(0, 255), p5.random(0, 255));
     };
 };
 

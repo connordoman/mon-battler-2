@@ -1,4 +1,5 @@
 import * as P5 from "p5";
+import * as Color from "./color";
 
 export class Vector {
     x: number;
@@ -52,14 +53,14 @@ export abstract class Polygon implements Shape {
     y: number;
     width: number;
     height: number;
-    color: number;
+    color: Color.Color;
 
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.color = 0;
+        this.color = Color.BLACK;
     }
 
     set position(pos: Vector) {

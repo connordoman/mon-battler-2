@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TitleScreenState = void 0;
+const main_1 = require("./main");
 const mainmenu_1 = require("./mainmenu");
 const state_1 = require("./state");
 class TitleScreenState extends state_1.BaseState {
@@ -10,7 +11,6 @@ class TitleScreenState extends state_1.BaseState {
         this.timer = 0;
     }
     draw(g) {
-        super.draw(g);
         g.background(0);
         g.fill(255);
         g.textSize(32);
@@ -22,15 +22,14 @@ class TitleScreenState extends state_1.BaseState {
         }
         this.timer++;
     }
-    joypadDown() {
-        super.joypadDown();
-        console.log("Checking buttons on title screen...");
-        if ((this.parent.joypad.state.A ||
-            this.parent.joypad.state.B ||
-            this.parent.joypad.state.START) === true) {
-            this.parent.exit();
-            this.parent.enter(new mainmenu_1.MainMenuState(this.parent));
+    joypadDown(key) {
+        (0, main_1.print)("Checking buttons on title screen...");
+        if ((this.parent.joypad.state.A || this.parent.joypad.state.B || this.parent.joypad.state.START) === true) {
+            this.parent.exitState();
+            this.parent.enterState(new mainmenu_1.MainMenuState(this.parent));
         }
     }
+    update(g) { }
+    joypadUp(key) { }
 }
 exports.TitleScreenState = TitleScreenState;

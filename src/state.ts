@@ -1,13 +1,12 @@
 import * as P5 from "p5";
 import { Stack } from "./stack";
 import { JoypadController } from "./joypad";
+import { GameObject } from "./main";
+import { print } from "./main";
 
-export interface State {
+export interface State extends GameObject {
     onEnter(): void;
     onExit(): void;
-    draw(g: P5): void;
-    joypadDown(): void;
-    joypadUp(): void;
 }
 
 export abstract class BaseState implements State {
@@ -18,34 +17,37 @@ export abstract class BaseState implements State {
         this.parent = parent;
         this.name = name;
     }
+    abstract update(g: P5): void;
 
-    joypadDown(): void {}
+    abstract draw(g: P5): void;
 
-    joypadUp(): void {}
+    abstract joypadDown(key: string): void;
+
+    abstract joypadUp(key: string): void;
 
     onEnter() {
-        console.log(`State "${this.name}" entered`);
+        print(`State "${this.name}" entered`);
     }
 
     onExit() {
-        console.log(`State "${this.name}" exited`);
+        print(`State "${this.name}" exited`);
     }
 
-    draw(g: P5) {}
+    toString(): string {
+        return this.name;
+    }
 }
 
 export class StateMachine {
-    g: P5;
     states: Stack<State>;
     joypad: JoypadController;
 
     constructor(g: P5) {
-        this.g = g;
         this.states = new Stack<State>();
         this.joypad = new JoypadController(this);
     }
 
-    enter(state: State) {
+    enterState(state: State) {
         this.states.push(state);
         this.currentState().onEnter();
     }
@@ -54,23 +56,25 @@ export class StateMachine {
         return this.states.peek();
     }
 
-    exit() {
+    exitState() {
         if (!this.states.isEmpty()) {
             this.currentState().onExit();
             this.states.pop();
         }
     }
 
-    update() {
-        if (!this.states.isEmpty()) {
-            this.currentState().draw(this.g);
-        }
-
-        this.joypad.update(this.g);
+    update(g: P5) {
+        this.joypad.update(g);
+        this.currentState().update(g);
     }
 
     noStates() {
         return this.states.isEmpty();
+    }
+    draw(g: P5): void {
+        if (!this.states.isEmpty()) {
+            this.currentState().draw(g);
+        }
     }
 
     keyPressed(key: string) {

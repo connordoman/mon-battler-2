@@ -10,9 +10,8 @@ export class SplashScreenState extends BaseState {
         this.timer = 0;
     }
 
+    update(g: P5): void {}
     draw(g: P5) {
-        super.draw(g);
-
         g.background(0);
         if (this.timer % 60 < 30) {
             g.fill(255);
@@ -23,10 +22,10 @@ export class SplashScreenState extends BaseState {
         this.timer++;
     }
 
-    joypadDown() {
-        super.joypadDown();
+    joypadDown(key: string) {
         //super.keyPressed(key);
-        this.parent.exit();
-        this.parent.enter(new TitleScreenState(this.parent));
+        this.parent.exitState();
+        this.parent.enterState(new TitleScreenState(this.parent));
     }
+    joypadUp(key: string): void {}
 }
