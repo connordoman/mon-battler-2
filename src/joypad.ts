@@ -1,7 +1,7 @@
 import * as P5 from "p5";
 import { Queue } from "./queue";
-import { StateMachine } from "./state";
-import { print } from "./main";
+import { StateMachine } from "./statemachine";
+import { gPrint } from "./main";
 
 const MAX_INPUTS = 10;
 
@@ -35,8 +35,8 @@ export type Joypad = {
     RIGHT: boolean;
 };
 
-export const JOYPAD_KEYS = ["A", "B", "X", "Y", "L", "R", "START", "SELECT", "UP", "DOWN", "LEFT", "RIGHT"];
-export const KEYBOARD_KEYS = ["Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT", "W", "S", "A", "D"];
+export const JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
+export const KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 
 export class JoypadController {
     parent: StateMachine;
@@ -91,7 +91,7 @@ export class JoypadController {
                     (this.state as any)[key] = true;
                     this.parent.currentState().joypadDown(key);
                 }
-                print("KeyDown: " + key, this.state);
+                gPrint("KeyDown: " + key, this.state);
             }
             if (!this.releaseQueue.isEmpty()) {
                 let key = this.releaseQueue.pop();
@@ -99,7 +99,7 @@ export class JoypadController {
                     (this.state as any)[key] = false;
                     this.parent.currentState().joypadUp(key);
                 }
-                print("KeyUp: " + key, this.state);
+                gPrint("KeyUp: " + key, this.state);
             }
         }
     }

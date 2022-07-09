@@ -1,5 +1,6 @@
 import * as P5 from "p5";
-import { StateMachine, BaseState } from "./state";
+import { BaseState } from "./state";
+import { StateMachine } from "./statemachine";
 import { TitleScreenState } from "./titlescreen";
 
 export class SplashScreenState extends BaseState {

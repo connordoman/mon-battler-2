@@ -10,7 +10,7 @@ const newgame_1 = require("./newgame");
 const Color = require("./color");
 class MainMenuState extends state_1.BaseState {
     constructor(parent) {
-        super(parent, "TitleScreenState");
+        super(parent, "MainMenuState");
         this.option = 0;
         this.pointer = new geometry_1.Triangle(0, 0, 25);
         this.pointer.setAngle(Math.PI / 2);

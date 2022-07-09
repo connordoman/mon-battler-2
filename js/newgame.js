@@ -35,6 +35,9 @@ class NewGameState extends state_1.BaseState {
                 }
                 this.phase = 2;
                 break;
+            case 2:
+                // Exit state
+                this.parent.exitState();
             default:
                 break;
         }

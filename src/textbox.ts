@@ -1,8 +1,9 @@
 import * as P5 from "p5";
 import * as Color from "./color";
 import { Rectangle, Triangle, Vector } from "./geometry";
-import { TEXT_SIZE, TILE_HEIGHT, TILE_WIDTH, print } from "./main";
-import { BaseState, StateMachine } from "./state";
+import { TEXT_SIZE, TILE_HEIGHT, TILE_WIDTH, gPrint } from "./main";
+import { BaseState } from "./state";
+import { StateMachine } from "./statemachine";
 
 export class TextBox extends Rectangle {
     parent: StateMachine;
@@ -36,15 +37,16 @@ export class TextBox extends Rectangle {
     draw(g: P5): void {
         g.push();
         g.translate(this.x, this.y);
+        g.textSize(TEXT_SIZE);
+
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
         g.strokeWeight(4);
         g.rect(4, 4, this.width - 8, this.height - 8, 8);
 
-        g.noStroke();
         g.fill(g.color(this.textColor));
+        g.noStroke();
         g.textAlign(g.LEFT, g.TOP);
-        g.textSize(TEXT_SIZE);
         g.text(this.msg, TILE_WIDTH, TILE_HEIGHT * 0.55);
         g.pop();
     }
@@ -103,7 +105,7 @@ export class TextBoxState extends BaseState {
 
         if (this.typing && this.timer % this.charInterval == 0) {
             let char = this.message.charAt(this.letterCount);
-            print(`\tCurrent char: ${char}`);
+            gPrint(`\tCurrent char: ${char}`);
 
             if (char === " ") {
                 let nextWord = this.words[this.wordCount];
@@ -111,10 +113,10 @@ export class TextBoxState extends BaseState {
                 let newLine = lines[lines.length - 1] + " " + nextWord;
                 let lineLength = g.textWidth(newLine);
 
-                print(lines);
-                print("Current line + nextWord: " + newLine);
-                print("Pixel width of this line: " + lineLength);
-                print(`\tNext Word: ${nextWord}`);
+                gPrint(lines);
+                gPrint("Current line + nextWord: " + newLine);
+                gPrint("Pixel width of this line: " + lineLength);
+                gPrint(`\tNext Word: ${nextWord}`);
 
                 this.wordCount++;
 
@@ -203,7 +205,7 @@ export class TextBoxArrow extends Triangle {
             let space = this.offset * (this.height / 3);
             this.position = new Vector(this.x, this.originY + space);
 
-            print(`TextBoxArrow: (${this.x}, ${this.y}) at offset = ${this.offset} with space = ${space}`);
+            gPrint(`TextBoxArrow: (${this.x}, ${this.y}) at offset = ${this.offset} with space = ${space}`);
 
             this.offset++;
         }

@@ -1,10 +1,10 @@
 import * as P5 from "p5";
-import { Stack } from "./stack";
-import { JoypadController } from "./joypad";
 import { GameObject } from "./main";
-import { print } from "./main";
+import { gPrint } from "./main";
+import { StateMachine } from "./statemachine";
 
 export interface State extends GameObject {
+    name: string;
     onEnter(): void;
     onExit(): void;
 }
@@ -26,66 +26,14 @@ export abstract class BaseState implements State {
     abstract joypadUp(key: string): void;
 
     onEnter() {
-        print(`State "${this.name}" entered`);
+        gPrint(`State "${this.name}" entered`);
     }
 
     onExit() {
-        print(`State "${this.name}" exited`);
+        gPrint(`State "${this.name}" exited`);
     }
 
     toString(): string {
         return this.name;
-    }
-}
-
-export class StateMachine {
-    states: Stack<State>;
-    joypad: JoypadController;
-
-    constructor(g: P5) {
-        this.states = new Stack<State>();
-        this.joypad = new JoypadController(this);
-    }
-
-    enterState(state: State) {
-        this.states.push(state);
-        this.currentState().onEnter();
-    }
-
-    currentState() {
-        return this.states.peek();
-    }
-
-    exitState() {
-        if (!this.states.isEmpty()) {
-            this.currentState().onExit();
-            this.states.pop();
-        }
-    }
-
-    update(g: P5) {
-        this.joypad.update(g);
-        this.currentState().update(g);
-    }
-
-    noStates() {
-        return this.states.isEmpty();
-    }
-    draw(g: P5): void {
-        if (!this.states.isEmpty()) {
-            this.currentState().draw(g);
-        }
-    }
-
-    keyPressed(key: string) {
-        if (!this.noStates()) {
-            this.joypad.pressJoypadKey(key);
-        }
-    }
-
-    keyReleased(key: string) {
-        if (!this.noStates()) {
-            this.joypad.releaseJoypadKey(key);
-        }
     }
 }

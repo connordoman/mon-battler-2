@@ -54,6 +54,8 @@ export abstract class Polygon implements Shape {
     width: number;
     height: number;
     color: Color.Color;
+    stroke: Color.Color;
+    outline: number;
 
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
@@ -61,6 +63,8 @@ export abstract class Polygon implements Shape {
         this.width = width;
         this.height = height;
         this.color = Color.BLACK;
+        this.stroke = Color.BLACK;
+        this.outline = 0;
     }
 
     set position(pos: Vector) {

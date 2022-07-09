@@ -18,8 +18,8 @@ exports.JOYPAD_STATE = {
     LEFT: false,
     RIGHT: false,
 };
-exports.JOYPAD_KEYS = ["A", "B", "X", "Y", "L", "R", "START", "SELECT", "UP", "DOWN", "LEFT", "RIGHT"];
-exports.KEYBOARD_KEYS = ["Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT", "W", "S", "A", "D"];
+exports.JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
+exports.KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 class JoypadController {
     constructor(parent) {
         this.parent = parent;
@@ -64,7 +64,7 @@ class JoypadController {
                     this.state[key] = true;
                     this.parent.currentState().joypadDown(key);
                 }
-                (0, main_1.print)("KeyDown: " + key, this.state);
+                (0, main_1.gPrint)("KeyDown: " + key, this.state);
             }
             if (!this.releaseQueue.isEmpty()) {
                 let key = this.releaseQueue.pop();
@@ -72,7 +72,7 @@ class JoypadController {
                     this.state[key] = false;
                     this.parent.currentState().joypadUp(key);
                 }
-                (0, main_1.print)("KeyUp: " + key, this.state);
+                (0, main_1.gPrint)("KeyUp: " + key, this.state);
             }
         }
     }

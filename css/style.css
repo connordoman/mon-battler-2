@@ -5,8 +5,46 @@ body {
     background: rgba(64, 64, 64, 1);
 }
 
-canvas {
+#game-area {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#game-area canvas {
     display: block;
-    margin: 2rem auto;
+    margin: 2rem 2rem;
     border: 0px solid black;
+}
+
+#controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem auto;
+    width: 100%;
+    max-width: 500px;
+    border-collapse: collapse;
+}
+
+#controls td {
+    color: lightgrey;
+    padding: 1rem;
+    border: 1px solid black;
+    text-align: center;
+}
+
+.joy-button {
+    background: darkred;
+    color: lightgrey;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    border: 1px solid black;
+    border-radius: 100%;
+    padding: 1rem;
 }

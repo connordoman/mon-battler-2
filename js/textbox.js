@@ -25,14 +25,14 @@ class TextBox extends geometry_1.Rectangle {
     draw(g) {
         g.push();
         g.translate(this.x, this.y);
+        g.textSize(main_1.TEXT_SIZE);
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
         g.strokeWeight(4);
         g.rect(4, 4, this.width - 8, this.height - 8, 8);
-        g.noStroke();
         g.fill(g.color(this.textColor));
+        g.noStroke();
         g.textAlign(g.LEFT, g.TOP);
-        g.textSize(main_1.TEXT_SIZE);
         g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.55);
         g.pop();
     }
@@ -69,16 +69,16 @@ class TextBoxState extends state_1.BaseState {
         }
         if (this.typing && this.timer % this.charInterval == 0) {
             let char = this.message.charAt(this.letterCount);
-            (0, main_1.print)(`\tCurrent char: ${char}`);
+            (0, main_1.gPrint)(`\tCurrent char: ${char}`);
             if (char === " ") {
                 let nextWord = this.words[this.wordCount];
                 let lines = this.typed.split("\n");
                 let newLine = lines[lines.length - 1] + " " + nextWord;
                 let lineLength = g.textWidth(newLine);
-                (0, main_1.print)(lines);
-                (0, main_1.print)("Current line + nextWord: " + newLine);
-                (0, main_1.print)("Pixel width of this line: " + lineLength);
-                (0, main_1.print)(`\tNext Word: ${nextWord}`);
+                (0, main_1.gPrint)(lines);
+                (0, main_1.gPrint)("Current line + nextWord: " + newLine);
+                (0, main_1.gPrint)("Pixel width of this line: " + lineLength);
+                (0, main_1.gPrint)(`\tNext Word: ${nextWord}`);
                 this.wordCount++;
                 if (lineLength >= this.textbox.lineSize) {
                     char = "\n";
@@ -156,7 +156,7 @@ class TextBoxArrow extends geometry_1.Triangle {
             }
             let space = this.offset * (this.height / 3);
             this.position = new geometry_1.Vector(this.x, this.originY + space);
-            (0, main_1.print)(`TextBoxArrow: (${this.x}, ${this.y}) at offset = ${this.offset} with space = ${space}`);
+            (0, main_1.gPrint)(`TextBoxArrow: (${this.x}, ${this.y}) at offset = ${this.offset} with space = ${space}`);
             this.offset++;
         }
         this.timer++;

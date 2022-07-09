@@ -1,5 +1,6 @@
 import { HEIGHT, TILE_HEIGHT, WIDTH } from "./main";
-import { BaseState, StateMachine } from "./state";
+import { BaseState } from "./state";
+import { StateMachine } from "./statemachine";
 import { TextBox, TextBoxState } from "./textbox";
 import * as Color from "./color";
 
@@ -41,6 +42,9 @@ export class NewGameState extends BaseState {
                 }
                 this.phase = 2;
                 break;
+            case 2:
+                // Exit state
+                this.parent.exitState();
             default:
                 break;
         }

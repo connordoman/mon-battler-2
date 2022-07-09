@@ -1,7 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getP5Color = exports.OFF_WHITE = exports.DARK_BLUE = exports.DARK_GREEN = exports.DARK_RED = exports.LIGHT_MAGENTA = exports.LIGHT_CYAN = exports.LIGHT_YELLOW = exports.LIGHT_RED = exports.LIGHT_BLUE = exports.LIGHT_GREEN = exports.DARK_GRAY = exports.LIGHT_GRAY = exports.GRAY = exports.TRANSPARENT = exports.MAGENTA = exports.CYAN = exports.YELLOW = exports.BLUE = exports.GREEN = exports.RED = exports.BLACK = exports.WHITE = void 0;
+exports.getP5Color = exports.SLATE_GLASS = exports.OFF_WHITE = exports.DARK_BLUE = exports.DARK_GREEN = exports.DARK_RED = exports.LIGHT_MAGENTA = exports.LIGHT_CYAN = exports.LIGHT_YELLOW = exports.LIGHT_RED = exports.LIGHT_BLUE = exports.LIGHT_GREEN = exports.DARK_GRAY = exports.LIGHT_GRAY = exports.GRAY = exports.TRANSPARENT = exports.MAGENTA = exports.CYAN = exports.YELLOW = exports.BLUE = exports.GREEN = exports.RED = exports.BLACK = exports.WHITE = void 0;
 exports.WHITE = [255, 255, 255, 255];
 exports.BLACK = [0, 0, 0, 255];
 exports.RED = [255, 0, 0, 255];
@@ -24,6 +24,7 @@ exports.DARK_RED = [68, 12, 35, 255];
 exports.DARK_GREEN = [35, 68, 12, 255];
 exports.DARK_BLUE = [12, 35, 68, 255];
 exports.OFF_WHITE = [250, 249, 246, 255];
+exports.SLATE_GLASS = [81, 81, 81, 128];
 const getP5Color = (p5, color) => {
     return p5.color(color[0], color[1], color[2], color[3]);
 };
@@ -72,6 +73,8 @@ class Polygon {
         this.width = width;
         this.height = height;
         this.color = Color.BLACK;
+        this.stroke = Color.BLACK;
+        this.outline = 0;
     }
     set position(pos) {
         this.x = pos.x;
@@ -173,8 +176,8 @@ exports.JOYPAD_STATE = {
     LEFT: false,
     RIGHT: false,
 };
-exports.JOYPAD_KEYS = ["A", "B", "X", "Y", "L", "R", "START", "SELECT", "UP", "DOWN", "LEFT", "RIGHT"];
-exports.KEYBOARD_KEYS = ["Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT", "W", "S", "A", "D"];
+exports.JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
+exports.KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 class JoypadController {
     constructor(parent) {
         this.parent = parent;
@@ -219,7 +222,7 @@ class JoypadController {
                     this.state[key] = true;
                     this.parent.currentState().joypadDown(key);
                 }
-                (0, main_1.print)("KeyDown: " + key, this.state);
+                (0, main_1.gPrint)("KeyDown: " + key, this.state);
             }
             if (!this.releaseQueue.isEmpty()) {
                 let key = this.releaseQueue.pop();
@@ -227,7 +230,7 @@ class JoypadController {
                     this.state[key] = false;
                     this.parent.currentState().joypadUp(key);
                 }
-                (0, main_1.print)("KeyUp: " + key, this.state);
+                (0, main_1.gPrint)("KeyUp: " + key, this.state);
             }
         }
     }
@@ -245,11 +248,12 @@ exports.JoypadController = JoypadController;
 },{"./main":4,"./queue":7}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.print = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
 const P5 = require("p5");
-const state_1 = require("./state");
+const statemachine_1 = require("./statemachine");
 const titlescreen_1 = require("./titlescreen");
-exports.DEBUG = true;
+const Color = require("./color");
+exports.DEBUG = false;
 exports.WIDTH = 720;
 exports.HEIGHT = 480;
 exports.PIXEL_WIDTH = 3;
@@ -257,21 +261,25 @@ exports.PIXEL_HEIGHT = 3;
 exports.TILE_WIDTH = 16 * exports.PIXEL_WIDTH;
 exports.TILE_HEIGHT = 16 * exports.PIXEL_HEIGHT;
 exports.TEXT_SIZE = exports.PIXEL_HEIGHT * 10.6;
+exports.FRAME_RATE = 60;
 // debug print function
-function print(...args) {
+function gPrint(...args) {
     if (exports.DEBUG) {
         console.log(...args);
     }
 }
-exports.print = print;
+exports.gPrint = gPrint;
 // main p5 logic
 const MONSTER_BATTLER_2 = (p5) => {
-    let stateMachine = new state_1.StateMachine(p5);
+    let stateMachine = new statemachine_1.StateMachine(p5);
     let randomNoiseOnce = false;
     let keyTimer = 0;
+    let fps = `${exports.FRAME_RATE}`;
     p5.setup = () => {
-        print("Monster Battler 2.0.0");
-        p5.createCanvas(exports.WIDTH, exports.HEIGHT);
+        gPrint("Monster Battler 2.0.0");
+        let canv = p5.createCanvas(exports.WIDTH, exports.HEIGHT);
+        canv.parent("game-area");
+        p5.frameRate(exports.FRAME_RATE);
         p5.background(0);
         p5.frameRate(60);
         p5.stroke(255);
@@ -290,6 +298,21 @@ const MONSTER_BATTLER_2 = (p5) => {
         }
         stateMachine.update(p5);
         stateMachine.draw(p5);
+        if (p5.frameCount % exports.FRAME_RATE == 0) {
+            fps = p5.frameRate().toFixed(2);
+        }
+        if (exports.DEBUG) {
+            let states = stateMachine.states.bottomUp();
+            p5.fill(Color.SLATE_GLASS);
+            p5.rect(0, 0, exports.WIDTH, exports.TEXT_SIZE / 2 + states.length * (exports.TEXT_SIZE / 2));
+            p5.fill(Color.OFF_WHITE);
+            p5.textSize(exports.TEXT_SIZE / 2);
+            p5.textAlign(p5.LEFT, p5.TOP);
+            p5.text("FPS: " + fps, exports.TEXT_SIZE, exports.TEXT_SIZE);
+            for (let i = 0; i < states.length; i++) {
+                p5.text(`${i}: ${states[i].name}`, exports.TEXT_SIZE / 4, exports.TEXT_SIZE / 4 + i * (exports.TEXT_SIZE / 2));
+            }
+        }
     };
     p5.keyPressed = () => {
         stateMachine.keyPressed(p5.key);
@@ -315,7 +338,7 @@ const MONSTER_BATTLER_2 = (p5) => {
 exports.MONSTER_BATTLER_2 = MONSTER_BATTLER_2;
 new P5(exports.MONSTER_BATTLER_2);
 
-},{"./state":9,"./titlescreen":11,"p5":12}],5:[function(require,module,exports){
+},{"./color":1,"./statemachine":10,"./titlescreen":12,"p5":13}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MainMenuState = void 0;
@@ -328,7 +351,7 @@ const newgame_1 = require("./newgame");
 const Color = require("./color");
 class MainMenuState extends state_1.BaseState {
     constructor(parent) {
-        super(parent, "TitleScreenState");
+        super(parent, "MainMenuState");
         this.option = 0;
         this.pointer = new geometry_1.Triangle(0, 0, 25);
         this.pointer.setAngle(Math.PI / 2);
@@ -405,7 +428,7 @@ class MainMenuState extends state_1.BaseState {
 }
 exports.MainMenuState = MainMenuState;
 
-},{"./color":1,"./geometry":2,"./main":4,"./newgame":6,"./state":9,"./textbox":10,"./titlescreen":11}],6:[function(require,module,exports){
+},{"./color":1,"./geometry":2,"./main":4,"./newgame":6,"./state":9,"./textbox":11,"./titlescreen":12}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NewGameState = exports.EN_CONTINUE = exports.EN_NEW_GAME = void 0;
@@ -443,6 +466,9 @@ class NewGameState extends state_1.BaseState {
                 }
                 this.phase = 2;
                 break;
+            case 2:
+                // Exit state
+                this.parent.exitState();
             default:
                 break;
         }
@@ -452,10 +478,10 @@ class NewGameState extends state_1.BaseState {
 }
 exports.NewGameState = NewGameState;
 
-},{"./color":1,"./main":4,"./state":9,"./textbox":10}],7:[function(require,module,exports){
+},{"./color":1,"./main":4,"./state":9,"./textbox":11}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Queue = void 0;
+exports.CircularQueue = exports.Queue = void 0;
 class Queue {
     constructor() {
         this.queue = [];
@@ -496,6 +522,94 @@ class Queue {
     }
 }
 exports.Queue = Queue;
+class CircularQueue {
+    constructor() {
+        this.queue = [];
+        this.size = 0;
+        this.front = -1;
+        this.back = -1;
+    }
+    resize() {
+        let newQueue = new Array(this.queue.length * 2);
+        for (let i = 0; i < this.queue.length; i++) {
+            newQueue[i] = this.queue[i];
+        }
+        this.queue = newQueue;
+    }
+    enqueue(item) {
+        if (this.size === this.queue.length) {
+            this.resize();
+        }
+        if (this.front === -1) {
+            this.front = 0;
+        }
+        if (this.back === -1) {
+            this.back = 0;
+        }
+        this.queue[this.back] = item;
+        this.back = (this.back + 1) % this.queue.length;
+        this.size++;
+    }
+    dequeue() {
+        if (this.isEmpty()) {
+            return null;
+        }
+        let frontItem = this.queue[this.front];
+        this.queue.splice(this.front, 1);
+        this.size--;
+        if (this.front === this.back) {
+            this.front = -1;
+            this.back = -1;
+        }
+        else {
+            this.front = (this.front + 1) % this.queue.length;
+        }
+        return frontItem;
+    }
+    peek() {
+        if (this.isEmpty()) {
+            return null;
+        }
+        return this.queue[this.front];
+    }
+    isEmpty() {
+        return this.size === 0;
+    }
+    frontToBack() {
+        if (this.isEmpty()) {
+            return [];
+        }
+        if (this.front === this.back) {
+            return [this.queue[this.front]];
+        }
+        // find forward and backward directions
+        let frontToBack = this.queue.slice(this.front, this.queue.length);
+        let backToFront = this.queue.slice(0, this.back);
+        // combine the two arrays
+        return frontToBack.concat(backToFront);
+    }
+    backToFront() {
+        if (this.isEmpty()) {
+            return [];
+        }
+        if (this.front === this.back) {
+            return [this.queue[this.front]];
+        }
+        // find forward and backward directions
+        let frontToBack = this.queue.slice(this.queue.length, this.front);
+        let backToFront = this.queue.slice(this.back, 0);
+        // combine the two arrays
+        return backToFront.concat(frontToBack);
+    }
+    toString() {
+        let result = "[ ";
+        for (let item of this.frontToBack()) {
+            result += item + ", ";
+        }
+        return this.queue.toString() + " ]";
+    }
+}
+exports.CircularQueue = CircularQueue;
 
 },{}],8:[function(require,module,exports){
 "use strict";
@@ -504,21 +618,40 @@ exports.Stack = void 0;
 class Stack {
     constructor() {
         this.stack = [];
+        this.count = 0;
     }
     push(item) {
         this.stack.push(item);
+        this.count++;
     }
     pop() {
+        if (this.isEmpty()) {
+            return null;
+        }
+        this.count--;
         return this.stack.pop();
     }
     peek() {
-        return this.stack[this.stack.length - 1];
+        return this.stack[this.count - 1];
     }
     isEmpty() {
-        return this.stack.length === 0;
+        return this.size() === 0;
     }
     clear() {
         this.stack = [];
+        this.count = 0;
+    }
+    size() {
+        if (this.stack === undefined) {
+            return 0;
+        }
+        return this.count;
+    }
+    bottomUp() {
+        if (this.count === 0) {
+            return [];
+        }
+        return this.stack.slice(0);
     }
 }
 exports.Stack = Stack;
@@ -526,9 +659,7 @@ exports.Stack = Stack;
 },{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StateMachine = exports.BaseState = void 0;
-const stack_1 = require("./stack");
-const joypad_1 = require("./joypad");
+exports.BaseState = void 0;
 const main_1 = require("./main");
 class BaseState {
     constructor(parent, name) {
@@ -536,26 +667,38 @@ class BaseState {
         this.name = name;
     }
     onEnter() {
-        (0, main_1.print)(`State "${this.name}" entered`);
+        (0, main_1.gPrint)(`State "${this.name}" entered`);
     }
     onExit() {
-        (0, main_1.print)(`State "${this.name}" exited`);
+        (0, main_1.gPrint)(`State "${this.name}" exited`);
     }
     toString() {
         return this.name;
     }
 }
 exports.BaseState = BaseState;
+
+},{"./main":4}],10:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StateMachine = void 0;
+const stack_1 = require("./stack");
+const joypad_1 = require("./joypad");
+const titlescreen_1 = require("./titlescreen");
 class StateMachine {
     constructor(g) {
         this.states = new stack_1.Stack();
         this.joypad = new joypad_1.JoypadController(this);
+        this.defaultTitleScreen = new titlescreen_1.TitleScreenState(this);
     }
     enterState(state) {
         this.states.push(state);
         this.currentState().onEnter();
     }
     currentState() {
+        if (this.states.isEmpty()) {
+            // return new TitleScreenState(this); // <- This line is broken
+        }
         return this.states.peek();
     }
     exitState() {
@@ -565,8 +708,10 @@ class StateMachine {
         }
     }
     update(g) {
-        this.joypad.update(g);
-        this.currentState().update(g);
+        if (!this.states.isEmpty()) {
+            this.joypad.update(g);
+            this.currentState().update(g);
+        }
     }
     noStates() {
         return this.states.isEmpty();
@@ -589,7 +734,7 @@ class StateMachine {
 }
 exports.StateMachine = StateMachine;
 
-},{"./joypad":3,"./main":4,"./stack":8}],10:[function(require,module,exports){
+},{"./joypad":3,"./stack":8,"./titlescreen":12}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextBoxArrow = exports.TextBoxState = exports.TextBox = void 0;
@@ -617,14 +762,14 @@ class TextBox extends geometry_1.Rectangle {
     draw(g) {
         g.push();
         g.translate(this.x, this.y);
+        g.textSize(main_1.TEXT_SIZE);
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
         g.strokeWeight(4);
         g.rect(4, 4, this.width - 8, this.height - 8, 8);
-        g.noStroke();
         g.fill(g.color(this.textColor));
+        g.noStroke();
         g.textAlign(g.LEFT, g.TOP);
-        g.textSize(main_1.TEXT_SIZE);
         g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.55);
         g.pop();
     }
@@ -661,16 +806,16 @@ class TextBoxState extends state_1.BaseState {
         }
         if (this.typing && this.timer % this.charInterval == 0) {
             let char = this.message.charAt(this.letterCount);
-            (0, main_1.print)(`\tCurrent char: ${char}`);
+            (0, main_1.gPrint)(`\tCurrent char: ${char}`);
             if (char === " ") {
                 let nextWord = this.words[this.wordCount];
                 let lines = this.typed.split("\n");
                 let newLine = lines[lines.length - 1] + " " + nextWord;
                 let lineLength = g.textWidth(newLine);
-                (0, main_1.print)(lines);
-                (0, main_1.print)("Current line + nextWord: " + newLine);
-                (0, main_1.print)("Pixel width of this line: " + lineLength);
-                (0, main_1.print)(`\tNext Word: ${nextWord}`);
+                (0, main_1.gPrint)(lines);
+                (0, main_1.gPrint)("Current line + nextWord: " + newLine);
+                (0, main_1.gPrint)("Pixel width of this line: " + lineLength);
+                (0, main_1.gPrint)(`\tNext Word: ${nextWord}`);
                 this.wordCount++;
                 if (lineLength >= this.textbox.lineSize) {
                     char = "\n";
@@ -748,7 +893,7 @@ class TextBoxArrow extends geometry_1.Triangle {
             }
             let space = this.offset * (this.height / 3);
             this.position = new geometry_1.Vector(this.x, this.originY + space);
-            (0, main_1.print)(`TextBoxArrow: (${this.x}, ${this.y}) at offset = ${this.offset} with space = ${space}`);
+            (0, main_1.gPrint)(`TextBoxArrow: (${this.x}, ${this.y}) at offset = ${this.offset} with space = ${space}`);
             this.offset++;
         }
         this.timer++;
@@ -759,7 +904,7 @@ class TextBoxArrow extends geometry_1.Triangle {
 }
 exports.TextBoxArrow = TextBoxArrow;
 
-},{"./color":1,"./geometry":2,"./main":4,"./state":9}],11:[function(require,module,exports){
+},{"./color":1,"./geometry":2,"./main":4,"./state":9}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TitleScreenState = void 0;
@@ -785,7 +930,7 @@ class TitleScreenState extends state_1.BaseState {
         this.timer++;
     }
     joypadDown(key) {
-        (0, main_1.print)("Checking buttons on title screen...");
+        (0, main_1.gPrint)("Checking buttons on title screen...");
         if ((this.parent.joypad.state.A || this.parent.joypad.state.B || this.parent.joypad.state.START) === true) {
             this.parent.exitState();
             this.parent.enterState(new mainmenu_1.MainMenuState(this.parent));
@@ -796,7 +941,7 @@ class TitleScreenState extends state_1.BaseState {
 }
 exports.TitleScreenState = TitleScreenState;
 
-},{"./main":4,"./mainmenu":5,"./state":9}],12:[function(require,module,exports){
+},{"./main":4,"./mainmenu":5,"./state":9}],13:[function(require,module,exports){
 (function (global){(function (){
 /*! p5.js v1.4.1 February 02, 2022 */
 

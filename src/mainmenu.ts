@@ -1,6 +1,7 @@
 import * as P5 from "p5";
 import { HEIGHT, PIXEL_HEIGHT, WIDTH } from "./main";
-import { BaseState, StateMachine } from "./state";
+import { BaseState } from "./state";
+import { StateMachine } from "./statemachine";
 import { TitleScreenState } from "./titlescreen";
 import { Triangle, Vector } from "./geometry";
 import { TextBox } from "./textbox";
@@ -15,7 +16,7 @@ export class MainMenuState extends BaseState {
     settingsBox: TextBox;
 
     constructor(parent: StateMachine) {
-        super(parent, "TitleScreenState");
+        super(parent, "MainMenuState");
         this.option = 0;
         this.pointer = new Triangle(0, 0, 25);
         this.pointer.setAngle(Math.PI / 2);

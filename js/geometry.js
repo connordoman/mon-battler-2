@@ -40,6 +40,8 @@ class Polygon {
         this.width = width;
         this.height = height;
         this.color = Color.BLACK;
+        this.stroke = Color.BLACK;
+        this.outline = 0;
     }
     set position(pos) {
         this.x = pos.x;

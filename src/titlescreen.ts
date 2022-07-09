@@ -1,7 +1,8 @@
 import * as P5 from "p5";
-import { print } from "./main";
+import { gPrint } from "./main";
 import { MainMenuState } from "./mainmenu";
-import { StateMachine, BaseState } from "./state";
+import { BaseState } from "./state";
+import { StateMachine } from "./statemachine";
 
 export class TitleScreenState extends BaseState {
     timer: number = 0;
@@ -26,7 +27,7 @@ export class TitleScreenState extends BaseState {
     }
 
     joypadDown(key: string) {
-        print("Checking buttons on title screen...");
+        gPrint("Checking buttons on title screen...");
         if ((this.parent.joypad.state.A || this.parent.joypad.state.B || this.parent.joypad.state.START) === true) {
             this.parent.exitState();
             this.parent.enterState(new MainMenuState(this.parent));

@@ -23,7 +23,7 @@ class TitleScreenState extends state_1.BaseState {
         this.timer++;
     }
     joypadDown(key) {
-        (0, main_1.print)("Checking buttons on title screen...");
+        (0, main_1.gPrint)("Checking buttons on title screen...");
         if ((this.parent.joypad.state.A || this.parent.joypad.state.B || this.parent.joypad.state.START) === true) {
             this.parent.exitState();
             this.parent.enterState(new mainmenu_1.MainMenuState(this.parent));

@@ -1,10 +1,10 @@
 import * as P5 from "p5";
-import { StateMachine } from "./state";
+import { StateMachine } from "./statemachine";
 import { SplashScreenState } from "./splashscreen";
 import { TitleScreenState } from "./titlescreen";
-import { OFF_WHITE } from "./color";
+import * as Color from "./color";
 
-export const DEBUG: boolean = true;
+export const DEBUG: boolean = false;
 
 export const WIDTH: number = 720;
 export const HEIGHT: number = 480;
@@ -13,6 +13,7 @@ export const PIXEL_HEIGHT: number = 3;
 export const TILE_WIDTH: number = 16 * PIXEL_WIDTH;
 export const TILE_HEIGHT: number = 16 * PIXEL_HEIGHT;
 export const TEXT_SIZE: number = PIXEL_HEIGHT * 10.6;
+export const FRAME_RATE: number = 60;
 
 // game object type
 export interface GameObject {
@@ -23,7 +24,7 @@ export interface GameObject {
 }
 
 // debug print function
-export function print(...args: any[]): void {
+export function gPrint(...args: any[]): void {
     if (DEBUG) {
         console.log(...args);
     }
@@ -37,9 +38,14 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
 
     let keyTimer = 0;
 
+    let fps = `${FRAME_RATE}`;
+
     p5.setup = () => {
-        print("Monster Battler 2.0.0");
-        p5.createCanvas(WIDTH, HEIGHT);
+        gPrint("Monster Battler 2.0.0");
+        let canv = p5.createCanvas(WIDTH, HEIGHT);
+        canv.parent("game-area");
+
+        p5.frameRate(FRAME_RATE);
 
         p5.background(0);
         p5.frameRate(60);
@@ -61,6 +67,25 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         }
         stateMachine.update(p5);
         stateMachine.draw(p5);
+
+        if (p5.frameCount % FRAME_RATE == 0) {
+            fps = p5.frameRate().toFixed(2);
+        }
+
+        if (DEBUG) {
+            let states = stateMachine.states.bottomUp();
+
+            p5.fill(Color.SLATE_GLASS);
+            p5.rect(0, 0, WIDTH, TEXT_SIZE / 2 + states.length * (TEXT_SIZE / 2));
+            p5.fill(Color.OFF_WHITE);
+            p5.textSize(TEXT_SIZE / 2);
+            p5.textAlign(p5.LEFT, p5.TOP);
+            p5.text("FPS: " + fps, TEXT_SIZE, TEXT_SIZE);
+
+            for (let i = 0; i < states.length; i++) {
+                p5.text(`${i}: ${states[i].name}`, TEXT_SIZE / 4, TEXT_SIZE / 4 + i * (TEXT_SIZE / 2));
+            }
+        }
     };
 
     p5.keyPressed = () => {
