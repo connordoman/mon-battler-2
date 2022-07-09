@@ -1,18 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextBoxArrow = exports.TextBoxState = exports.TextBox = void 0;
-const Color = require("./color");
-const geometry_1 = require("./geometry");
-const main_1 = require("./main");
+const Color = require("../color");
+const geometry_1 = require("../geometry");
+const main_1 = require("../main");
 const state_1 = require("./state");
 class TextBox extends geometry_1.Rectangle {
-    constructor(parent, msg, x, y, w, h) {
+    constructor(msg, x, y, w, h) {
         super(x, y, w, h);
-        this.parent = parent;
         this.msg = msg.trim();
         this.static = false;
         this.color = Color.WHITE;
-        this.textColor = Color.DARK_GREEN;
+        this.textColor = Color.SLATE;
         this.lineSize = w - 2 * main_1.TILE_WIDTH;
         this.seen = false;
     }
@@ -21,11 +20,14 @@ class TextBox extends geometry_1.Rectangle {
         this.static = false;
         this.seen = false;
     }
-    update(g) { }
+    update(g) {
+        if (g.textSize() !== main_1.TEXT_SIZE) {
+            g.textSize(main_1.TEXT_SIZE);
+        }
+    }
     draw(g) {
         g.push();
         g.translate(this.x, this.y);
-        g.textSize(main_1.TEXT_SIZE);
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
         g.strokeWeight(4);
@@ -39,13 +41,11 @@ class TextBox extends geometry_1.Rectangle {
 }
 exports.TextBox = TextBox;
 class TextBoxState extends state_1.BaseState {
-    constructor(parent, textbox) {
+    constructor(textbox) {
         super();
-        this.parent = parent;
         this.name = `TextBoxState: ${textbox.msg.slice(0, 17)}...`;
         this.textbox = textbox;
         this.textboxArrow = new TextBoxArrow(textbox.x + textbox.width - main_1.TILE_WIDTH / 2, textbox.y + textbox.height - main_1.TILE_HEIGHT / 1.5);
-        this.parent = parent;
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
@@ -60,7 +60,7 @@ class TextBoxState extends state_1.BaseState {
     update(g) {
         this.textbox.update(g);
         if (this.textbox.seen) {
-            this.parent.exitState();
+            main_1.GAME_DATA.stateMachine.exitState();
             return;
         }
         if (this.textbox.static) {
@@ -120,8 +120,8 @@ class TextBoxState extends state_1.BaseState {
             this.textboxArrow.draw(g);
         }
     }
-    joypadDown(key) {
-        if (this.parent.joypad.state.A || this.parent.joypad.state.B) {
+    joypadDown() {
+        if (main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
                 this.lineCount = 0;
                 this.typed = "";
@@ -129,14 +129,14 @@ class TextBoxState extends state_1.BaseState {
                 this.wrappable = false;
             }
             else if (!this.typing) {
-                this.parent.exitState();
+                main_1.GAME_DATA.stateMachine.exitState();
             }
             else {
                 this.charInterval = 1;
             }
         }
     }
-    joypadUp(key) {
+    joypadUp() {
         this.charInterval = 4;
     }
 }

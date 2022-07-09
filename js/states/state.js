@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseState = void 0;
-const main_1 = require("./main");
+const main_1 = require("../main");
 class BaseState {
     constructor() {
         this.phase = 0;

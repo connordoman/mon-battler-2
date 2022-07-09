@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
 const P5 = require("p5");
 const state_1 = require("./state");
-const Color = require("./color");
-const main_1 = require("./main");
+const Color = require("../color");
+const main_1 = require("../main");
 exports.TILE_BLANK = "BLANK";
 exports.TILE_GRASS = "GRASS";
 exports.TILE_WATER = "WATER";
@@ -22,13 +22,12 @@ class MapTile {
         this.frameNum = 0;
         this.animated = false;
         this.timer = 0;
-        this.initalize();
     }
-    initalize() {
-        //this.sprite.loadPixels();
-        for (let i = 0; i < exports.TILE_PIXELS_X; i++) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j++) {
-                this.sprite.set(i, j, Color.MAGENTA);
+    initialize() {
+        this.sprite.loadPixels();
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+                MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
             }
         }
     }
@@ -45,8 +44,8 @@ class MapTile {
     draw(g) {
         g.image(this.sprite, this.mapX * exports.TILE_WIDTH, this.mapY * exports.TILE_HEIGHT);
     }
-    joypadDown(key) { }
-    joypadUp(key) { }
+    joypadDown() { }
+    joypadUp() { }
     get frameTime() {
         return Math.floor(main_1.FRAME_RATE / this.frames.length);
     }
@@ -54,23 +53,28 @@ class MapTile {
         let tile = new MapTile(0, 0, "blank");
         return tile;
     }
-    static writeColorAtPixel(image, x, y, color) {
+    static setPixelAt(image, x, y, color) {
         for (let i = 0; i < main_1.PIXEL_WIDTH; i++) {
             for (let j = 0; j < main_1.PIXEL_HEIGHT; j++) {
-                image.set(x * main_1.PIXEL_WIDTH + i, y * main_1.PIXEL_HEIGHT + j, color);
+                let index = (x * main_1.PIXEL_WIDTH + i + (y * main_1.PIXEL_HEIGHT + j) * exports.TILE_PIXELS_X) * 4;
+                image.pixels[index] = color[0];
+                image.pixels[index + 1] = color[1];
+                image.pixels[index + 2] = color[2];
+                image.pixels[index + 3] = color[3];
             }
         }
     }
     static checkeredTile(x, y) {
         let tile = new MapTile(x, y, "checkered");
         let image = new P5.Image(exports.TILE_WIDTH, exports.TILE_HEIGHT);
-        for (let i = 0; i < exports.TILE_PIXELS_X; i++) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j++) {
-                if (i % 2 === 0 && j % 2 === 0) {
-                    MapTile.writeColorAtPixel(image, i, j, Color.BLACK);
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+                let index = (i + j * exports.TILE_PIXELS_X) * 4;
+                if (index % 2 === 0) {
+                    MapTile.setPixelAt(image, i, j, Color.BLACK);
                 }
                 else {
-                    MapTile.writeColorAtPixel(image, i, j, Color.WHITE);
+                    MapTile.setPixelAt(image, i, j, Color.WHITE);
                 }
             }
         }
@@ -80,12 +84,23 @@ class MapTile {
 }
 exports.MapTile = MapTile;
 class OverworldMap {
-    constructor(parent, width, height) {
-        this.parent = parent;
-        this.tilesX = width;
-        this.tilesY = height;
+    constructor(width, height) {
+        if (width === undefined) {
+            this.tilesX = 15;
+        }
+        else {
+            this.tilesX = width;
+        }
+        if (height === undefined) {
+            this.tilesY = 11;
+        }
+        else {
+            this.tilesY = height;
+        }
         this.tiles = [];
-        this.initializedWithCheckeredTiles();
+        if (width === undefined && height === undefined) {
+            this.initializedWithCheckeredTiles();
+        }
     }
     initialize() {
         for (let i = 0; i < this.tilesX; i++) {
@@ -118,14 +133,13 @@ class OverworldMap {
             }
         }
     }
-    joypadDown(key) { }
-    joypadUp(key) { }
+    joypadDown() { }
+    joypadUp() { }
 }
 exports.OverworldMap = OverworldMap;
 class OverworldState extends state_1.BaseState {
-    constructor(parent, map) {
+    constructor(map) {
         super();
-        this.parent = parent;
         this.name = "OverworldState";
         this.map = map;
     }
@@ -136,7 +150,7 @@ class OverworldState extends state_1.BaseState {
         g.background(0);
         this.map.draw(g);
     }
-    joypadDown(key) { }
-    joypadUp(key) { }
+    joypadDown() { }
+    joypadUp() { }
 }
 exports.OverworldState = OverworldState;

@@ -1,12 +1,10 @@
 import * as P5 from "p5";
-import * as Color from "./color";
-import { Rectangle, Triangle, Vector } from "./geometry";
-import { TEXT_SIZE, TILE_HEIGHT, TILE_WIDTH, gPrint } from "./main";
+import * as Color from "../color";
+import { Rectangle, Triangle, Vector } from "../geometry";
+import { GAME_DATA, TEXT_SIZE, TILE_HEIGHT, TILE_WIDTH, gPrint } from "../main";
 import { BaseState } from "./state";
-import { StateMachine } from "./statemachine";
 
 export class TextBox extends Rectangle {
-    parent: StateMachine;
     msg: string;
     static: boolean;
     textColor: Color.Color;
@@ -14,13 +12,12 @@ export class TextBox extends Rectangle {
 
     seen: boolean;
 
-    constructor(parent: StateMachine, msg: string, x: number, y: number, w: number, h: number) {
+    constructor(msg: string, x: number, y: number, w: number, h: number) {
         super(x, y, w, h);
-        this.parent = parent;
         this.msg = msg.trim();
         this.static = false;
         this.color = Color.WHITE;
-        this.textColor = Color.DARK_GREEN;
+        this.textColor = Color.SLATE;
         this.lineSize = w - 2 * TILE_WIDTH;
 
         this.seen = false;
@@ -32,12 +29,15 @@ export class TextBox extends Rectangle {
         this.seen = false;
     }
 
-    update(g: P5): void {}
+    update(g: P5): void {
+        if (g.textSize() !== TEXT_SIZE) {
+            g.textSize(TEXT_SIZE);
+        }
+    }
 
     draw(g: P5): void {
         g.push();
         g.translate(this.x, this.y);
-        g.textSize(TEXT_SIZE);
 
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
@@ -53,7 +53,7 @@ export class TextBox extends Rectangle {
 }
 
 export class TextBoxState extends BaseState {
-    parent: StateMachine;
+    name: string;
     textbox: TextBox;
     textboxArrow: TextBoxArrow;
     message: string;
@@ -67,14 +67,14 @@ export class TextBoxState extends BaseState {
     lineCount: number;
     charInterval: number;
 
-    constructor(parent: StateMachine, textbox: TextBox) {
-        super(parent, `TextBoxState: ${textbox.msg.slice(0, 17)}...`);
+    constructor(textbox: TextBox) {
+        super();
+        this.name = `TextBoxState: ${textbox.msg.slice(0, 17)}...`;
         this.textbox = textbox;
         this.textboxArrow = new TextBoxArrow(
             textbox.x + textbox.width - TILE_WIDTH / 2,
             textbox.y + textbox.height - TILE_HEIGHT / 1.5
         );
-        this.parent = parent;
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
@@ -91,7 +91,7 @@ export class TextBoxState extends BaseState {
         this.textbox.update(g);
 
         if (this.textbox.seen) {
-            this.parent.exitState();
+            GAME_DATA.stateMachine.exitState();
             return;
         }
 
@@ -162,22 +162,22 @@ export class TextBoxState extends BaseState {
         }
     }
 
-    joypadDown(key: string): void {
-        if (this.parent.joypad.state.A || this.parent.joypad.state.B) {
+    joypadDown(): void {
+        if (GAME_DATA.joypad.state.A || GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
                 this.lineCount = 0;
                 this.typed = "";
                 this.typing = true;
                 this.wrappable = false;
             } else if (!this.typing) {
-                this.parent.exitState();
+                GAME_DATA.stateMachine.exitState();
             } else {
                 this.charInterval = 1;
             }
         }
     }
 
-    joypadUp(key: string): void {
+    joypadUp(): void {
         this.charInterval = 4;
     }
 }

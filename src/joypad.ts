@@ -1,9 +1,22 @@
 import * as P5 from "p5";
 import { Queue } from "./queue";
 import { StateMachine } from "./statemachine";
-import { gPrint } from "./main";
+import { GAME_DATA, gPrint } from "./main";
 
 const MAX_INPUTS = 10;
+
+export const ASCII_KEYS = {
+    escape: 27,
+    space: 32,
+    enter: 13,
+    backspace: 8,
+    tab: 9,
+    delete: 46,
+    left: 37,
+    up: 38,
+    right: 39,
+    down: 40,
+};
 
 export const JOYPAD_STATE: Joypad = {
     A: false,
@@ -39,14 +52,12 @@ export const JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "
 export const KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 
 export class JoypadController {
-    parent: StateMachine;
     state: Joypad;
     keyTimer: number;
     inputQueue: Queue<string>;
     releaseQueue: Queue<string>;
 
-    constructor(parent: StateMachine) {
-        this.parent = parent;
+    constructor() {
         this.state = {
             ...JOYPAD_STATE,
         };
@@ -55,22 +66,22 @@ export class JoypadController {
         this.releaseQueue = new Queue<string>();
     }
 
-    pressJoypadKey(keyboard: string) {
+    pressJoypadKey() {
         if (this.keyTimer !== 0) return;
-        keyboard = keyboard.toUpperCase();
+        GAME_DATA.key = GAME_DATA.key.toUpperCase();
         for (let i = 0; i < KEYBOARD_KEYS.length; i++) {
-            if (KEYBOARD_KEYS[i] === keyboard && this.inputQueue.size < MAX_INPUTS) {
+            if (KEYBOARD_KEYS[i] === GAME_DATA.key && this.inputQueue.size < MAX_INPUTS) {
                 this.inputQueue.push(JOYPAD_KEYS[i]);
                 break;
             }
         }
     }
 
-    releaseJoypadKey(keyboard: string) {
+    releaseJoypadKey() {
         if (this.keyTimer !== 0) return;
-        keyboard = keyboard.toUpperCase();
+        GAME_DATA.key = GAME_DATA.key.toUpperCase();
         for (let i = 0; i < KEYBOARD_KEYS.length; i++) {
-            if (KEYBOARD_KEYS[i] === keyboard) {
+            if (KEYBOARD_KEYS[i] === GAME_DATA.key) {
                 this.releaseQueue.push(JOYPAD_KEYS[i]);
                 break;
             }
@@ -89,7 +100,7 @@ export class JoypadController {
                 let key = this.inputQueue.pop();
                 if (key) {
                     (this.state as any)[key] = true;
-                    this.parent.currentState().joypadDown(key);
+                    GAME_DATA.stateMachine.currentState().joypadDown();
                 }
                 gPrint("KeyDown: " + key, this.state);
             }
@@ -97,7 +108,7 @@ export class JoypadController {
                 let key = this.releaseQueue.pop();
                 if (key) {
                     (this.state as any)[key] = false;
-                    this.parent.currentState().joypadUp(key);
+                    GAME_DATA.stateMachine.currentState().joypadUp();
                 }
                 gPrint("KeyUp: " + key, this.state);
             }

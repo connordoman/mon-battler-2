@@ -1,18 +1,15 @@
 import * as P5 from "p5";
 import { Stack } from "./stack";
-import { JoypadController } from "./joypad";
-import { TitleScreenState } from "./titlescreen";
-import { State } from "./state";
+import { TitleScreenState } from "./states/titlescreen";
+import { State } from "./states/state";
+import { GAME_DATA, GameObject, DEBUG } from "./main";
+import { ASCII_KEYS } from "./joypad";
 
-export class StateMachine {
+export class StateMachine implements GameObject {
     states: Stack<State>;
-    joypad: JoypadController;
-    defaultTitleScreen: TitleScreenState;
 
-    constructor(g: P5) {
+    constructor() {
         this.states = new Stack<State>();
-        this.joypad = new JoypadController(this);
-        this.defaultTitleScreen = new TitleScreenState(this);
     }
 
     enterState(state: State) {
@@ -21,9 +18,6 @@ export class StateMachine {
     }
 
     currentState() {
-        if (this.states.isEmpty()) {
-            // return new TitleScreenState(this); // <- This line is broken
-        }
         return this.states.peek();
     }
 
@@ -34,15 +28,20 @@ export class StateMachine {
         }
     }
 
-    update(g: P5) {
-        if (!this.states.isEmpty()) {
-            this.joypad.update(g);
-            this.currentState().update(g);
-        }
-    }
-
     noStates() {
         return this.states.isEmpty();
+    }
+
+    stateArray(): State[] {
+        return this.states.bottomUp();
+    }
+
+    update(g: P5) {
+        if (!this.states.isEmpty()) {
+            this.currentState().update(g);
+        } else {
+            this.enterState(new TitleScreenState());
+        }
     }
 
     draw(g: P5): void {
@@ -51,15 +50,12 @@ export class StateMachine {
         }
     }
 
-    keyPressed(key: string) {
-        if (!this.noStates()) {
-            this.joypad.pressJoypadKey(key);
+    joypadDown(): void {
+        if (DEBUG) {
+            if (GAME_DATA.keyCode === ASCII_KEYS.backspace) {
+                this.exitState();
+            }
         }
     }
-
-    keyReleased(key: string) {
-        if (!this.noStates()) {
-            this.joypad.releaseJoypadKey(key);
-        }
-    }
+    joypadUp(): void {}
 }

@@ -1,27 +1,26 @@
-import { HEIGHT, TILE_HEIGHT, WIDTH } from "./main";
+import { GAME_DATA, HEIGHT, TILE_HEIGHT, WIDTH } from "../main";
 import { BaseState } from "./state";
-import { StateMachine } from "./statemachine";
 import { TextBox, TextBoxState } from "./textbox";
-import * as Color from "./color";
+import * as Color from "../color";
 
 export const EN_NEW_GAME =
     "Hello! It's nice to see you. Welcome to the world of monster battling. We are going to start you off with a new game.";
 export const EN_CONTINUE = "Press any key to continue...";
 
 export class NewGameState extends BaseState {
-    parent: StateMachine;
+    name: string;
     textbox: TextBox;
-    phase: number;
 
-    constructor(parent: StateMachine) {
-        super(parent, "NewGameState");
-        this.parent = parent;
+    constructor() {
+        super();
+        this.name = "NewGameState";
         let boxHeight = HEIGHT / 4;
-        this.textbox = new TextBox(parent, EN_NEW_GAME, 0, HEIGHT - boxHeight, WIDTH, boxHeight);
+        this.textbox = new TextBox(EN_NEW_GAME, 0, HEIGHT - boxHeight, WIDTH, boxHeight);
         this.textbox.static = false;
-        this.phase = 0;
     }
-    update(g: import("p5")): void {}
+    update(g: import("p5")): void {
+        this.timer++;
+    }
 
     draw(g: import("p5")): void {
         g.background(g.color(Color.DARK_RED));
@@ -30,7 +29,7 @@ export class NewGameState extends BaseState {
             case 0:
                 // Welcome message
                 if (!this.textbox.seen) {
-                    this.parent.enterState(new TextBoxState(this.parent, this.textbox));
+                    GAME_DATA.stateMachine.enterState(new TextBoxState(this.textbox));
                 }
                 this.phase = 1;
                 break;
@@ -38,17 +37,20 @@ export class NewGameState extends BaseState {
                 // Press any key to continue
                 this.textbox.reset(EN_CONTINUE);
                 if (!this.textbox.seen) {
-                    this.parent.enterState(new TextBoxState(this.parent, this.textbox));
+                    GAME_DATA.stateMachine.enterState(new TextBoxState(this.textbox));
                 }
                 this.phase = 2;
+                this.timer = 0;
                 break;
             case 2:
                 // Exit state
-                this.parent.exitState();
+                if (this.timer === 30) {
+                    GAME_DATA.stateMachine.exitState();
+                }
             default:
                 break;
         }
     }
-    joypadDown(key: string): void {}
-    joypadUp(key: string): void {}
+    joypadDown(): void {}
+    joypadUp(): void {}
 }

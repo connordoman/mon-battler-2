@@ -1,7 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getP5Color = exports.SLATE_GLASS = exports.OFF_WHITE = exports.DARK_BLUE = exports.DARK_GREEN = exports.DARK_RED = exports.LIGHT_MAGENTA = exports.LIGHT_CYAN = exports.LIGHT_YELLOW = exports.LIGHT_RED = exports.LIGHT_BLUE = exports.LIGHT_GREEN = exports.DARK_GRAY = exports.LIGHT_GRAY = exports.GRAY = exports.TRANSPARENT = exports.MAGENTA = exports.CYAN = exports.YELLOW = exports.BLUE = exports.GREEN = exports.RED = exports.BLACK = exports.WHITE = void 0;
+exports.getP5Color = exports.SLATE = exports.SLATE_GLASS = exports.OFF_WHITE = exports.DARK_BLUE = exports.DARK_GREEN = exports.DARK_RED = exports.LIGHT_MAGENTA = exports.LIGHT_CYAN = exports.LIGHT_YELLOW = exports.LIGHT_RED = exports.LIGHT_BLUE = exports.LIGHT_GREEN = exports.DARK_GRAY = exports.LIGHT_GRAY = exports.GRAY = exports.TRANSPARENT = exports.MAGENTA = exports.CYAN = exports.YELLOW = exports.BLUE = exports.GREEN = exports.RED = exports.BLACK = exports.WHITE = void 0;
 exports.WHITE = [255, 255, 255, 255];
 exports.BLACK = [0, 0, 0, 255];
 exports.RED = [255, 0, 0, 255];
@@ -24,7 +24,8 @@ exports.DARK_RED = [68, 12, 35, 255];
 exports.DARK_GREEN = [35, 68, 12, 255];
 exports.DARK_BLUE = [12, 35, 68, 255];
 exports.OFF_WHITE = [250, 249, 246, 255];
-exports.SLATE_GLASS = [81, 81, 81, 128];
+exports.SLATE_GLASS = [56, 64, 72, 128];
+exports.SLATE = [56, 64, 72, 255];
 const getP5Color = (p5, color) => {
     return p5.color(color[0], color[1], color[2], color[3]);
 };
@@ -158,10 +159,22 @@ exports.Triangle = Triangle;
 },{"./color":1}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JoypadController = exports.KEYBOARD_KEYS = exports.JOYPAD_KEYS = exports.JOYPAD_STATE = void 0;
+exports.JoypadController = exports.KEYBOARD_KEYS = exports.JOYPAD_KEYS = exports.JOYPAD_STATE = exports.ASCII_KEYS = void 0;
 const queue_1 = require("./queue");
 const main_1 = require("./main");
 const MAX_INPUTS = 10;
+exports.ASCII_KEYS = {
+    escape: 27,
+    space: 32,
+    enter: 13,
+    backspace: 8,
+    tab: 9,
+    delete: 46,
+    left: 37,
+    up: 38,
+    right: 39,
+    down: 40,
+};
 exports.JOYPAD_STATE = {
     A: false,
     B: false,
@@ -179,30 +192,29 @@ exports.JOYPAD_STATE = {
 exports.JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
 exports.KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 class JoypadController {
-    constructor(parent) {
-        this.parent = parent;
+    constructor() {
         this.state = Object.assign({}, exports.JOYPAD_STATE);
         this.keyTimer = 0;
         this.inputQueue = new queue_1.Queue();
         this.releaseQueue = new queue_1.Queue();
     }
-    pressJoypadKey(keyboard) {
+    pressJoypadKey() {
         if (this.keyTimer !== 0)
             return;
-        keyboard = keyboard.toUpperCase();
+        main_1.GAME_DATA.key = main_1.GAME_DATA.key.toUpperCase();
         for (let i = 0; i < exports.KEYBOARD_KEYS.length; i++) {
-            if (exports.KEYBOARD_KEYS[i] === keyboard && this.inputQueue.size < MAX_INPUTS) {
+            if (exports.KEYBOARD_KEYS[i] === main_1.GAME_DATA.key && this.inputQueue.size < MAX_INPUTS) {
                 this.inputQueue.push(exports.JOYPAD_KEYS[i]);
                 break;
             }
         }
     }
-    releaseJoypadKey(keyboard) {
+    releaseJoypadKey() {
         if (this.keyTimer !== 0)
             return;
-        keyboard = keyboard.toUpperCase();
+        main_1.GAME_DATA.key = main_1.GAME_DATA.key.toUpperCase();
         for (let i = 0; i < exports.KEYBOARD_KEYS.length; i++) {
-            if (exports.KEYBOARD_KEYS[i] === keyboard) {
+            if (exports.KEYBOARD_KEYS[i] === main_1.GAME_DATA.key) {
                 this.releaseQueue.push(exports.JOYPAD_KEYS[i]);
                 break;
             }
@@ -220,7 +232,7 @@ class JoypadController {
                 let key = this.inputQueue.pop();
                 if (key) {
                     this.state[key] = true;
-                    this.parent.currentState().joypadDown(key);
+                    main_1.GAME_DATA.stateMachine.currentState().joypadDown();
                 }
                 (0, main_1.gPrint)("KeyDown: " + key, this.state);
             }
@@ -228,7 +240,7 @@ class JoypadController {
                 let key = this.releaseQueue.pop();
                 if (key) {
                     this.state[key] = false;
-                    this.parent.currentState().joypadUp(key);
+                    main_1.GAME_DATA.stateMachine.currentState().joypadUp();
                 }
                 (0, main_1.gPrint)("KeyUp: " + key, this.state);
             }
@@ -245,15 +257,17 @@ class JoypadController {
 }
 exports.JoypadController = JoypadController;
 
-},{"./main":4,"./queue":7}],4:[function(require,module,exports){
+},{"./main":4,"./queue":5}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
-const titlescreen_1 = require("./titlescreen");
+const titlescreen_1 = require("./states/titlescreen");
 const Color = require("./color");
-exports.DEBUG = false;
+const overworld_1 = require("./states/overworld");
+const joypad_1 = require("./joypad");
+exports.DEBUG = true;
 exports.WIDTH = 720;
 exports.HEIGHT = 480;
 exports.PIXEL_WIDTH = 3;
@@ -269,10 +283,15 @@ function gPrint(...args) {
     }
 }
 exports.gPrint = gPrint;
+exports.GAME_DATA = {
+    map: new overworld_1.OverworldMap(),
+    stateMachine: new statemachine_1.StateMachine(),
+    joypad: new joypad_1.JoypadController(),
+    key: "",
+    keyCode: 0,
+};
 // main p5 logic
 const MONSTER_BATTLER_2 = (p5) => {
-    let stateMachine = new statemachine_1.StateMachine(p5);
-    let randomNoiseOnce = false;
     let keyTimer = 0;
     let fps = `${exports.FRAME_RATE}`;
     p5.setup = () => {
@@ -284,201 +303,51 @@ const MONSTER_BATTLER_2 = (p5) => {
         p5.frameRate(60);
         p5.stroke(255);
         p5.strokeWeight(1);
-        stateMachine.enterState(new titlescreen_1.TitleScreenState(stateMachine));
+        exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
+        exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
     };
     p5.draw = () => {
-        p5.noStroke();
-        // Random noise pattern (no loop only)
-        // this.randomNoisePattern();
         if (keyTimer !== 0) {
             keyTimer++;
         }
-        else if (keyTimer >= 60) {
+        else if (keyTimer >= 30) {
             keyTimer = 0;
         }
-        stateMachine.update(p5);
-        stateMachine.draw(p5);
+        exports.GAME_DATA.stateMachine.update(p5);
+        exports.GAME_DATA.joypad.update(p5);
+        p5.noStroke();
+        exports.GAME_DATA.stateMachine.draw(p5);
         if (p5.frameCount % exports.FRAME_RATE == 0) {
             fps = p5.frameRate().toFixed(2);
         }
         if (exports.DEBUG) {
-            let states = stateMachine.states.bottomUp();
+            let states = exports.GAME_DATA.stateMachine.stateArray();
             p5.fill(Color.SLATE_GLASS);
-            p5.rect(0, 0, exports.WIDTH, exports.TEXT_SIZE / 2 + states.length * (exports.TEXT_SIZE / 2));
+            p5.rect(0, 0, exports.WIDTH, exports.TEXT_SIZE + states.length * (exports.TEXT_SIZE / 2));
             p5.fill(Color.OFF_WHITE);
             p5.textSize(exports.TEXT_SIZE / 2);
             p5.textAlign(p5.LEFT, p5.TOP);
-            p5.text("FPS: " + fps, exports.TEXT_SIZE, exports.TEXT_SIZE);
+            p5.text("FPS: " + fps, exports.TEXT_SIZE / 4, exports.TEXT_SIZE / 4 + (exports.TEXT_SIZE / 2) * states.length);
             for (let i = 0; i < states.length; i++) {
                 p5.text(`${i}: ${states[i].name}`, exports.TEXT_SIZE / 4, exports.TEXT_SIZE / 4 + i * (exports.TEXT_SIZE / 2));
             }
         }
     };
     p5.keyPressed = () => {
-        stateMachine.keyPressed(p5.key);
+        exports.GAME_DATA.key = p5.key;
+        exports.GAME_DATA.keyCode = p5.keyCode;
+        exports.GAME_DATA.joypad.pressJoypadKey();
     };
     p5.keyReleased = () => {
-        stateMachine.keyReleased(p5.key);
-    };
-    let randomNoisePattern = () => {
-        if (!randomNoiseOnce) {
-            for (let i = 0; i < exports.WIDTH; i += exports.PIXEL_WIDTH) {
-                for (let j = 0; j < exports.HEIGHT; j += exports.PIXEL_HEIGHT) {
-                    p5.fill(randomColor());
-                    p5.rect(i, j, i + exports.PIXEL_WIDTH, j + exports.PIXEL_HEIGHT);
-                }
-            }
-        }
-        randomNoiseOnce = true;
-    };
-    let randomColor = () => {
-        return p5.color(p5.random(0, 255), p5.random(0, 255), p5.random(0, 255));
+        exports.GAME_DATA.joypad.releaseJoypadKey();
+        exports.GAME_DATA.key = "";
+        exports.GAME_DATA.keyCode = 0;
     };
 };
 exports.MONSTER_BATTLER_2 = MONSTER_BATTLER_2;
 new P5(exports.MONSTER_BATTLER_2);
 
-},{"./color":1,"./statemachine":10,"./titlescreen":12,"p5":13}],5:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MainMenuState = void 0;
-const main_1 = require("./main");
-const state_1 = require("./state");
-const titlescreen_1 = require("./titlescreen");
-const geometry_1 = require("./geometry");
-const textbox_1 = require("./textbox");
-const newgame_1 = require("./newgame");
-const Color = require("./color");
-class MainMenuState extends state_1.BaseState {
-    constructor(parent) {
-        super(parent, "MainMenuState");
-        this.option = 0;
-        this.pointer = new geometry_1.Triangle(0, 0, 25);
-        this.pointer.setAngle(Math.PI / 2);
-        this.pointer.color = Color.BLACK;
-        this.newGameBox = new textbox_1.TextBox(parent, "New Game", 0, 0, main_1.WIDTH, main_1.HEIGHT / 6);
-        this.continueBox = new textbox_1.TextBox(parent, "Continue", 0, this.newGameBox.height, main_1.WIDTH, main_1.HEIGHT / 6);
-        this.settingsBox = new textbox_1.TextBox(parent, "Settings", 0, this.continueBox.height + this.continueBox.y, main_1.WIDTH, main_1.HEIGHT / 6);
-        this.newGameBox.static = false;
-        this.continueBox.static = true;
-        this.settingsBox.static = true;
-    }
-    draw(g) {
-        g.background(0);
-        g.fill(255);
-        g.textSize(32);
-        this.newGameBox.update(g);
-        this.continueBox.update(g);
-        this.settingsBox.update(g);
-        this.newGameBox.draw(g);
-        this.continueBox.draw(g);
-        this.settingsBox.draw(g);
-        let offset = 16 * main_1.PIXEL_HEIGHT;
-        let arrowX = offset / 2;
-        let arrowY = 0;
-        switch (this.option) {
-            case 0:
-                arrowY = this.newGameBox.y + this.newGameBox.height / 2;
-                break;
-            case 1:
-                arrowY = this.continueBox.y + this.continueBox.height / 2;
-                break;
-            case 2:
-                arrowY = this.settingsBox.y + this.settingsBox.height / 2;
-                break;
-            default:
-                break;
-        }
-        this.pointer.position = new geometry_1.Vector(arrowX, arrowY);
-        this.pointer.draw(g);
-    }
-    joypadDown() {
-        if (this.parent.joypad.state.DOWN && this.option < 2) {
-            this.option++;
-        }
-        if (this.parent.joypad.state.UP && this.option > 0) {
-            this.option--;
-        }
-        if (this.parent.joypad.state.A) {
-            switch (this.option) {
-                case 0:
-                    // New Game
-                    this.parent.exitState();
-                    this.parent.enterState(new newgame_1.NewGameState(this.parent));
-                    break;
-                case 1:
-                    // Continue
-                    // this.parent.exitState();
-                    break;
-                case 2:
-                    // Settings
-                    // this.parent.exitState();
-                    break;
-                default:
-                    break;
-            }
-        }
-        if (this.parent.joypad.state.B) {
-            this.parent.exitState();
-            this.parent.enterState(new titlescreen_1.TitleScreenState(this.parent));
-        }
-    }
-    update(g) { }
-    joypadUp(key) { }
-}
-exports.MainMenuState = MainMenuState;
-
-},{"./color":1,"./geometry":2,"./main":4,"./newgame":6,"./state":9,"./textbox":11,"./titlescreen":12}],6:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NewGameState = exports.EN_CONTINUE = exports.EN_NEW_GAME = void 0;
-const main_1 = require("./main");
-const state_1 = require("./state");
-const textbox_1 = require("./textbox");
-const Color = require("./color");
-exports.EN_NEW_GAME = "Hello! It's nice to see you. Welcome to the world of monster battling. We are going to start you off with a new game.";
-exports.EN_CONTINUE = "Press any key to continue...";
-class NewGameState extends state_1.BaseState {
-    constructor(parent) {
-        super(parent, "NewGameState");
-        this.parent = parent;
-        let boxHeight = main_1.HEIGHT / 4;
-        this.textbox = new textbox_1.TextBox(parent, exports.EN_NEW_GAME, 0, main_1.HEIGHT - boxHeight, main_1.WIDTH, boxHeight);
-        this.textbox.static = false;
-        this.phase = 0;
-    }
-    update(g) { }
-    draw(g) {
-        g.background(g.color(Color.DARK_RED));
-        switch (this.phase) {
-            case 0:
-                // Welcome message
-                if (!this.textbox.seen) {
-                    this.parent.enterState(new textbox_1.TextBoxState(this.parent, this.textbox));
-                }
-                this.phase = 1;
-                break;
-            case 1:
-                // Press any key to continue
-                this.textbox.reset(exports.EN_CONTINUE);
-                if (!this.textbox.seen) {
-                    this.parent.enterState(new textbox_1.TextBoxState(this.parent, this.textbox));
-                }
-                this.phase = 2;
-                break;
-            case 2:
-                // Exit state
-                this.parent.exitState();
-            default:
-                break;
-        }
-    }
-    joypadDown(key) { }
-    joypadUp(key) { }
-}
-exports.NewGameState = NewGameState;
-
-},{"./color":1,"./main":4,"./state":9,"./textbox":11}],7:[function(require,module,exports){
+},{"./color":1,"./joypad":3,"./statemachine":7,"./states/overworld":10,"./states/titlescreen":13,"p5":14}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CircularQueue = exports.Queue = void 0;
@@ -611,7 +480,7 @@ class CircularQueue {
 }
 exports.CircularQueue = CircularQueue;
 
-},{}],8:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Stack = void 0;
@@ -656,15 +525,373 @@ class Stack {
 }
 exports.Stack = Stack;
 
-},{}],9:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StateMachine = void 0;
+const stack_1 = require("./stack");
+const titlescreen_1 = require("./states/titlescreen");
+const main_1 = require("./main");
+const joypad_1 = require("./joypad");
+class StateMachine {
+    constructor() {
+        this.states = new stack_1.Stack();
+    }
+    enterState(state) {
+        this.states.push(state);
+        this.currentState().onEnter();
+    }
+    currentState() {
+        return this.states.peek();
+    }
+    exitState() {
+        if (!this.states.isEmpty()) {
+            this.currentState().onExit();
+            this.states.pop();
+        }
+    }
+    noStates() {
+        return this.states.isEmpty();
+    }
+    stateArray() {
+        return this.states.bottomUp();
+    }
+    update(g) {
+        if (!this.states.isEmpty()) {
+            this.currentState().update(g);
+        }
+        else {
+            this.enterState(new titlescreen_1.TitleScreenState());
+        }
+    }
+    draw(g) {
+        if (!this.states.isEmpty()) {
+            this.currentState().draw(g);
+        }
+    }
+    joypadDown() {
+        if (main_1.DEBUG) {
+            if (main_1.GAME_DATA.keyCode === joypad_1.ASCII_KEYS.backspace) {
+                this.exitState();
+            }
+        }
+    }
+    joypadUp() { }
+}
+exports.StateMachine = StateMachine;
+
+},{"./joypad":3,"./main":4,"./stack":6,"./states/titlescreen":13}],8:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MainMenuState = void 0;
+const main_1 = require("../main");
+const state_1 = require("./state");
+const titlescreen_1 = require("./titlescreen");
+const geometry_1 = require("../geometry");
+const textbox_1 = require("./textbox");
+const newgame_1 = require("./newgame");
+const Color = require("../color");
+class MainMenuState extends state_1.BaseState {
+    constructor() {
+        super();
+        this.name = "MainMenuState";
+        this.option = 0;
+        this.pointer = new geometry_1.Triangle(0, 0, 25);
+        this.pointer.setAngle(Math.PI / 2);
+        this.pointer.color = Color.BLACK;
+        this.newGameBox = new textbox_1.TextBox("New Game", 0, 0, main_1.WIDTH, main_1.HEIGHT / 6);
+        this.continueBox = new textbox_1.TextBox("Continue", 0, this.newGameBox.height, main_1.WIDTH, main_1.HEIGHT / 6);
+        this.settingsBox = new textbox_1.TextBox("Settings", 0, this.continueBox.height + this.continueBox.y, main_1.WIDTH, main_1.HEIGHT / 6);
+        this.newGameBox.static = false;
+        this.continueBox.static = true;
+        this.settingsBox.static = true;
+    }
+    draw(g) {
+        g.background(0);
+        g.fill(255);
+        g.textSize(32);
+        this.newGameBox.update(g);
+        this.continueBox.update(g);
+        this.settingsBox.update(g);
+        this.newGameBox.draw(g);
+        this.continueBox.draw(g);
+        this.settingsBox.draw(g);
+        let offset = 16 * main_1.PIXEL_HEIGHT;
+        let arrowX = offset / 2;
+        let arrowY = 0;
+        switch (this.option) {
+            case 0:
+                arrowY = this.newGameBox.y + this.newGameBox.height / 2;
+                break;
+            case 1:
+                arrowY = this.continueBox.y + this.continueBox.height / 2;
+                break;
+            case 2:
+                arrowY = this.settingsBox.y + this.settingsBox.height / 2;
+                break;
+            default:
+                break;
+        }
+        this.pointer.position = new geometry_1.Vector(arrowX, arrowY);
+        this.pointer.draw(g);
+    }
+    joypadDown() {
+        if (main_1.GAME_DATA.joypad.state.DOWN && this.option < 2) {
+            this.option++;
+        }
+        if (main_1.GAME_DATA.joypad.state.UP && this.option > 0) {
+            this.option--;
+        }
+        if (main_1.GAME_DATA.joypad.state.A) {
+            switch (this.option) {
+                case 0:
+                    // New Game
+                    main_1.GAME_DATA.stateMachine.exitState();
+                    main_1.GAME_DATA.stateMachine.enterState(new newgame_1.NewGameState());
+                    break;
+                case 1:
+                    // Continue
+                    // this.parent.exitState();
+                    break;
+                case 2:
+                    // Settings
+                    // this.parent.exitState();
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (main_1.GAME_DATA.joypad.state.B) {
+            main_1.GAME_DATA.stateMachine.exitState();
+            main_1.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
+        }
+    }
+    update(g) { }
+    joypadUp() { }
+}
+exports.MainMenuState = MainMenuState;
+
+},{"../color":1,"../geometry":2,"../main":4,"./newgame":9,"./state":11,"./textbox":12,"./titlescreen":13}],9:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NewGameState = exports.EN_CONTINUE = exports.EN_NEW_GAME = void 0;
+const main_1 = require("../main");
+const state_1 = require("./state");
+const textbox_1 = require("./textbox");
+const Color = require("../color");
+exports.EN_NEW_GAME = "Hello! It's nice to see you. Welcome to the world of monster battling. We are going to start you off with a new game.";
+exports.EN_CONTINUE = "Press any key to continue...";
+class NewGameState extends state_1.BaseState {
+    constructor() {
+        super();
+        this.name = "NewGameState";
+        let boxHeight = main_1.HEIGHT / 4;
+        this.textbox = new textbox_1.TextBox(exports.EN_NEW_GAME, 0, main_1.HEIGHT - boxHeight, main_1.WIDTH, boxHeight);
+        this.textbox.static = false;
+    }
+    update(g) {
+        this.timer++;
+    }
+    draw(g) {
+        g.background(g.color(Color.DARK_RED));
+        switch (this.phase) {
+            case 0:
+                // Welcome message
+                if (!this.textbox.seen) {
+                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.TextBoxState(this.textbox));
+                }
+                this.phase = 1;
+                break;
+            case 1:
+                // Press any key to continue
+                this.textbox.reset(exports.EN_CONTINUE);
+                if (!this.textbox.seen) {
+                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.TextBoxState(this.textbox));
+                }
+                this.phase = 2;
+                this.timer = 0;
+                break;
+            case 2:
+                // Exit state
+                if (this.timer === 30) {
+                    main_1.GAME_DATA.stateMachine.exitState();
+                }
+            default:
+                break;
+        }
+    }
+    joypadDown() { }
+    joypadUp() { }
+}
+exports.NewGameState = NewGameState;
+
+},{"../color":1,"../main":4,"./state":11,"./textbox":12}],10:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
+const P5 = require("p5");
+const state_1 = require("./state");
+const Color = require("../color");
+const main_1 = require("../main");
+exports.TILE_BLANK = "BLANK";
+exports.TILE_GRASS = "GRASS";
+exports.TILE_WATER = "WATER";
+exports.TILE_PIXELS_X = 16;
+exports.TILE_PIXELS_Y = 16;
+exports.TILE_WIDTH = exports.TILE_PIXELS_X * main_1.PIXEL_WIDTH;
+exports.TILE_HEIGHT = exports.TILE_PIXELS_Y * main_1.PIXEL_HEIGHT;
+class MapTile {
+    constructor(mapX, mapY, tile) {
+        this.mapX = mapX;
+        this.mapY = mapY;
+        this.tile = tile;
+        this.sprite = new P5.Image(exports.TILE_WIDTH, exports.TILE_WIDTH);
+        this.frames = [];
+        this.frameNum = 0;
+        this.animated = false;
+        this.timer = 0;
+    }
+    initialize() {
+        this.sprite.loadPixels();
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+                MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
+            }
+        }
+    }
+    addFrame(frame) {
+        this.frames.push(frame);
+    }
+    update(g) {
+        if (this.animated && this.timer % this.frameTime === 0 && this.frames.length > 1) {
+            this.frameNum = (this.frameNum + 1) % this.frames.length;
+            this.sprite = this.frames[this.frameNum];
+        }
+        this.timer++;
+    }
+    draw(g) {
+        g.image(this.sprite, this.mapX * exports.TILE_WIDTH, this.mapY * exports.TILE_HEIGHT);
+    }
+    joypadDown() { }
+    joypadUp() { }
+    get frameTime() {
+        return Math.floor(main_1.FRAME_RATE / this.frames.length);
+    }
+    static get blankTile() {
+        let tile = new MapTile(0, 0, "blank");
+        return tile;
+    }
+    static setPixelAt(image, x, y, color) {
+        for (let i = 0; i < main_1.PIXEL_WIDTH; i++) {
+            for (let j = 0; j < main_1.PIXEL_HEIGHT; j++) {
+                let index = (x * main_1.PIXEL_WIDTH + i + (y * main_1.PIXEL_HEIGHT + j) * exports.TILE_PIXELS_X) * 4;
+                image.pixels[index] = color[0];
+                image.pixels[index + 1] = color[1];
+                image.pixels[index + 2] = color[2];
+                image.pixels[index + 3] = color[3];
+            }
+        }
+    }
+    static checkeredTile(x, y) {
+        let tile = new MapTile(x, y, "checkered");
+        let image = new P5.Image(exports.TILE_WIDTH, exports.TILE_HEIGHT);
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+                let index = (i + j * exports.TILE_PIXELS_X) * 4;
+                if (index % 2 === 0) {
+                    MapTile.setPixelAt(image, i, j, Color.BLACK);
+                }
+                else {
+                    MapTile.setPixelAt(image, i, j, Color.WHITE);
+                }
+            }
+        }
+        tile.sprite = image;
+        return tile;
+    }
+}
+exports.MapTile = MapTile;
+class OverworldMap {
+    constructor(width, height) {
+        if (width === undefined) {
+            this.tilesX = 15;
+        }
+        else {
+            this.tilesX = width;
+        }
+        if (height === undefined) {
+            this.tilesY = 11;
+        }
+        else {
+            this.tilesY = height;
+        }
+        this.tiles = [];
+        if (width === undefined && height === undefined) {
+            this.initializedWithCheckeredTiles();
+        }
+    }
+    initialize() {
+        for (let i = 0; i < this.tilesX; i++) {
+            for (let j = 0; j < this.tilesY; j++) {
+                let index = i + j * this.tilesX;
+                this.tiles[index] = MapTile.blankTile;
+            }
+        }
+    }
+    initializedWithCheckeredTiles() {
+        for (let i = 0; i < this.tilesX; i++) {
+            for (let j = 0; j < this.tilesY; j++) {
+                let index = i + j * this.tilesX;
+                this.tiles[index] = MapTile.checkeredTile(i, j);
+            }
+        }
+    }
+    update(g) {
+        for (let tile of this.tiles) {
+            tile.update(g);
+        }
+    }
+    draw(g) {
+        for (let i = 0; i < this.tilesX; i++) {
+            for (let j = 0; j < this.tilesY; j++) {
+                if (i * exports.TILE_WIDTH < g.width && j * exports.TILE_HEIGHT < g.height) {
+                    let index = i + j * this.tilesX;
+                    this.tiles[index].draw(g);
+                }
+            }
+        }
+    }
+    joypadDown() { }
+    joypadUp() { }
+}
+exports.OverworldMap = OverworldMap;
+class OverworldState extends state_1.BaseState {
+    constructor(map) {
+        super();
+        this.name = "OverworldState";
+        this.map = map;
+    }
+    update(g) {
+        this.map.update(g);
+    }
+    draw(g) {
+        g.background(0);
+        this.map.draw(g);
+    }
+    joypadDown() { }
+    joypadUp() { }
+}
+exports.OverworldState = OverworldState;
+
+},{"../color":1,"../main":4,"./state":11,"p5":14}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseState = void 0;
-const main_1 = require("./main");
+const main_1 = require("../main");
 class BaseState {
-    constructor(parent, name) {
-        this.parent = parent;
-        this.name = name;
+    constructor() {
+        this.phase = 0;
+        this.timer = 0;
     }
     onEnter() {
         (0, main_1.gPrint)(`State "${this.name}" entered`);
@@ -678,78 +905,21 @@ class BaseState {
 }
 exports.BaseState = BaseState;
 
-},{"./main":4}],10:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.StateMachine = void 0;
-const stack_1 = require("./stack");
-const joypad_1 = require("./joypad");
-const titlescreen_1 = require("./titlescreen");
-class StateMachine {
-    constructor(g) {
-        this.states = new stack_1.Stack();
-        this.joypad = new joypad_1.JoypadController(this);
-        this.defaultTitleScreen = new titlescreen_1.TitleScreenState(this);
-    }
-    enterState(state) {
-        this.states.push(state);
-        this.currentState().onEnter();
-    }
-    currentState() {
-        if (this.states.isEmpty()) {
-            // return new TitleScreenState(this); // <- This line is broken
-        }
-        return this.states.peek();
-    }
-    exitState() {
-        if (!this.states.isEmpty()) {
-            this.currentState().onExit();
-            this.states.pop();
-        }
-    }
-    update(g) {
-        if (!this.states.isEmpty()) {
-            this.joypad.update(g);
-            this.currentState().update(g);
-        }
-    }
-    noStates() {
-        return this.states.isEmpty();
-    }
-    draw(g) {
-        if (!this.states.isEmpty()) {
-            this.currentState().draw(g);
-        }
-    }
-    keyPressed(key) {
-        if (!this.noStates()) {
-            this.joypad.pressJoypadKey(key);
-        }
-    }
-    keyReleased(key) {
-        if (!this.noStates()) {
-            this.joypad.releaseJoypadKey(key);
-        }
-    }
-}
-exports.StateMachine = StateMachine;
-
-},{"./joypad":3,"./stack":8,"./titlescreen":12}],11:[function(require,module,exports){
+},{"../main":4}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextBoxArrow = exports.TextBoxState = exports.TextBox = void 0;
-const Color = require("./color");
-const geometry_1 = require("./geometry");
-const main_1 = require("./main");
+const Color = require("../color");
+const geometry_1 = require("../geometry");
+const main_1 = require("../main");
 const state_1 = require("./state");
 class TextBox extends geometry_1.Rectangle {
-    constructor(parent, msg, x, y, w, h) {
+    constructor(msg, x, y, w, h) {
         super(x, y, w, h);
-        this.parent = parent;
         this.msg = msg.trim();
         this.static = false;
         this.color = Color.WHITE;
-        this.textColor = Color.DARK_GREEN;
+        this.textColor = Color.SLATE;
         this.lineSize = w - 2 * main_1.TILE_WIDTH;
         this.seen = false;
     }
@@ -758,11 +928,14 @@ class TextBox extends geometry_1.Rectangle {
         this.static = false;
         this.seen = false;
     }
-    update(g) { }
+    update(g) {
+        if (g.textSize() !== main_1.TEXT_SIZE) {
+            g.textSize(main_1.TEXT_SIZE);
+        }
+    }
     draw(g) {
         g.push();
         g.translate(this.x, this.y);
-        g.textSize(main_1.TEXT_SIZE);
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
         g.strokeWeight(4);
@@ -776,11 +949,11 @@ class TextBox extends geometry_1.Rectangle {
 }
 exports.TextBox = TextBox;
 class TextBoxState extends state_1.BaseState {
-    constructor(parent, textbox) {
-        super(parent, `TextBoxState: ${textbox.msg.slice(0, 17)}...`);
+    constructor(textbox) {
+        super();
+        this.name = `TextBoxState: ${textbox.msg.slice(0, 17)}...`;
         this.textbox = textbox;
         this.textboxArrow = new TextBoxArrow(textbox.x + textbox.width - main_1.TILE_WIDTH / 2, textbox.y + textbox.height - main_1.TILE_HEIGHT / 1.5);
-        this.parent = parent;
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
@@ -795,7 +968,7 @@ class TextBoxState extends state_1.BaseState {
     update(g) {
         this.textbox.update(g);
         if (this.textbox.seen) {
-            this.parent.exitState();
+            main_1.GAME_DATA.stateMachine.exitState();
             return;
         }
         if (this.textbox.static) {
@@ -855,8 +1028,8 @@ class TextBoxState extends state_1.BaseState {
             this.textboxArrow.draw(g);
         }
     }
-    joypadDown(key) {
-        if (this.parent.joypad.state.A || this.parent.joypad.state.B) {
+    joypadDown() {
+        if (main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
                 this.lineCount = 0;
                 this.typed = "";
@@ -864,14 +1037,14 @@ class TextBoxState extends state_1.BaseState {
                 this.wrappable = false;
             }
             else if (!this.typing) {
-                this.parent.exitState();
+                main_1.GAME_DATA.stateMachine.exitState();
             }
             else {
                 this.charInterval = 1;
             }
         }
     }
-    joypadUp(key) {
+    joypadUp() {
         this.charInterval = 4;
     }
 }
@@ -904,18 +1077,17 @@ class TextBoxArrow extends geometry_1.Triangle {
 }
 exports.TextBoxArrow = TextBoxArrow;
 
-},{"./color":1,"./geometry":2,"./main":4,"./state":9}],12:[function(require,module,exports){
+},{"../color":1,"../geometry":2,"../main":4,"./state":11}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TitleScreenState = void 0;
-const main_1 = require("./main");
+const main_1 = require("../main");
 const mainmenu_1 = require("./mainmenu");
 const state_1 = require("./state");
 class TitleScreenState extends state_1.BaseState {
-    constructor(parent) {
-        super(parent, "TitleScreenState");
-        this.timer = 0;
-        this.timer = 0;
+    constructor() {
+        super();
+        this.name = "TitleScreenState";
     }
     draw(g) {
         g.background(0);
@@ -929,19 +1101,19 @@ class TitleScreenState extends state_1.BaseState {
         }
         this.timer++;
     }
-    joypadDown(key) {
+    joypadDown() {
         (0, main_1.gPrint)("Checking buttons on title screen...");
-        if ((this.parent.joypad.state.A || this.parent.joypad.state.B || this.parent.joypad.state.START) === true) {
-            this.parent.exitState();
-            this.parent.enterState(new mainmenu_1.MainMenuState(this.parent));
+        if ((main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B || main_1.GAME_DATA.joypad.state.START) === true) {
+            main_1.GAME_DATA.stateMachine.exitState();
+            main_1.GAME_DATA.stateMachine.enterState(new mainmenu_1.MainMenuState());
         }
     }
     update(g) { }
-    joypadUp(key) { }
+    joypadUp() { }
 }
 exports.TitleScreenState = TitleScreenState;
 
-},{"./main":4,"./mainmenu":5,"./state":9}],13:[function(require,module,exports){
+},{"../main":4,"./mainmenu":8,"./state":11}],14:[function(require,module,exports){
 (function (global){(function (){
 /*! p5.js v1.4.1 February 02, 2022 */
 

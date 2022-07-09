@@ -2,22 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StateMachine = void 0;
 const stack_1 = require("./stack");
+const titlescreen_1 = require("./states/titlescreen");
+const main_1 = require("./main");
 const joypad_1 = require("./joypad");
-const titlescreen_1 = require("./titlescreen");
 class StateMachine {
-    constructor(g) {
+    constructor() {
         this.states = new stack_1.Stack();
-        this.joypad = new joypad_1.JoypadController(this);
-        this.defaultTitleScreen = new titlescreen_1.TitleScreenState(this);
     }
     enterState(state) {
         this.states.push(state);
         this.currentState().onEnter();
     }
     currentState() {
-        if (this.states.isEmpty()) {
-            // return new TitleScreenState(this); // <- This line is broken
-        }
         return this.states.peek();
     }
     exitState() {
@@ -26,29 +22,32 @@ class StateMachine {
             this.states.pop();
         }
     }
-    update(g) {
-        if (!this.states.isEmpty()) {
-            this.joypad.update(g);
-            this.currentState().update(g);
-        }
-    }
     noStates() {
         return this.states.isEmpty();
+    }
+    stateArray() {
+        return this.states.bottomUp();
+    }
+    update(g) {
+        if (!this.states.isEmpty()) {
+            this.currentState().update(g);
+        }
+        else {
+            this.enterState(new titlescreen_1.TitleScreenState());
+        }
     }
     draw(g) {
         if (!this.states.isEmpty()) {
             this.currentState().draw(g);
         }
     }
-    keyPressed(key) {
-        if (!this.noStates()) {
-            this.joypad.pressJoypadKey(key);
+    joypadDown() {
+        if (main_1.DEBUG) {
+            if (main_1.GAME_DATA.keyCode === joypad_1.ASCII_KEYS.backspace) {
+                this.exitState();
+            }
         }
     }
-    keyReleased(key) {
-        if (!this.noStates()) {
-            this.joypad.releaseJoypadKey(key);
-        }
-    }
+    joypadUp() { }
 }
 exports.StateMachine = StateMachine;

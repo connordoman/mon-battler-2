@@ -1,8 +1,7 @@
 import * as P5 from "p5";
-import { BaseState, State } from "./state";
-import { StateMachine } from "./statemachine";
-import * as Color from "./color";
-import { FRAME_RATE, GameObject, PIXEL_HEIGHT, PIXEL_WIDTH } from "./main";
+import { BaseState } from "./state";
+import * as Color from "../color";
+import { FRAME_RATE, GameObject, PIXEL_HEIGHT, PIXEL_WIDTH } from "../main";
 
 export const TILE_BLANK: string = "BLANK";
 export const TILE_GRASS: string = "GRASS";
@@ -33,15 +32,14 @@ export class MapTile implements GameObject {
         this.frameNum = 0;
         this.animated = false;
         this.timer = 0;
-
-        this.initalize();
     }
 
-    initalize() {
-        //this.sprite.loadPixels();
-        for (let i = 0; i < TILE_PIXELS_X; i++) {
-            for (let j = 0; j < TILE_PIXELS_Y; j++) {
-                this.sprite.set(i, j, Color.MAGENTA);
+    initialize() {
+        this.sprite.loadPixels();
+
+        for (let i = 0; i < TILE_PIXELS_X; i += PIXEL_WIDTH) {
+            for (let j = 0; j < TILE_PIXELS_Y; j += PIXEL_HEIGHT) {
+                MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
             }
         }
     }
@@ -63,9 +61,9 @@ export class MapTile implements GameObject {
         g.image(this.sprite, this.mapX * TILE_WIDTH, this.mapY * TILE_HEIGHT);
     }
 
-    joypadDown(key: string): void {}
+    joypadDown(): void {}
 
-    joypadUp(key: string): void {}
+    joypadUp(): void {}
 
     private get frameTime(): number {
         return Math.floor(FRAME_RATE / this.frames.length);
@@ -76,10 +74,14 @@ export class MapTile implements GameObject {
         return tile;
     }
 
-    static writeColorAtPixel(image: P5.Image, x: number, y: number, color: Color.Color) {
+    static setPixelAt(image: P5.Image, x: number, y: number, color: Color.Color) {
         for (let i = 0; i < PIXEL_WIDTH; i++) {
             for (let j = 0; j < PIXEL_HEIGHT; j++) {
-                image.set(x * PIXEL_WIDTH + i, y * PIXEL_HEIGHT + j, color);
+                let index = (x * PIXEL_WIDTH + i + (y * PIXEL_HEIGHT + j) * TILE_PIXELS_X) * 4;
+                image.pixels[index] = color[0];
+                image.pixels[index + 1] = color[1];
+                image.pixels[index + 2] = color[2];
+                image.pixels[index + 3] = color[3];
             }
         }
     }
@@ -87,12 +89,13 @@ export class MapTile implements GameObject {
     static checkeredTile(x: number, y: number): MapTile {
         let tile = new MapTile(x, y, "checkered");
         let image = new P5.Image(TILE_WIDTH, TILE_HEIGHT);
-        for (let i = 0; i < TILE_PIXELS_X; i++) {
-            for (let j = 0; j < TILE_PIXELS_Y; j++) {
-                if (i % 2 === 0 && j % 2 === 0) {
-                    MapTile.writeColorAtPixel(image, i, j, Color.BLACK);
+        for (let i = 0; i < TILE_PIXELS_X; i += PIXEL_WIDTH) {
+            for (let j = 0; j < TILE_PIXELS_Y; j += PIXEL_HEIGHT) {
+                let index = (i + j * TILE_PIXELS_X) * 4;
+                if (index % 2 === 0) {
+                    MapTile.setPixelAt(image, i, j, Color.BLACK);
                 } else {
-                    MapTile.writeColorAtPixel(image, i, j, Color.WHITE);
+                    MapTile.setPixelAt(image, i, j, Color.WHITE);
                 }
             }
         }
@@ -102,23 +105,43 @@ export class MapTile implements GameObject {
 }
 
 export class OverworldMap implements GameObject {
-    parent: StateMachine;
-    width: number;
-    height: number;
+    tilesX: number;
+    tilesY: number;
     tiles: MapTile[];
 
-    constructor(parent: StateMachine, width: number, height: number) {
-        this.parent = parent;
-        this.width = width;
-        this.height = height;
+    constructor(width?: number, height?: number) {
+        if (width === undefined) {
+            this.tilesX = 15;
+        } else {
+            this.tilesX = width;
+        }
+        if (height === undefined) {
+            this.tilesY = 11;
+        } else {
+            this.tilesY = height;
+        }
+
         this.tiles = [];
+
+        if (width === undefined && height === undefined) {
+            this.initializedWithCheckeredTiles();
+        }
     }
 
-    initialize() {
-        for (let i = 0; i < this.width; i++) {
-            for (let j = 0; j < this.height; j++) {
-                let index = i + j * this.width;
+    initialize(): void {
+        for (let i = 0; i < this.tilesX; i++) {
+            for (let j = 0; j < this.tilesY; j++) {
+                let index = i + j * this.tilesX;
                 this.tiles[index] = MapTile.blankTile;
+            }
+        }
+    }
+
+    initializedWithCheckeredTiles(): void {
+        for (let i = 0; i < this.tilesX; i++) {
+            for (let j = 0; j < this.tilesY; j++) {
+                let index = i + j * this.tilesX;
+                this.tiles[index] = MapTile.checkeredTile(i, j);
             }
         }
     }
@@ -128,25 +151,29 @@ export class OverworldMap implements GameObject {
             tile.update(g);
         }
     }
+
     draw(g: P5): void {
-        for (let i = 0; i < this.width; i++) {
-            for (let j = 0; j < this.height; j++) {
+        for (let i = 0; i < this.tilesX; i++) {
+            for (let j = 0; j < this.tilesY; j++) {
                 if (i * TILE_WIDTH < g.width && j * TILE_HEIGHT < g.height) {
-                    let index = i + j * this.width;
+                    let index = i + j * this.tilesX;
                     this.tiles[index].draw(g);
                 }
             }
         }
     }
-    joypadDown(key: string): void {}
-    joypadUp(key: string): void {}
+
+    joypadDown(): void {}
+    joypadUp(): void {}
 }
 
 export class OverworldState extends BaseState {
+    name: string;
     map: OverworldMap;
 
-    constructor(parent: StateMachine, map: OverworldMap) {
-        super(parent, "OverworldState");
+    constructor(map: OverworldMap) {
+        super();
+        this.name = "OverworldState";
         this.map = map;
     }
 
@@ -157,6 +184,6 @@ export class OverworldState extends BaseState {
         g.background(0);
         this.map.draw(g);
     }
-    joypadDown(key: string): void {}
-    joypadUp(key: string): void {}
+    joypadDown(): void {}
+    joypadUp(): void {}
 }

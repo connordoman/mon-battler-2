@@ -1,13 +1,16 @@
 import * as P5 from "p5";
+import { GAME_DATA } from "../main";
 import { BaseState } from "./state";
-import { StateMachine } from "./statemachine";
 import { TitleScreenState } from "./titlescreen";
 
 export class SplashScreenState extends BaseState {
+    name: string;
     timer: number = 0;
 
-    constructor(parent: StateMachine) {
-        super(parent, "SplashScreenState");
+    constructor() {
+        super();
+        this.name = "SplashScreenState";
+
         this.timer = 0;
     }
 
@@ -23,10 +26,10 @@ export class SplashScreenState extends BaseState {
         this.timer++;
     }
 
-    joypadDown(key: string) {
+    joypadDown() {
         //super.keyPressed(key);
-        this.parent.exitState();
-        this.parent.enterState(new TitleScreenState(this.parent));
+        GAME_DATA.stateMachine.exitState();
+        GAME_DATA.stateMachine.enterState(new TitleScreenState());
     }
-    joypadUp(key: string): void {}
+    joypadUp(): void {}
 }

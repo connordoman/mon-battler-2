@@ -23,7 +23,8 @@ export const DARK_RED: Color = [68, 12, 35, 255];
 export const DARK_GREEN: Color = [35, 68, 12, 255];
 export const DARK_BLUE: Color = [12, 35, 68, 255];
 export const OFF_WHITE: Color = [250, 249, 246, 255];
-export const SLATE_GLASS: Color = [81, 81, 81, 128];
+export const SLATE_GLASS: Color = [56, 64, 72, 128];
+export const SLATE: Color = [56, 64, 72, 255];
 
 export const getP5Color = (p5: P5, color: Color): P5.Color => {
     return p5.color(color[0], color[1], color[2], color[3]);

@@ -1,37 +1,31 @@
 import * as P5 from "p5";
-import { HEIGHT, PIXEL_HEIGHT, WIDTH } from "./main";
+import { GAME_DATA, HEIGHT, PIXEL_HEIGHT, WIDTH } from "../main";
 import { BaseState } from "./state";
-import { StateMachine } from "./statemachine";
 import { TitleScreenState } from "./titlescreen";
-import { Triangle, Vector } from "./geometry";
+import { Triangle, Vector } from "../geometry";
 import { TextBox } from "./textbox";
 import { NewGameState } from "./newgame";
-import * as Color from "./color";
+import * as Color from "../color";
 
 export class MainMenuState extends BaseState {
+    name: string;
     option: number;
     pointer: Triangle;
     newGameBox: TextBox;
     continueBox: TextBox;
     settingsBox: TextBox;
 
-    constructor(parent: StateMachine) {
-        super(parent, "MainMenuState");
+    constructor() {
+        super();
+        this.name = "MainMenuState";
         this.option = 0;
         this.pointer = new Triangle(0, 0, 25);
         this.pointer.setAngle(Math.PI / 2);
         this.pointer.color = Color.BLACK;
 
-        this.newGameBox = new TextBox(parent, "New Game", 0, 0, WIDTH, HEIGHT / 6);
-        this.continueBox = new TextBox(parent, "Continue", 0, this.newGameBox.height, WIDTH, HEIGHT / 6);
-        this.settingsBox = new TextBox(
-            parent,
-            "Settings",
-            0,
-            this.continueBox.height + this.continueBox.y,
-            WIDTH,
-            HEIGHT / 6
-        );
+        this.newGameBox = new TextBox("New Game", 0, 0, WIDTH, HEIGHT / 6);
+        this.continueBox = new TextBox("Continue", 0, this.newGameBox.height, WIDTH, HEIGHT / 6);
+        this.settingsBox = new TextBox("Settings", 0, this.continueBox.height + this.continueBox.y, WIDTH, HEIGHT / 6);
         this.newGameBox.static = false;
         this.continueBox.static = true;
         this.settingsBox.static = true;
@@ -70,20 +64,20 @@ export class MainMenuState extends BaseState {
     }
 
     joypadDown() {
-        if (this.parent.joypad.state.DOWN && this.option < 2) {
+        if (GAME_DATA.joypad.state.DOWN && this.option < 2) {
             this.option++;
         }
 
-        if (this.parent.joypad.state.UP && this.option > 0) {
+        if (GAME_DATA.joypad.state.UP && this.option > 0) {
             this.option--;
         }
 
-        if (this.parent.joypad.state.A) {
+        if (GAME_DATA.joypad.state.A) {
             switch (this.option) {
                 case 0:
                     // New Game
-                    this.parent.exitState();
-                    this.parent.enterState(new NewGameState(this.parent));
+                    GAME_DATA.stateMachine.exitState();
+                    GAME_DATA.stateMachine.enterState(new NewGameState());
                     break;
                 case 1:
                     // Continue
@@ -98,12 +92,12 @@ export class MainMenuState extends BaseState {
             }
         }
 
-        if (this.parent.joypad.state.B) {
-            this.parent.exitState();
-            this.parent.enterState(new TitleScreenState(this.parent));
+        if (GAME_DATA.joypad.state.B) {
+            GAME_DATA.stateMachine.exitState();
+            GAME_DATA.stateMachine.enterState(new TitleScreenState());
         }
     }
     update(g: P5): void {}
 
-    joypadUp(key: string): void {}
+    joypadUp(): void {}
 }

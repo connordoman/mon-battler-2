@@ -1,15 +1,14 @@
 import * as P5 from "p5";
-import { gPrint } from "./main";
+import { GAME_DATA, gPrint } from "../main";
 import { MainMenuState } from "./mainmenu";
 import { BaseState } from "./state";
-import { StateMachine } from "./statemachine";
 
 export class TitleScreenState extends BaseState {
-    timer: number = 0;
+    name: string;
 
-    constructor(parent: StateMachine) {
-        super(parent, "TitleScreenState");
-        this.timer = 0;
+    constructor() {
+        super();
+        this.name = "TitleScreenState";
     }
 
     draw(g: P5) {
@@ -26,13 +25,13 @@ export class TitleScreenState extends BaseState {
         this.timer++;
     }
 
-    joypadDown(key: string) {
+    joypadDown() {
         gPrint("Checking buttons on title screen...");
-        if ((this.parent.joypad.state.A || this.parent.joypad.state.B || this.parent.joypad.state.START) === true) {
-            this.parent.exitState();
-            this.parent.enterState(new MainMenuState(this.parent));
+        if ((GAME_DATA.joypad.state.A || GAME_DATA.joypad.state.B || GAME_DATA.joypad.state.START) === true) {
+            GAME_DATA.stateMachine.exitState();
+            GAME_DATA.stateMachine.enterState(new MainMenuState());
         }
     }
     update(g: P5): void {}
-    joypadUp(key: string): void {}
+    joypadUp(): void {}
 }

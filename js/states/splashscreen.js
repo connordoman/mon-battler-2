@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SplashScreenState = void 0;
+const main_1 = require("../main");
 const state_1 = require("./state");
 const titlescreen_1 = require("./titlescreen");
 class SplashScreenState extends state_1.BaseState {
-    constructor(parent) {
+    constructor() {
         super();
         this.timer = 0;
-        this.parent = parent;
         this.name = "SplashScreenState";
         this.timer = 0;
     }
@@ -22,11 +22,11 @@ class SplashScreenState extends state_1.BaseState {
         }
         this.timer++;
     }
-    joypadDown(key) {
+    joypadDown() {
         //super.keyPressed(key);
-        this.parent.exitState();
-        this.parent.enterState(new titlescreen_1.TitleScreenState(this.parent));
+        main_1.GAME_DATA.stateMachine.exitState();
+        main_1.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
     }
-    joypadUp(key) { }
+    joypadUp() { }
 }
 exports.SplashScreenState = SplashScreenState;
