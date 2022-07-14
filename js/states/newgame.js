@@ -32,14 +32,16 @@ class NewGameState extends state_1.BaseState {
                 // Press any key to continue
                 this.textbox.reset(exports.EN_CONTINUE);
                 if (!this.textbox.seen) {
-                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.TextBoxState(this.textbox));
+                    let boxHeight = main_1.HEIGHT / 4;
+                    this.textbox = new textbox_1.PressAnyKeyTextbox(0, main_1.HEIGHT - boxHeight, main_1.WIDTH, boxHeight);
+                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.PressAnyKeyTextBoxState(this.textbox));
                 }
                 this.phase = 2;
                 this.timer = 0;
                 break;
             case 2:
                 // Exit state
-                if (this.timer === 30) {
+                if (this.timer === 60) {
                     main_1.GAME_DATA.stateMachine.exitState();
                 }
             default:

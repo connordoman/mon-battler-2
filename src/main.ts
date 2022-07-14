@@ -17,6 +17,7 @@ export const TEXT_SIZE: number = PIXEL_HEIGHT * 10.6;
 export const FRAME_RATE: number = 60;
 
 export type GameData = {
+    canv: P5.Element;
     map: OverworldMap;
     stateMachine: StateMachine;
     joypad: JoypadController;
@@ -28,8 +29,8 @@ export type GameData = {
 export interface GameObject {
     update(g: P5): void;
     draw(g: P5): void;
-    joypadDown(): void;
-    joypadUp(): void;
+    joypadDown(key: string): void;
+    joypadUp(key: string): void;
 }
 
 // debug print function
@@ -39,7 +40,13 @@ export function gPrint(...args: any[]): void {
     }
 }
 
+// get pixels from css rem units
+export function gConvertRemToPixels(rem: number): number {
+    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+
 export const GAME_DATA: GameData = {
+    canv: new P5.Element("canvas"),
     map: new OverworldMap(),
     stateMachine: new StateMachine(),
     joypad: new JoypadController(),
@@ -56,6 +63,7 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         gPrint("Monster Battler 2.0.0");
         let canv = p5.createCanvas(WIDTH, HEIGHT);
         canv.parent("game-area");
+        GAME_DATA.canv = canv;
 
         p5.frameRate(FRAME_RATE);
 
@@ -66,6 +74,8 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
 
         GAME_DATA.stateMachine = new StateMachine();
         GAME_DATA.stateMachine.enterState(new TitleScreenState());
+
+        JoypadController.deployJoypadHTML(p5);
     };
 
     p5.draw = () => {

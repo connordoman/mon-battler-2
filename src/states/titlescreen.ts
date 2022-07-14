@@ -25,7 +25,7 @@ export class TitleScreenState extends BaseState {
         this.timer++;
     }
 
-    joypadDown() {
+    joypadDown(key: string) {
         gPrint("Checking buttons on title screen...");
         if ((GAME_DATA.joypad.state.A || GAME_DATA.joypad.state.B || GAME_DATA.joypad.state.START) === true) {
             GAME_DATA.stateMachine.exitState();
@@ -33,5 +33,5 @@ export class TitleScreenState extends BaseState {
         }
     }
     update(g: P5): void {}
-    joypadUp(): void {}
+    joypadUp(key: string): void {}
 }

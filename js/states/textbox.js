@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TextBoxArrow = exports.TextBoxState = exports.TextBox = void 0;
+exports.TextBoxArrow = exports.PressAnyKeyTextBoxState = exports.TextBoxState = exports.PressAnyKeyTextbox = exports.TextBox = exports.EN_CONTINUE = void 0;
 const Color = require("../color");
 const geometry_1 = require("../geometry");
 const main_1 = require("../main");
 const state_1 = require("./state");
+exports.EN_CONTINUE = "Press any key to continue...";
 class TextBox extends geometry_1.Rectangle {
     constructor(msg, x, y, w, h) {
         super(x, y, w, h);
@@ -40,6 +41,12 @@ class TextBox extends geometry_1.Rectangle {
     }
 }
 exports.TextBox = TextBox;
+class PressAnyKeyTextbox extends TextBox {
+    constructor(x, y, w, h) {
+        super(exports.EN_CONTINUE, x, y, w, h);
+    }
+}
+exports.PressAnyKeyTextbox = PressAnyKeyTextbox;
 class TextBoxState extends state_1.BaseState {
     constructor(textbox) {
         super();
@@ -49,13 +56,14 @@ class TextBoxState extends state_1.BaseState {
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
-        this.wrappable = false;
         this.typing = true;
+        this.wrappable = false;
         this.letterCount = 0;
         this.wordCount = 1;
         this.words = this.message.split(" ");
         this.lineCount = 0;
         this.charInterval = 4;
+        main_1.GAME_DATA.joypad.clearKeys();
     }
     update(g) {
         this.textbox.update(g);
@@ -120,7 +128,7 @@ class TextBoxState extends state_1.BaseState {
             this.textboxArrow.draw(g);
         }
     }
-    joypadDown() {
+    joypadDown(key) {
         if (main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
                 this.lineCount = 0;
@@ -136,11 +144,31 @@ class TextBoxState extends state_1.BaseState {
             }
         }
     }
-    joypadUp() {
+    joypadUp(key) {
         this.charInterval = 4;
     }
 }
 exports.TextBoxState = TextBoxState;
+class PressAnyKeyTextBoxState extends TextBoxState {
+    constructor(textbox) {
+        super(textbox);
+        this.name = `PressAnyKeyTextboxState: ${textbox.msg.slice(0, 17)}...`;
+        this.closable = false;
+    }
+    joypadDown(key) {
+        super.joypadDown(key);
+        if (!this.closable && !this.typing) {
+            this.closable = true;
+        }
+    }
+    joypadUp(key) {
+        super.joypadUp(key);
+        if (this.closable) {
+            main_1.GAME_DATA.stateMachine.exitState();
+        }
+    }
+}
+exports.PressAnyKeyTextBoxState = PressAnyKeyTextBoxState;
 class TextBoxArrow extends geometry_1.Triangle {
     constructor(x, y) {
         super(x, y, main_1.TILE_WIDTH / 3);

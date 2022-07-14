@@ -22,9 +22,9 @@ export abstract class BaseState implements State {
 
     abstract draw(g: P5): void;
 
-    abstract joypadDown(): void;
+    abstract joypadDown(key: string): void;
 
-    abstract joypadUp(): void;
+    abstract joypadUp(key: string): void;
 
     onEnter() {
         gPrint(`State "${this.name}" entered`);

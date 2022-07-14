@@ -159,7 +159,7 @@ exports.Triangle = Triangle;
 },{"./color":1}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JoypadController = exports.KEYBOARD_KEYS = exports.JOYPAD_KEYS = exports.JOYPAD_STATE = exports.ASCII_KEYS = void 0;
+exports.JoypadController = exports.KEYBOARD_KEYS = exports.JOYPAD_KEYS = exports.JOYPAD = exports.JOYPAD_STATE = exports.ASCII_KEYS = void 0;
 const queue_1 = require("./queue");
 const main_1 = require("./main");
 const MAX_INPUTS = 10;
@@ -189,6 +189,20 @@ exports.JOYPAD_STATE = {
     LEFT: false,
     RIGHT: false,
 };
+exports.JOYPAD = {
+    A: "Z".charCodeAt(0),
+    B: "X".charCodeAt(0),
+    X: "C".charCodeAt(0),
+    Y: "V".charCodeAt(0),
+    L: "Q".charCodeAt(0),
+    R: "E".charCodeAt(0),
+    START: exports.ASCII_KEYS.enter,
+    SELECT: exports.ASCII_KEYS.backspace,
+    UP: "W".charCodeAt(0),
+    DOWN: "S".charCodeAt(0),
+    LEFT: "A".charCodeAt(0),
+    RIGHT: "D".charCodeAt(0),
+};
 exports.JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
 exports.KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 class JoypadController {
@@ -198,9 +212,25 @@ class JoypadController {
         this.inputQueue = new queue_1.Queue();
         this.releaseQueue = new queue_1.Queue();
     }
+    clearKeys() {
+        this.inputQueue.clear();
+        this.releaseQueue.clear();
+        this.state = Object.assign({}, exports.JOYPAD_STATE);
+    }
     pressJoypadKey() {
         if (this.keyTimer !== 0)
             return;
+        // check for keycode
+        if (main_1.GAME_DATA.keyCode < 32) {
+            switch (main_1.GAME_DATA.keyCode) {
+                case exports.JOYPAD.START:
+                    this.inputQueue.push("START");
+                    return;
+                case exports.JOYPAD.SELECT:
+                    this.inputQueue.push("SELECT");
+                    return;
+            }
+        }
         main_1.GAME_DATA.key = main_1.GAME_DATA.key.toUpperCase();
         for (let i = 0; i < exports.KEYBOARD_KEYS.length; i++) {
             if (exports.KEYBOARD_KEYS[i] === main_1.GAME_DATA.key && this.inputQueue.size < MAX_INPUTS) {
@@ -212,6 +242,17 @@ class JoypadController {
     releaseJoypadKey() {
         if (this.keyTimer !== 0)
             return;
+        // check for keycode
+        if (main_1.GAME_DATA.keyCode < 32) {
+            switch (main_1.GAME_DATA.keyCode) {
+                case exports.JOYPAD.START:
+                    this.releaseQueue.push("START");
+                    return;
+                case exports.JOYPAD.SELECT:
+                    this.releaseQueue.push("SELECT");
+                    return;
+            }
+        }
         main_1.GAME_DATA.key = main_1.GAME_DATA.key.toUpperCase();
         for (let i = 0; i < exports.KEYBOARD_KEYS.length; i++) {
             if (exports.KEYBOARD_KEYS[i] === main_1.GAME_DATA.key) {
@@ -228,21 +269,23 @@ class JoypadController {
             this.keyTimer++;
         }
         if (g.frameCount % 4 === 0) {
+            // input pressed
             if (!this.inputQueue.isEmpty()) {
-                let key = this.inputQueue.pop();
-                if (key) {
-                    this.state[key] = true;
-                    main_1.GAME_DATA.stateMachine.currentState().joypadDown();
+                let jkey = this.inputQueue.pop();
+                if (jkey) {
+                    this.state[jkey] = true;
+                    main_1.GAME_DATA.stateMachine.currentState().joypadDown(jkey);
                 }
-                (0, main_1.gPrint)("KeyDown: " + key, this.state);
+                (0, main_1.gPrint)("KeyDown: " + jkey, this.state);
             }
+            // input released
             if (!this.releaseQueue.isEmpty()) {
-                let key = this.releaseQueue.pop();
-                if (key) {
-                    this.state[key] = false;
-                    main_1.GAME_DATA.stateMachine.currentState().joypadUp();
+                let jkey = this.releaseQueue.pop();
+                if (jkey) {
+                    this.state[jkey] = false;
+                    main_1.GAME_DATA.stateMachine.currentState().joypadUp(jkey);
                 }
-                (0, main_1.gPrint)("KeyUp: " + key, this.state);
+                (0, main_1.gPrint)("KeyUp: " + jkey, this.state);
             }
         }
     }
@@ -254,13 +297,137 @@ class JoypadController {
         }
         return false;
     }
+    static deployJoypadHTML(g) {
+        let leftPad;
+        let rightPad;
+        let canvas = document.getElementById(main_1.GAME_DATA.canv.id());
+        let leftPadUp = document.createElement("td");
+        let leftPadDown = document.createElement("td");
+        let leftPadLeft = document.createElement("td");
+        let leftPadRight = document.createElement("td");
+        let rightPadX = document.createElement("td");
+        let rightPadB = document.createElement("td");
+        let rightPadY = document.createElement("td");
+        let rightPadA = document.createElement("td");
+        let centerPadStart = document.createElement("span");
+        let centerPadSelect = document.createElement("span");
+        // directional buttons
+        leftPadUp.id = `joypad-${exports.JOYPAD.UP}`;
+        leftPadDown.id = `joypad-${exports.JOYPAD.DOWN}`;
+        leftPadLeft.id = `joypad-${exports.JOYPAD.LEFT}`;
+        leftPadRight.id = `joypad-${exports.JOYPAD.RIGHT}`;
+        leftPadUp.className = "pad-button";
+        leftPadDown.className = "pad-button";
+        leftPadLeft.className = "pad-button";
+        leftPadRight.className = "pad-button";
+        leftPadUp.innerHTML = "&uarr;";
+        leftPadDown.innerHTML = "&darr;";
+        leftPadLeft.innerHTML = "&larr;";
+        leftPadRight.innerHTML = "&rarr;";
+        // action buttons
+        rightPadX.id = `joypad-${exports.JOYPAD.X}`;
+        rightPadB.id = `joypad-${exports.JOYPAD.B}`;
+        rightPadY.id = `joypad-${exports.JOYPAD.Y}`;
+        rightPadA.id = `joypad-${exports.JOYPAD.A}`;
+        rightPadX.className = "pad-button";
+        rightPadB.className = "pad-button";
+        rightPadY.className = "pad-button";
+        rightPadA.className = "pad-button";
+        rightPadX.innerHTML = "X";
+        rightPadB.innerHTML = "B";
+        rightPadY.innerHTML = "Y";
+        rightPadA.innerHTML = "A";
+        // option buttons
+        centerPadStart.id = `joypad-${exports.JOYPAD.START}`;
+        centerPadSelect.id = `joypad-${exports.JOYPAD.SELECT}`;
+        centerPadStart.innerHTML = "START";
+        centerPadSelect.innerHTML = "SELECT";
+        centerPadStart.classList.add("pad-button", "noselect", "center-button");
+        centerPadSelect.classList.add("pad-button", "noselect", "center-button");
+        // position option buttons according to game area
+        let rect = canvas.getBoundingClientRect();
+        let rem1 = (0, main_1.gConvertRemToPixels)(1);
+        (0, main_1.gPrint)(rect.top, rect.left, rect.bottom, rect.right);
+        centerPadStart.style.left = `${rect.right + rem1}px`;
+        centerPadSelect.style.right = `${rect.right + rem1}px`;
+        // add action listeners to option buttons
+        centerPadStart.addEventListener("mousedown", (e) => {
+            JoypadController.onScreenKeyPress(e);
+        });
+        centerPadStart.addEventListener("mouseup", (e) => {
+            JoypadController.onScreenKeyRelease(e);
+        });
+        centerPadSelect.addEventListener("mousedown", (e) => {
+            JoypadController.onScreenKeyPress(e);
+        });
+        centerPadSelect.addEventListener("mouseup", (e) => {
+            JoypadController.onScreenKeyRelease(e);
+        });
+        // prepare cross shaped tables
+        leftPad = JoypadController.createButtonsCross([leftPadUp, leftPadLeft, leftPadRight, leftPadDown]);
+        rightPad = JoypadController.createButtonsCross([rightPadX, rightPadY, rightPadA, rightPadB]);
+        leftPad.classList.add("left");
+        rightPad.classList.add("right");
+        leftPad.id = "left-pad";
+        rightPad.id = "right-pad";
+        // add controller to screen
+        document.body.appendChild(leftPad);
+        document.body.appendChild(centerPadSelect);
+        document.body.appendChild(centerPadStart);
+        document.body.appendChild(rightPad);
+    }
+    static createButtonsCross(buttons) {
+        let table = document.createElement("table");
+        table.classList.add("button-pad", "noselect");
+        for (let i = 0; i < 3; i++) {
+            let row = table.insertRow(i);
+            for (let j = 0; j < 3; j++) {
+                let index = i * 3 + j;
+                let cell;
+                if (index % 2 === 1) {
+                    cell = buttons[(index - 1) / 2];
+                    cell.classList.add("pad-button");
+                    cell.addEventListener("mousedown", (e) => {
+                        JoypadController.onScreenKeyPress(e);
+                    });
+                    cell.addEventListener("mouseup", (e) => {
+                        JoypadController.onScreenKeyRelease(e);
+                    });
+                    row.appendChild(cell);
+                }
+                else {
+                    cell = row.insertCell(j);
+                    cell.innerHTML = "&nbsp;";
+                }
+            }
+        }
+        return table;
+    }
+    static onScreenKeyPress(e) {
+        let jkey = parseInt(e.target.id.slice(7));
+        if (jkey) {
+            main_1.GAME_DATA.key = String.fromCharCode(jkey);
+            main_1.GAME_DATA.keyCode = jkey;
+            main_1.GAME_DATA.joypad.pressJoypadKey();
+            (0, main_1.gPrint)("Pressed: " + String.fromCharCode(jkey));
+        }
+    }
+    static onScreenKeyRelease(e) {
+        let jkey = e.target.id.slice(7);
+        if (jkey) {
+            main_1.GAME_DATA.joypad.releaseJoypadKey();
+            main_1.GAME_DATA.key = "";
+            main_1.GAME_DATA.keyCode = 0;
+            (0, main_1.gPrint)("Released: " + jkey);
+        }
+    }
 }
 exports.JoypadController = JoypadController;
 
 },{"./main":4,"./queue":5}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
 const titlescreen_1 = require("./states/titlescreen");
@@ -283,7 +450,13 @@ function gPrint(...args) {
     }
 }
 exports.gPrint = gPrint;
+// get pixels from css rem units
+function gConvertRemToPixels(rem) {
+    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+exports.gConvertRemToPixels = gConvertRemToPixels;
 exports.GAME_DATA = {
+    canv: new P5.Element("canvas"),
     map: new overworld_1.OverworldMap(),
     stateMachine: new statemachine_1.StateMachine(),
     joypad: new joypad_1.JoypadController(),
@@ -298,6 +471,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         gPrint("Monster Battler 2.0.0");
         let canv = p5.createCanvas(exports.WIDTH, exports.HEIGHT);
         canv.parent("game-area");
+        exports.GAME_DATA.canv = canv;
         p5.frameRate(exports.FRAME_RATE);
         p5.background(0);
         p5.frameRate(60);
@@ -305,6 +479,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         p5.strokeWeight(1);
         exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
         exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
+        joypad_1.JoypadController.deployJoypadHTML(p5);
     };
     p5.draw = () => {
         if (keyTimer !== 0) {
@@ -706,14 +881,16 @@ class NewGameState extends state_1.BaseState {
                 // Press any key to continue
                 this.textbox.reset(exports.EN_CONTINUE);
                 if (!this.textbox.seen) {
-                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.TextBoxState(this.textbox));
+                    let boxHeight = main_1.HEIGHT / 4;
+                    this.textbox = new textbox_1.PressAnyKeyTextbox(0, main_1.HEIGHT - boxHeight, main_1.WIDTH, boxHeight);
+                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.PressAnyKeyTextBoxState(this.textbox));
                 }
                 this.phase = 2;
                 this.timer = 0;
                 break;
             case 2:
                 // Exit state
-                if (this.timer === 30) {
+                if (this.timer === 60) {
                     main_1.GAME_DATA.stateMachine.exitState();
                 }
             default:
@@ -908,11 +1085,12 @@ exports.BaseState = BaseState;
 },{"../main":4}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TextBoxArrow = exports.TextBoxState = exports.TextBox = void 0;
+exports.TextBoxArrow = exports.PressAnyKeyTextBoxState = exports.TextBoxState = exports.PressAnyKeyTextbox = exports.TextBox = exports.EN_CONTINUE = void 0;
 const Color = require("../color");
 const geometry_1 = require("../geometry");
 const main_1 = require("../main");
 const state_1 = require("./state");
+exports.EN_CONTINUE = "Press any key to continue...";
 class TextBox extends geometry_1.Rectangle {
     constructor(msg, x, y, w, h) {
         super(x, y, w, h);
@@ -948,6 +1126,12 @@ class TextBox extends geometry_1.Rectangle {
     }
 }
 exports.TextBox = TextBox;
+class PressAnyKeyTextbox extends TextBox {
+    constructor(x, y, w, h) {
+        super(exports.EN_CONTINUE, x, y, w, h);
+    }
+}
+exports.PressAnyKeyTextbox = PressAnyKeyTextbox;
 class TextBoxState extends state_1.BaseState {
     constructor(textbox) {
         super();
@@ -957,13 +1141,14 @@ class TextBoxState extends state_1.BaseState {
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
-        this.wrappable = false;
         this.typing = true;
+        this.wrappable = false;
         this.letterCount = 0;
         this.wordCount = 1;
         this.words = this.message.split(" ");
         this.lineCount = 0;
         this.charInterval = 4;
+        main_1.GAME_DATA.joypad.clearKeys();
     }
     update(g) {
         this.textbox.update(g);
@@ -1028,7 +1213,7 @@ class TextBoxState extends state_1.BaseState {
             this.textboxArrow.draw(g);
         }
     }
-    joypadDown() {
+    joypadDown(key) {
         if (main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
                 this.lineCount = 0;
@@ -1044,11 +1229,31 @@ class TextBoxState extends state_1.BaseState {
             }
         }
     }
-    joypadUp() {
+    joypadUp(key) {
         this.charInterval = 4;
     }
 }
 exports.TextBoxState = TextBoxState;
+class PressAnyKeyTextBoxState extends TextBoxState {
+    constructor(textbox) {
+        super(textbox);
+        this.name = `PressAnyKeyTextboxState: ${textbox.msg.slice(0, 17)}...`;
+        this.closable = false;
+    }
+    joypadDown(key) {
+        super.joypadDown(key);
+        if (!this.closable && !this.typing) {
+            this.closable = true;
+        }
+    }
+    joypadUp(key) {
+        super.joypadUp(key);
+        if (this.closable) {
+            main_1.GAME_DATA.stateMachine.exitState();
+        }
+    }
+}
+exports.PressAnyKeyTextBoxState = PressAnyKeyTextBoxState;
 class TextBoxArrow extends geometry_1.Triangle {
     constructor(x, y) {
         super(x, y, main_1.TILE_WIDTH / 3);
@@ -1101,7 +1306,7 @@ class TitleScreenState extends state_1.BaseState {
         }
         this.timer++;
     }
-    joypadDown() {
+    joypadDown(key) {
         (0, main_1.gPrint)("Checking buttons on title screen...");
         if ((main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B || main_1.GAME_DATA.joypad.state.START) === true) {
             main_1.GAME_DATA.stateMachine.exitState();
@@ -1109,7 +1314,7 @@ class TitleScreenState extends state_1.BaseState {
         }
     }
     update(g) { }
-    joypadUp() { }
+    joypadUp(key) { }
 }
 exports.TitleScreenState = TitleScreenState;
 

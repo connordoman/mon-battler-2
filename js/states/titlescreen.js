@@ -21,7 +21,7 @@ class TitleScreenState extends state_1.BaseState {
         }
         this.timer++;
     }
-    joypadDown() {
+    joypadDown(key) {
         (0, main_1.gPrint)("Checking buttons on title screen...");
         if ((main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B || main_1.GAME_DATA.joypad.state.START) === true) {
             main_1.GAME_DATA.stateMachine.exitState();
@@ -29,6 +29,6 @@ class TitleScreenState extends state_1.BaseState {
         }
     }
     update(g) { }
-    joypadUp() { }
+    joypadUp(key) { }
 }
 exports.TitleScreenState = TitleScreenState;

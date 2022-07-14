@@ -1,6 +1,6 @@
 import { GAME_DATA, HEIGHT, TILE_HEIGHT, WIDTH } from "../main";
 import { BaseState } from "./state";
-import { TextBox, TextBoxState } from "./textbox";
+import { PressAnyKeyTextbox, TextBox, TextBoxState, PressAnyKeyTextBoxState } from "./textbox";
 import * as Color from "../color";
 
 export const EN_NEW_GAME =
@@ -37,14 +37,16 @@ export class NewGameState extends BaseState {
                 // Press any key to continue
                 this.textbox.reset(EN_CONTINUE);
                 if (!this.textbox.seen) {
-                    GAME_DATA.stateMachine.enterState(new TextBoxState(this.textbox));
+                    let boxHeight = HEIGHT / 4;
+                    this.textbox = new PressAnyKeyTextbox(0, HEIGHT - boxHeight, WIDTH, boxHeight);
+                    GAME_DATA.stateMachine.enterState(new PressAnyKeyTextBoxState(this.textbox));
                 }
                 this.phase = 2;
                 this.timer = 0;
                 break;
             case 2:
                 // Exit state
-                if (this.timer === 30) {
+                if (this.timer === 60) {
                     GAME_DATA.stateMachine.exitState();
                 }
             default:

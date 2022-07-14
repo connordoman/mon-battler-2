@@ -4,6 +4,8 @@ import { Rectangle, Triangle, Vector } from "../geometry";
 import { GAME_DATA, TEXT_SIZE, TILE_HEIGHT, TILE_WIDTH, gPrint } from "../main";
 import { BaseState } from "./state";
 
+export const EN_CONTINUE = "Press any key to continue...";
+
 export class TextBox extends Rectangle {
     msg: string;
     static: boolean;
@@ -52,6 +54,12 @@ export class TextBox extends Rectangle {
     }
 }
 
+export class PressAnyKeyTextbox extends TextBox {
+    constructor(x: number, y: number, w: number, h: number) {
+        super(EN_CONTINUE, x, y, w, h);
+    }
+}
+
 export class TextBoxState extends BaseState {
     name: string;
     textbox: TextBox;
@@ -78,13 +86,15 @@ export class TextBoxState extends BaseState {
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
-        this.wrappable = false;
         this.typing = true;
+        this.wrappable = false;
         this.letterCount = 0;
         this.wordCount = 1;
         this.words = this.message.split(" ");
         this.lineCount = 0;
         this.charInterval = 4;
+
+        GAME_DATA.joypad.clearKeys();
     }
 
     update(g: P5): void {
@@ -162,7 +172,7 @@ export class TextBoxState extends BaseState {
         }
     }
 
-    joypadDown(): void {
+    joypadDown(key: string): void {
         if (GAME_DATA.joypad.state.A || GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
                 this.lineCount = 0;
@@ -177,8 +187,32 @@ export class TextBoxState extends BaseState {
         }
     }
 
-    joypadUp(): void {
+    joypadUp(key: string): void {
         this.charInterval = 4;
+    }
+}
+
+export class PressAnyKeyTextBoxState extends TextBoxState {
+    closable: boolean;
+
+    constructor(textbox: TextBox) {
+        super(textbox);
+        this.name = `PressAnyKeyTextboxState: ${textbox.msg.slice(0, 17)}...`;
+        this.closable = false;
+    }
+
+    joypadDown(key: string): void {
+        super.joypadDown(key);
+        if (!this.closable && !this.typing) {
+            this.closable = true;
+        }
+    }
+
+    joypadUp(key: string): void {
+        super.joypadUp(key);
+        if (this.closable) {
+            GAME_DATA.stateMachine.exitState();
+        }
     }
 }
 

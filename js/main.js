@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
 const titlescreen_1 = require("./states/titlescreen");
@@ -23,7 +23,13 @@ function gPrint(...args) {
     }
 }
 exports.gPrint = gPrint;
+// get pixels from css rem units
+function gConvertRemToPixels(rem) {
+    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+exports.gConvertRemToPixels = gConvertRemToPixels;
 exports.GAME_DATA = {
+    canv: new P5.Element("canvas"),
     map: new overworld_1.OverworldMap(),
     stateMachine: new statemachine_1.StateMachine(),
     joypad: new joypad_1.JoypadController(),
@@ -38,6 +44,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         gPrint("Monster Battler 2.0.0");
         let canv = p5.createCanvas(exports.WIDTH, exports.HEIGHT);
         canv.parent("game-area");
+        exports.GAME_DATA.canv = canv;
         p5.frameRate(exports.FRAME_RATE);
         p5.background(0);
         p5.frameRate(60);
@@ -45,6 +52,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         p5.strokeWeight(1);
         exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
         exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
+        joypad_1.JoypadController.deployJoypadHTML(p5);
     };
     p5.draw = () => {
         if (keyTimer !== 0) {
