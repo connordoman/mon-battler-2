@@ -8,6 +8,7 @@
     },
     "license": "MIT",
     "scripts": {
-        "compile": "clear && (date +\"%T\" && tsc && browserify js/main.js -o dist/monster_battler_2.js)"
+        "compile": "clear && (date +\"%T\" && tsc && browserify js/main.js -o dist/monster_battler_2.js)",
+        "deploy": "tsc && browserify js/main.js -o dist/monster_battler_2.js"
     }
 }
