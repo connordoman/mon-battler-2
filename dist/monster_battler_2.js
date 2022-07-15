@@ -300,15 +300,16 @@ class JoypadController {
     static deployJoypadHTML(g) {
         let leftPad;
         let rightPad;
+        let gameArea = document.getElementById("game-area");
         let canvas = document.getElementById(main_1.GAME_DATA.canv.id());
-        let leftPadUp = document.createElement("td");
-        let leftPadDown = document.createElement("td");
-        let leftPadLeft = document.createElement("td");
-        let leftPadRight = document.createElement("td");
-        let rightPadX = document.createElement("td");
-        let rightPadB = document.createElement("td");
-        let rightPadY = document.createElement("td");
-        let rightPadA = document.createElement("td");
+        let leftPadUp = document.createElement("span");
+        let leftPadDown = document.createElement("span");
+        let leftPadLeft = document.createElement("span");
+        let leftPadRight = document.createElement("span");
+        let rightPadX = document.createElement("span");
+        let rightPadB = document.createElement("span");
+        let rightPadY = document.createElement("span");
+        let rightPadA = document.createElement("span");
         let centerPadStart = document.createElement("span");
         let centerPadSelect = document.createElement("span");
         // directional buttons
@@ -316,10 +317,6 @@ class JoypadController {
         leftPadDown.id = `joypad-${exports.JOYPAD.DOWN}`;
         leftPadLeft.id = `joypad-${exports.JOYPAD.LEFT}`;
         leftPadRight.id = `joypad-${exports.JOYPAD.RIGHT}`;
-        leftPadUp.className = "pad-button";
-        leftPadDown.className = "pad-button";
-        leftPadLeft.className = "pad-button";
-        leftPadRight.className = "pad-button";
         leftPadUp.innerHTML = "&uarr;";
         leftPadDown.innerHTML = "&darr;";
         leftPadLeft.innerHTML = "&larr;";
@@ -329,10 +326,6 @@ class JoypadController {
         rightPadB.id = `joypad-${exports.JOYPAD.B}`;
         rightPadY.id = `joypad-${exports.JOYPAD.Y}`;
         rightPadA.id = `joypad-${exports.JOYPAD.A}`;
-        rightPadX.className = "pad-button";
-        rightPadB.className = "pad-button";
-        rightPadY.className = "pad-button";
-        rightPadA.className = "pad-button";
         rightPadX.innerHTML = "X";
         rightPadB.innerHTML = "B";
         rightPadY.innerHTML = "Y";
@@ -344,25 +337,9 @@ class JoypadController {
         centerPadSelect.innerHTML = "SELECT";
         centerPadStart.classList.add("pad-button", "noselect", "center-button");
         centerPadSelect.classList.add("pad-button", "noselect", "center-button");
-        // position option buttons according to game area
-        let rect = canvas.getBoundingClientRect();
-        let rem1 = (0, main_1.gConvertRemToPixels)(1);
-        (0, main_1.gPrint)(rect.top, rect.left, rect.bottom, rect.right);
-        centerPadStart.style.left = `${rect.right + rem1}px`;
-        centerPadSelect.style.right = `${rect.right + rem1}px`;
         // add action listeners to option buttons
-        centerPadStart.addEventListener("mousedown", (e) => {
-            JoypadController.onScreenKeyPress(e);
-        });
-        centerPadStart.addEventListener("mouseup", (e) => {
-            JoypadController.onScreenKeyRelease(e);
-        });
-        centerPadSelect.addEventListener("mousedown", (e) => {
-            JoypadController.onScreenKeyPress(e);
-        });
-        centerPadSelect.addEventListener("mouseup", (e) => {
-            JoypadController.onScreenKeyRelease(e);
-        });
+        JoypadController.prepareActionListeners(centerPadStart);
+        JoypadController.prepareActionListeners(centerPadSelect);
         // prepare cross shaped tables
         leftPad = JoypadController.createButtonsCross([leftPadUp, leftPadLeft, leftPadRight, leftPadDown]);
         rightPad = JoypadController.createButtonsCross([rightPadX, rightPadY, rightPadA, rightPadB]);
@@ -370,11 +347,22 @@ class JoypadController {
         rightPad.classList.add("right");
         leftPad.id = "left-pad";
         rightPad.id = "right-pad";
+        // position buttons according to game area
+        let rect = canvas.getBoundingClientRect();
+        let rem1 = (0, main_1.gConvertRemToPixels)(1);
+        (0, main_1.gPrint)(rect.top, rect.left, rect.bottom, rect.right);
+        centerPadStart.style.left = `${rect.right + rem1}px`;
+        centerPadSelect.style.right = `${rect.right + rem1}px`;
+        let botMargin = window.innerHeight - rect.bottom;
+        leftPad.style.bottom = `${botMargin}px`;
+        rightPad.style.bottom = `${botMargin}px`;
+        centerPadStart.style.bottom = `${botMargin}px`;
+        centerPadSelect.style.bottom = `${botMargin}px`;
         // add controller to screen
-        document.body.appendChild(leftPad);
-        document.body.appendChild(centerPadSelect);
-        document.body.appendChild(centerPadStart);
-        document.body.appendChild(rightPad);
+        gameArea.appendChild(leftPad);
+        gameArea.appendChild(centerPadSelect);
+        gameArea.appendChild(centerPadStart);
+        gameArea.appendChild(rightPad);
     }
     static createButtonsCross(buttons) {
         let table = document.createElement("table");
@@ -383,20 +371,14 @@ class JoypadController {
             let row = table.insertRow(i);
             for (let j = 0; j < 3; j++) {
                 let index = i * 3 + j;
-                let cell;
+                let cell = row.insertCell(j);
                 if (index % 2 === 1) {
-                    cell = buttons[(index - 1) / 2];
-                    cell.classList.add("pad-button");
-                    cell.addEventListener("mousedown", (e) => {
-                        JoypadController.onScreenKeyPress(e);
-                    });
-                    cell.addEventListener("mouseup", (e) => {
-                        JoypadController.onScreenKeyRelease(e);
-                    });
-                    row.appendChild(cell);
+                    let sp = buttons[(index - 1) / 2];
+                    sp.className = "pad-button";
+                    cell.appendChild(sp);
+                    JoypadController.prepareActionListeners(sp);
                 }
                 else {
-                    cell = row.insertCell(j);
                     cell.innerHTML = "&nbsp;";
                 }
             }
@@ -411,7 +393,9 @@ class JoypadController {
             JoypadController.onScreenKeyRelease(e);
         });
         elem.addEventListener("touchstart", (e) => {
-            JoypadController.onScreenKeyPress(e);
+            window.setTimeout(() => {
+                JoypadController.onScreenKeyPress(e);
+            }, 100);
         });
         elem.addEventListener("touchend", (e) => {
             JoypadController.onScreenKeyRelease(e);
@@ -435,19 +419,59 @@ class JoypadController {
             (0, main_1.gPrint)("Released: " + jkey);
         }
     }
-    static deployControlsTable(g) {
+    static deployControlsTable() {
+        let keyset = exports.JOYPAD_KEYS;
         let table = document.createElement("table");
+        table.id = "controls";
         let header = table.createTHead();
-        let cell = header.insertRow(0).insertCell(0);
-        cell.colSpan = 2;
-        cell.innerHTML = "";
-        for (let i = 1; i <= exports.JOYPAD_KEYS.length; i++) {
-            let row = table.insertRow(i);
-            let cell1 = row.insertCell(0);
-            let cell2 = row.insertCell(1);
-            cell1.innerHTML = `${exports.KEYBOARD_KEYS[i]}`;
-            cell2.innerHTML = `${exports.JOYPAD_KEYS[i]}`;
+        let headerCell = header.insertRow(0).insertCell(0);
+        headerCell.colSpan = keyset.length + 1;
+        headerCell.innerHTML = "<h1><em>Controls</em></h1>";
+        for (let i = 0; i < 2; i++) {
+            keyset = i % 2 == 0 ? exports.JOYPAD_KEYS : exports.KEYBOARD_KEYS;
+            let keysetName = i % 2 == 0 ? "Joypad" : "Keyboard";
+            let row = table.insertRow(i + 1);
+            let cell = row.insertCell(0);
+            cell.innerHTML = `<h2>${keysetName}</h2>`;
+            for (let j = 0; j < keyset.length; j++) {
+                let key = keyset[j];
+                cell = row.insertCell(j + 1);
+                let sp = document.createElement("span");
+                if (i % 2 == 0) {
+                    sp.innerHTML = key;
+                    sp.classList.add("pad-button");
+                    //if (j < 4) {
+                    switch (j) {
+                        case 0:
+                            sp.innerHTML = "&uarr;";
+                            break;
+                        case 1:
+                            sp.innerHTML = "&darr;";
+                            break;
+                        case 2:
+                            sp.innerHTML = "&larr;";
+                            break;
+                        case 3:
+                            sp.innerHTML = "&rarr;";
+                            break;
+                        case keyset.length - 2:
+                        case keyset.length - 1:
+                            sp.classList.add("center-button");
+                            sp.style.position = "static";
+                            break;
+                    }
+                    //} else if (j > keyset.length - 3) {
+                    //}
+                }
+                else {
+                    sp.innerHTML = key;
+                    sp.classList.add("key-button");
+                }
+                cell.appendChild(sp);
+            }
         }
+        table.classList.add("noselect");
+        document.getElementById("game-area").appendChild(table);
     }
 }
 exports.JoypadController = JoypadController;
@@ -509,6 +533,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
         exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
         joypad_1.JoypadController.deployJoypadHTML(p5);
+        joypad_1.JoypadController.deployControlsTable();
     };
     p5.draw = () => {
         if (keyTimer !== 0) {

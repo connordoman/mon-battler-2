@@ -77,6 +77,7 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         GAME_DATA.stateMachine.enterState(new TitleScreenState());
 
         JoypadController.deployJoypadHTML(p5);
+        JoypadController.deployControlsTable();
     };
 
     p5.draw = () => {

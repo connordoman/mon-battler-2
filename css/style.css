@@ -1,11 +1,5 @@
 @import "../node_modules/normalize.css/normalize.css";
 
-@font-face {
-    font-family: "Game";
-    src: "../node_modules/font-awesome/fonts/Arial.ttf";
-    ascent-override: 110%;
-}
-
 html,
 body {
     margin: 0;
@@ -33,62 +27,90 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 2rem auto;
-    width: 100%;
-    max-width: 500px;
+    margin: 2em auto;
     border-collapse: collapse;
+    color: black;
+    background-color: #f9f9f9;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-#controls td {
-    color: lightgrey;
-    padding: 1rem;
-    border: 1px solid black;
+#controls th {
+    border: 1px solid #aaa;
+    padding: 0.3em 0.4em;
+    background-color: #f2f2f2;
+    font-weight: bold;
     text-align: center;
 }
 
-.joy-button {
-    background: darkred;
-    color: lightgrey;
-    width: 2rem;
-    height: 2rem;
-    cursor: pointer;
-    border: 1px solid black;
-    border-radius: 100%;
-    padding: 1rem;
+#controls tr {
+    border: 1px solid #aaa;
+    padding: 0.3em 0.4em;
+}
+
+#controls td {
+    border: 1px solid #aaa;
+    padding: 0.3em 0.4em;
+    text-align: center;
+}
+
+#controls .pad-button,
+#controls .key-button {
+    cursor: default;
+}
+
+#controls .pad-button:hover,
+#controls .pad-button:active {
+    background-color: white;
+    box-shadow: 0px 0px 0.5em black;
 }
 
 .button-pad {
-    display: inline-block;
-    border: 1px solid black;
     border-collapse: collapse;
     padding: 0px;
     margin: 0px;
     width: 6rem;
     height: 6rem;
     position: fixed;
-    bottom: 1rem;
 }
 
 .pad-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background-color: white;
-    padding: 0;
     margin: 0;
     height: 2rem;
     min-width: 2rem;
     border-radius: 100%;
-    box-shadow: 0px 0px 10px black;
+    box-shadow: 0px 0px 0.5em black;
     text-align: center;
     cursor: pointer;
     font-family: monospace;
+    transition: all ease 50ms;
 }
 
 .center-button {
     display: inline-flex;
     align-items: center;
-    position: fixed;
     justify-content: center;
-    bottom: 1rem;
-    padding: 0 0.25rem;
+    position: fixed;
+    bottom: 1em;
+    padding: 0 0.25em;
+}
+
+.key-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: lightgrey;
+    margin: 0;
+    height: 2rem;
+    padding: 0 0.5rem;
+    min-width: 1rem;
+    border-radius: 10%;
+    text-align: center;
+    cursor: pointer;
+    font-family: monospace;
 }
 
 .pad-button:hover {
@@ -97,14 +119,15 @@ body {
 
 .pad-button:active {
     background-color: darkgrey;
+    box-shadow: none;
 }
 
 .left {
-    left: 1rem;
+    left: 1em;
 }
 
 .right {
-    right: 1rem;
+    right: 1em;
 }
 
 .noselect {

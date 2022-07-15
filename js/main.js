@@ -54,6 +54,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
         exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
         joypad_1.JoypadController.deployJoypadHTML(p5);
+        joypad_1.JoypadController.deployControlsTable();
     };
     p5.draw = () => {
         if (keyTimer !== 0) {
