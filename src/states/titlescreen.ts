@@ -1,5 +1,5 @@
 import * as P5 from "p5";
-import { GAME_DATA, gPrint } from "../main";
+import { DEBUG, WIDTH, HEIGHT, GAME_DATA, gPrint } from "../main";
 import { MainMenuState } from "./mainmenu";
 import { BaseState } from "./state";
 
@@ -23,6 +23,15 @@ export class TitleScreenState extends BaseState {
             g.text("Press A to start", g.width / 2, g.height * 0.75);
         }
         this.timer++;
+
+        if (DEBUG) {
+            g.push();
+            g.strokeWeight(1);
+            g.stroke(255, 0, 0);
+            g.line(WIDTH / 2, 0, WIDTH / 2, HEIGHT);
+            g.line(0, HEIGHT / 2, WIDTH, HEIGHT / 2);
+            g.pop();
+        }
     }
 
     joypadDown(key: string) {

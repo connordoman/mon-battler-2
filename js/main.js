@@ -1,20 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.HEIGHT = exports.WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
 const titlescreen_1 = require("./states/titlescreen");
 const Color = require("./color");
 const overworld_1 = require("./states/overworld");
 const joypad_1 = require("./joypad");
-exports.DEBUG = true;
-exports.WIDTH = 720;
-exports.HEIGHT = 480;
+exports.DEBUG = false;
 exports.PIXEL_WIDTH = 3;
 exports.PIXEL_HEIGHT = 3;
+exports.WIDTH = 240 * exports.PIXEL_WIDTH;
+exports.HEIGHT = 160 * exports.PIXEL_HEIGHT;
 exports.TILE_WIDTH = 16 * exports.PIXEL_WIDTH;
 exports.TILE_HEIGHT = 16 * exports.PIXEL_HEIGHT;
-exports.TEXT_SIZE = exports.PIXEL_HEIGHT * 10.6;
+exports.TEXT_SIZE = exports.PIXEL_HEIGHT * (53 / 5);
 exports.FRAME_RATE = 60;
 // debug print function
 function gPrint(...args) {
@@ -50,6 +50,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         p5.frameRate(60);
         p5.stroke(255);
         p5.strokeWeight(1);
+        p5.textFont("monospace");
         exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
         exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
         joypad_1.JoypadController.deployJoypadHTML(p5);

@@ -5,15 +5,15 @@ import * as Color from "./color";
 import { OverworldMap } from "./states/overworld";
 import { JoypadController } from "./joypad";
 
-export const DEBUG: boolean = true;
+export const DEBUG: boolean = false;
 
-export const WIDTH: number = 720;
-export const HEIGHT: number = 480;
 export const PIXEL_WIDTH: number = 3;
 export const PIXEL_HEIGHT: number = 3;
+export const WIDTH: number = 240 * PIXEL_WIDTH;
+export const HEIGHT: number = 160 * PIXEL_HEIGHT;
 export const TILE_WIDTH: number = 16 * PIXEL_WIDTH;
 export const TILE_HEIGHT: number = 16 * PIXEL_HEIGHT;
-export const TEXT_SIZE: number = PIXEL_HEIGHT * 10.6;
+export const TEXT_SIZE: number = PIXEL_HEIGHT * (53 / 5);
 export const FRAME_RATE: number = 60;
 
 export type GameData = {
@@ -71,6 +71,7 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         p5.frameRate(60);
         p5.stroke(255);
         p5.strokeWeight(1);
+        p5.textFont("monospace");
 
         GAME_DATA.stateMachine = new StateMachine();
         GAME_DATA.stateMachine.enterState(new TitleScreenState());

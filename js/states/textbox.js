@@ -36,7 +36,7 @@ class TextBox extends geometry_1.Rectangle {
         g.fill(g.color(this.textColor));
         g.noStroke();
         g.textAlign(g.LEFT, g.TOP);
-        g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.55);
+        g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.48);
         g.pop();
     }
 }
@@ -79,15 +79,15 @@ class TextBoxState extends state_1.BaseState {
         }
         if (this.typing && this.timer % this.charInterval == 0) {
             let char = this.message.charAt(this.letterCount);
-            (0, main_1.gPrint)(`\tCurrent char: ${char}`);
+            // gPrint(`\tCurrent char: ${char}`);
             if (char === " ") {
                 let nextWord = this.words[this.wordCount];
                 let lines = this.typed.split("\n");
                 let newLine = lines[lines.length - 1] + " " + nextWord;
                 let lineLength = g.textWidth(newLine);
-                (0, main_1.gPrint)(lines);
-                (0, main_1.gPrint)("Current line + nextWord: " + newLine);
-                (0, main_1.gPrint)("Pixel width of this line: " + lineLength);
+                // gPrint(lines);
+                // gPrint("Current line + nextWord: " + newLine);
+                //gPrint("Pixel width of this line: " + lineLength);
                 (0, main_1.gPrint)(`\tNext Word: ${nextWord}`);
                 this.wordCount++;
                 if (lineLength >= this.textbox.lineSize) {

@@ -403,6 +403,20 @@ class JoypadController {
         }
         return table;
     }
+    static prepareActionListeners(elem) {
+        elem.addEventListener("mousedown", (e) => {
+            JoypadController.onScreenKeyPress(e);
+        });
+        elem.addEventListener("mouseup", (e) => {
+            JoypadController.onScreenKeyRelease(e);
+        });
+        elem.addEventListener("touchstart", (e) => {
+            JoypadController.onScreenKeyPress(e);
+        });
+        elem.addEventListener("touchend", (e) => {
+            JoypadController.onScreenKeyRelease(e);
+        });
+    }
     static onScreenKeyPress(e) {
         let jkey = parseInt(e.target.id.slice(7));
         if (jkey) {
@@ -421,27 +435,41 @@ class JoypadController {
             (0, main_1.gPrint)("Released: " + jkey);
         }
     }
+    static deployControlsTable(g) {
+        let table = document.createElement("table");
+        let header = table.createTHead();
+        let cell = header.insertRow(0).insertCell(0);
+        cell.colSpan = 2;
+        cell.innerHTML = "";
+        for (let i = 1; i <= exports.JOYPAD_KEYS.length; i++) {
+            let row = table.insertRow(i);
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            cell1.innerHTML = `${exports.KEYBOARD_KEYS[i]}`;
+            cell2.innerHTML = `${exports.JOYPAD_KEYS[i]}`;
+        }
+    }
 }
 exports.JoypadController = JoypadController;
 
 },{"./main":4,"./queue":5}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.HEIGHT = exports.WIDTH = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.HEIGHT = exports.WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
 const titlescreen_1 = require("./states/titlescreen");
 const Color = require("./color");
 const overworld_1 = require("./states/overworld");
 const joypad_1 = require("./joypad");
-exports.DEBUG = true;
-exports.WIDTH = 720;
-exports.HEIGHT = 480;
+exports.DEBUG = false;
 exports.PIXEL_WIDTH = 3;
 exports.PIXEL_HEIGHT = 3;
+exports.WIDTH = 240 * exports.PIXEL_WIDTH;
+exports.HEIGHT = 160 * exports.PIXEL_HEIGHT;
 exports.TILE_WIDTH = 16 * exports.PIXEL_WIDTH;
 exports.TILE_HEIGHT = 16 * exports.PIXEL_HEIGHT;
-exports.TEXT_SIZE = exports.PIXEL_HEIGHT * 10.6;
+exports.TEXT_SIZE = exports.PIXEL_HEIGHT * (53 / 5);
 exports.FRAME_RATE = 60;
 // debug print function
 function gPrint(...args) {
@@ -477,6 +505,7 @@ const MONSTER_BATTLER_2 = (p5) => {
         p5.frameRate(60);
         p5.stroke(255);
         p5.strokeWeight(1);
+        p5.textFont("monospace");
         exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
         exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
         joypad_1.JoypadController.deployJoypadHTML(p5);
@@ -1121,7 +1150,7 @@ class TextBox extends geometry_1.Rectangle {
         g.fill(g.color(this.textColor));
         g.noStroke();
         g.textAlign(g.LEFT, g.TOP);
-        g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.55);
+        g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.48);
         g.pop();
     }
 }
@@ -1164,15 +1193,15 @@ class TextBoxState extends state_1.BaseState {
         }
         if (this.typing && this.timer % this.charInterval == 0) {
             let char = this.message.charAt(this.letterCount);
-            (0, main_1.gPrint)(`\tCurrent char: ${char}`);
+            // gPrint(`\tCurrent char: ${char}`);
             if (char === " ") {
                 let nextWord = this.words[this.wordCount];
                 let lines = this.typed.split("\n");
                 let newLine = lines[lines.length - 1] + " " + nextWord;
                 let lineLength = g.textWidth(newLine);
-                (0, main_1.gPrint)(lines);
-                (0, main_1.gPrint)("Current line + nextWord: " + newLine);
-                (0, main_1.gPrint)("Pixel width of this line: " + lineLength);
+                // gPrint(lines);
+                // gPrint("Current line + nextWord: " + newLine);
+                //gPrint("Pixel width of this line: " + lineLength);
                 (0, main_1.gPrint)(`\tNext Word: ${nextWord}`);
                 this.wordCount++;
                 if (lineLength >= this.textbox.lineSize) {
@@ -1305,6 +1334,14 @@ class TitleScreenState extends state_1.BaseState {
             g.text("Press A to start", g.width / 2, g.height * 0.75);
         }
         this.timer++;
+        if (main_1.DEBUG) {
+            g.push();
+            g.strokeWeight(1);
+            g.stroke(255, 0, 0);
+            g.line(main_1.WIDTH / 2, 0, main_1.WIDTH / 2, main_1.HEIGHT);
+            g.line(0, main_1.HEIGHT / 2, main_1.WIDTH, main_1.HEIGHT / 2);
+            g.pop();
+        }
     }
     joypadDown(key) {
         (0, main_1.gPrint)("Checking buttons on title screen...");

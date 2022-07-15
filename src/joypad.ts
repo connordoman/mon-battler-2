@@ -302,7 +302,22 @@ export class JoypadController {
         return table;
     }
 
-    private static onScreenKeyPress(e: MouseEvent): void {
+    private static prepareActionListeners(elem: HTMLElement): void {
+        elem.addEventListener("mousedown", (e) => {
+            JoypadController.onScreenKeyPress(e);
+        });
+        elem.addEventListener("mouseup", (e) => {
+            JoypadController.onScreenKeyRelease(e);
+        });
+        elem.addEventListener("touchstart", (e) => {
+            JoypadController.onScreenKeyPress(e);
+        });
+        elem.addEventListener("touchend", (e) => {
+            JoypadController.onScreenKeyRelease(e);
+        });
+    }
+
+    private static onScreenKeyPress(e: MouseEvent | TouchEvent): void {
         let jkey = parseInt((e.target as HTMLTableCellElement).id.slice(7));
         if (jkey) {
             GAME_DATA.key = String.fromCharCode(jkey);
@@ -312,13 +327,29 @@ export class JoypadController {
         }
     }
 
-    private static onScreenKeyRelease(e: MouseEvent): void {
+    private static onScreenKeyRelease(e: MouseEvent | TouchEvent): void {
         let jkey = (e.target as HTMLTableCellElement).id.slice(7);
         if (jkey) {
             GAME_DATA.joypad.releaseJoypadKey();
             GAME_DATA.key = "";
             GAME_DATA.keyCode = 0;
             gPrint("Released: " + jkey);
+        }
+    }
+
+    public static deployControlsTable(g: P5): void {
+        let table = document.createElement("table") as HTMLTableElement;
+        let header = table.createTHead();
+        let cell = header.insertRow(0).insertCell(0);
+        cell.colSpan = 2;
+        cell.innerHTML = "";
+
+        for (let i = 1; i <= JOYPAD_KEYS.length; i++) {
+            let row = table.insertRow(i);
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            cell1.innerHTML = `${KEYBOARD_KEYS[i]}`;
+            cell2.innerHTML = `${JOYPAD_KEYS[i]}`;
         }
     }
 }

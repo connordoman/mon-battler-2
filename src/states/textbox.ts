@@ -49,7 +49,7 @@ export class TextBox extends Rectangle {
         g.fill(g.color(this.textColor));
         g.noStroke();
         g.textAlign(g.LEFT, g.TOP);
-        g.text(this.msg, TILE_WIDTH, TILE_HEIGHT * 0.55);
+        g.text(this.msg, TILE_WIDTH, TILE_HEIGHT * 0.48);
         g.pop();
     }
 }
@@ -115,7 +115,7 @@ export class TextBoxState extends BaseState {
 
         if (this.typing && this.timer % this.charInterval == 0) {
             let char = this.message.charAt(this.letterCount);
-            gPrint(`\tCurrent char: ${char}`);
+            // gPrint(`\tCurrent char: ${char}`);
 
             if (char === " ") {
                 let nextWord = this.words[this.wordCount];
@@ -123,9 +123,9 @@ export class TextBoxState extends BaseState {
                 let newLine = lines[lines.length - 1] + " " + nextWord;
                 let lineLength = g.textWidth(newLine);
 
-                gPrint(lines);
-                gPrint("Current line + nextWord: " + newLine);
-                gPrint("Pixel width of this line: " + lineLength);
+                // gPrint(lines);
+                // gPrint("Current line + nextWord: " + newLine);
+                //gPrint("Pixel width of this line: " + lineLength);
                 gPrint(`\tNext Word: ${nextWord}`);
 
                 this.wordCount++;

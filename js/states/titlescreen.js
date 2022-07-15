@@ -20,6 +20,14 @@ class TitleScreenState extends state_1.BaseState {
             g.text("Press A to start", g.width / 2, g.height * 0.75);
         }
         this.timer++;
+        if (main_1.DEBUG) {
+            g.push();
+            g.strokeWeight(1);
+            g.stroke(255, 0, 0);
+            g.line(main_1.WIDTH / 2, 0, main_1.WIDTH / 2, main_1.HEIGHT);
+            g.line(0, main_1.HEIGHT / 2, main_1.WIDTH, main_1.HEIGHT / 2);
+            g.pop();
+        }
     }
     joypadDown(key) {
         (0, main_1.gPrint)("Checking buttons on title screen...");
