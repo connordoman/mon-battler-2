@@ -1,5 +1,5 @@
 import * as P5 from "p5";
-import { GAME_DATA, HEIGHT, PIXEL_HEIGHT, WIDTH } from "../main";
+import { GAME_DATA, gPrint, HEIGHT, pixelHeight, pixelWidth, WIDTH } from "../main";
 import { BaseState } from "./state";
 import { TitleScreenState } from "./titlescreen";
 import { Triangle, Vector } from "../geometry";
@@ -19,14 +19,21 @@ export class MainMenuState extends BaseState {
         super();
         this.name = "MainMenuState";
         this.option = 0;
-        this.pointer = new Triangle(0, 0, 25);
+        this.pointer = new Triangle(0, 0, 8 * pixelWidth);
         this.pointer.setAngle(Math.PI / 2);
         this.pointer.color = Color.BLACK;
 
-        this.newGameBox = new TextBox("New Game", 0, 0, WIDTH, HEIGHT / 6);
-        this.continueBox = new TextBox("Continue", 0, this.newGameBox.height, WIDTH, HEIGHT / 6);
-        this.settingsBox = new TextBox("Settings", 0, this.continueBox.height + this.continueBox.y, WIDTH, HEIGHT / 6);
-        this.newGameBox.static = false;
+        this.newGameBox = new TextBox("New Game", 0, 0, WIDTH(), GAME_DATA.tileHeight * 2);
+        gPrint(this.newGameBox.msg.indexOf("\n"));
+        this.continueBox = new TextBox("Continue", 0, this.newGameBox.height, WIDTH(), this.newGameBox.height);
+        this.settingsBox = new TextBox(
+            "Settings",
+            0,
+            this.continueBox.height + this.continueBox.y,
+            WIDTH(),
+            this.continueBox.height
+        );
+        this.newGameBox.static = true;
         this.continueBox.static = true;
         this.settingsBox.static = true;
     }
@@ -43,7 +50,7 @@ export class MainMenuState extends BaseState {
         this.continueBox.draw(g);
         this.settingsBox.draw(g);
 
-        let offset = 16 * PIXEL_HEIGHT;
+        let offset = GAME_DATA.tileHeight;
         let arrowX = offset / 2;
         let arrowY = 0;
         switch (this.option) {
@@ -96,6 +103,12 @@ export class MainMenuState extends BaseState {
             GAME_DATA.stateMachine.exitState();
             GAME_DATA.stateMachine.enterState(new TitleScreenState());
         }
+    }
+    resize(g: P5): void {
+        this.newGameBox.resize();
+        this.continueBox.resize();
+        this.settingsBox.resize();
+        this.pointer.setSize(8 * pixelWidth);
     }
     update(g: P5): void {}
 

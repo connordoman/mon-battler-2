@@ -32,7 +32,7 @@ export class Queue<T> {
 
     peek() {
         if (this.size === 0) {
-            return null;
+            return undefined;
         }
         return this.queue[0];
     }
@@ -44,6 +44,10 @@ export class Queue<T> {
     clear() {
         this.queue = [];
         this.size = 0;
+    }
+
+    get array() {
+        return this.queue.splice(0, this.size - 1);
     }
 }
 
@@ -100,9 +104,6 @@ export class CircularQueue<T> {
     }
 
     peek() {
-        if (this.isEmpty()) {
-            return null;
-        }
         return this.queue[this.front];
     }
 

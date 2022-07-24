@@ -4,6 +4,7 @@ import { GameObject, gPrint } from "../main";
 export interface State extends GameObject {
     name: string;
     phase: number;
+    lastPhase: number;
     timer: number;
     onEnter(): void;
     onExit(): void;
@@ -12,15 +13,19 @@ export interface State extends GameObject {
 export abstract class BaseState implements State {
     abstract name: string;
     phase: number;
+    lastPhase: number;
     timer: number;
 
     constructor() {
         this.phase = 0;
+        this.lastPhase = -1;
         this.timer = 0;
     }
     abstract update(g: P5): void;
 
     abstract draw(g: P5): void;
+
+    abstract resize(g: P5): void;
 
     abstract joypadDown(key: string): void;
 

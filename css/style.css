@@ -8,6 +8,7 @@ body {
 }
 
 #game-area {
+    max-width: 100%;
     width: 100%;
     height: 100%;
     display: flex;
@@ -32,6 +33,8 @@ body {
     color: black;
     background-color: #f9f9f9;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    max-width: 720px;
 }
 
 #controls th {

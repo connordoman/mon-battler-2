@@ -9,11 +9,13 @@ exports.EN_CONTINUE = "Press any key to continue...";
 class TextBox extends geometry_1.Rectangle {
     constructor(msg, x, y, w, h) {
         super(x, y, w, h);
+        this.posRatio = new geometry_1.Vector(x / (0, main_1.WIDTH)(), y / (0, main_1.HEIGHT)());
+        this.dimRatio = new geometry_1.Vector(w / (0, main_1.WIDTH)(), h / (0, main_1.HEIGHT)());
         this.msg = msg.trim();
         this.static = false;
         this.color = Color.WHITE;
         this.textColor = Color.SLATE;
-        this.lineSize = w - 2 * main_1.TILE_WIDTH;
+        this.lineSize = w - 2 * main_1.GAME_DATA.tileHeight;
         this.seen = false;
     }
     reset(msg) {
@@ -22,8 +24,8 @@ class TextBox extends geometry_1.Rectangle {
         this.seen = false;
     }
     update(g) {
-        if (g.textSize() !== main_1.TEXT_SIZE) {
-            g.textSize(main_1.TEXT_SIZE);
+        if (g.textSize() !== main_1.GAME_DATA.textSize) {
+            g.textSize(main_1.GAME_DATA.textSize);
         }
     }
     draw(g) {
@@ -31,13 +33,34 @@ class TextBox extends geometry_1.Rectangle {
         g.translate(this.x, this.y);
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
-        g.strokeWeight(4);
-        g.rect(4, 4, this.width - 8, this.height - 8, 8);
-        g.fill(g.color(this.textColor));
+        g.strokeWeight(2 * main_1.pixelWidth);
+        g.rect(2 * main_1.pixelWidth, 2 * main_1.pixelHeight, this.width - 4 * main_1.pixelWidth, this.height - 4 * main_1.pixelHeight, main_1.GAME_DATA.tileHeight / 4);
         g.noStroke();
+        g.fill(g.color(this.textColor));
         g.textAlign(g.LEFT, g.TOP);
-        g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.48);
+        if (this.static && this.msg.indexOf("\n") < 0) {
+            g.text(this.msg, main_1.GAME_DATA.tileWidth, this.height / 2 - (main_1.GAME_DATA.textSize * this.msg.split("\n").length) / 2);
+        }
+        else {
+            g.text(this.msg, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight * 0.48);
+        }
         g.pop();
+    }
+    resize() {
+        if (this.width !== this.dimRatio.x * (0, main_1.WIDTH)()) {
+            this.width = this.dimRatio.x * (0, main_1.WIDTH)();
+        }
+        if (this.height !== this.dimRatio.y * (0, main_1.HEIGHT)()) {
+            this.height = this.dimRatio.y * (0, main_1.HEIGHT)();
+        }
+        if (this.x !== this.posRatio.x * (0, main_1.WIDTH)()) {
+            this.x = this.posRatio.x * (0, main_1.WIDTH)();
+        }
+        if (this.y !== this.posRatio.y * (0, main_1.HEIGHT)()) {
+            this.y = this.posRatio.y * (0, main_1.HEIGHT)();
+        }
+        this.posRatio = new geometry_1.Vector(this.x / (0, main_1.WIDTH)(), this.y / (0, main_1.HEIGHT)());
+        this.dimRatio = new geometry_1.Vector(this.width / (0, main_1.WIDTH)(), this.height / (0, main_1.HEIGHT)());
     }
 }
 exports.TextBox = TextBox;
@@ -52,7 +75,7 @@ class TextBoxState extends state_1.BaseState {
         super();
         this.name = `TextBoxState: ${textbox.msg.slice(0, 17)}...`;
         this.textbox = textbox;
-        this.textboxArrow = new TextBoxArrow(textbox.x + textbox.width - main_1.TILE_WIDTH / 2, textbox.y + textbox.height - main_1.TILE_HEIGHT / 1.5);
+        this.textboxArrow = new TextBoxArrow(textbox.x + textbox.width - main_1.GAME_DATA.tileWidth / 2, textbox.y + textbox.height - main_1.GAME_DATA.tileHeight / 1.5);
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
@@ -128,6 +151,10 @@ class TextBoxState extends state_1.BaseState {
             this.textboxArrow.draw(g);
         }
     }
+    resize(g) {
+        this.textbox.resize();
+        this.textboxArrow = new TextBoxArrow(this.textbox.x + this.textbox.width - main_1.GAME_DATA.tileWidth / 2, this.textbox.y + this.textbox.height - main_1.GAME_DATA.tileHeight / 1.5);
+    }
     joypadDown(key) {
         if (main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
@@ -171,7 +198,7 @@ class PressAnyKeyTextBoxState extends TextBoxState {
 exports.PressAnyKeyTextBoxState = PressAnyKeyTextBoxState;
 class TextBoxArrow extends geometry_1.Triangle {
     constructor(x, y) {
-        super(x, y, main_1.TILE_WIDTH / 3);
+        super(x, y, main_1.GAME_DATA.tileWidth / 3);
         this.setAngle(Math.PI);
         this.offset = 0;
         this.timer = 0;

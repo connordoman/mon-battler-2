@@ -1,15 +1,13 @@
 import * as P5 from "p5";
 import { BaseState } from "./state";
 import * as Color from "../color";
-import { FRAME_RATE, GameObject, PIXEL_HEIGHT, PIXEL_WIDTH } from "../main";
+import { GAME_DATA, GameObject, pixelHeight, pixelWidth } from "../main";
 
 export const TILE_BLANK: string = "BLANK";
 export const TILE_GRASS: string = "GRASS";
 export const TILE_WATER: string = "WATER";
 export const TILE_PIXELS_X: number = 16;
 export const TILE_PIXELS_Y: number = 16;
-export const TILE_WIDTH: number = TILE_PIXELS_X * PIXEL_WIDTH;
-export const TILE_HEIGHT: number = TILE_PIXELS_Y * PIXEL_HEIGHT;
 
 export class MapTile implements GameObject {
     mapX: number;
@@ -26,7 +24,7 @@ export class MapTile implements GameObject {
         this.mapX = mapX;
         this.mapY = mapY;
         this.tile = tile;
-        this.sprite = new P5.Image(TILE_WIDTH, TILE_WIDTH);
+        this.sprite = new P5.Image(GAME_DATA.tileWidth, GAME_DATA.tileHeight);
 
         this.frames = [];
         this.frameNum = 0;
@@ -37,8 +35,8 @@ export class MapTile implements GameObject {
     initialize() {
         this.sprite.loadPixels();
 
-        for (let i = 0; i < TILE_PIXELS_X; i += PIXEL_WIDTH) {
-            for (let j = 0; j < TILE_PIXELS_Y; j += PIXEL_HEIGHT) {
+        for (let i = 0; i < TILE_PIXELS_X; i += pixelWidth) {
+            for (let j = 0; j < TILE_PIXELS_Y; j += pixelHeight) {
                 MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
             }
         }
@@ -58,15 +56,16 @@ export class MapTile implements GameObject {
     }
 
     draw(g: P5): void {
-        g.image(this.sprite, this.mapX * TILE_WIDTH, this.mapY * TILE_HEIGHT);
+        g.image(this.sprite, this.mapX * GAME_DATA.tileWidth, this.mapY * GAME_DATA.tileHeight);
     }
+    resize(g: P5): void {}
 
     joypadDown(): void {}
 
     joypadUp(): void {}
 
     private get frameTime(): number {
-        return Math.floor(FRAME_RATE / this.frames.length);
+        return Math.floor(GAME_DATA.frameRate / this.frames.length);
     }
 
     static get blankTile(): MapTile {
@@ -75,9 +74,9 @@ export class MapTile implements GameObject {
     }
 
     static setPixelAt(image: P5.Image, x: number, y: number, color: Color.Color) {
-        for (let i = 0; i < PIXEL_WIDTH; i++) {
-            for (let j = 0; j < PIXEL_HEIGHT; j++) {
-                let index = (x * PIXEL_WIDTH + i + (y * PIXEL_HEIGHT + j) * TILE_PIXELS_X) * 4;
+        for (let i = 0; i < pixelWidth; i++) {
+            for (let j = 0; j < pixelHeight; j++) {
+                let index = (x * pixelWidth + i + (y * pixelHeight + j) * TILE_PIXELS_X) * 4;
                 image.pixels[index] = color[0];
                 image.pixels[index + 1] = color[1];
                 image.pixels[index + 2] = color[2];
@@ -88,9 +87,9 @@ export class MapTile implements GameObject {
 
     static checkeredTile(x: number, y: number): MapTile {
         let tile = new MapTile(x, y, "checkered");
-        let image = new P5.Image(TILE_WIDTH, TILE_HEIGHT);
-        for (let i = 0; i < TILE_PIXELS_X; i += PIXEL_WIDTH) {
-            for (let j = 0; j < TILE_PIXELS_Y; j += PIXEL_HEIGHT) {
+        let image = new P5.Image(GAME_DATA.tileWidth, GAME_DATA.tileHeight);
+        for (let i = 0; i < TILE_PIXELS_X; i += pixelWidth) {
+            for (let j = 0; j < TILE_PIXELS_Y; j += pixelHeight) {
                 let index = (i + j * TILE_PIXELS_X) * 4;
                 if (index % 2 === 0) {
                     MapTile.setPixelAt(image, i, j, Color.BLACK);
@@ -122,10 +121,6 @@ export class OverworldMap implements GameObject {
         }
 
         this.tiles = [];
-
-        if (width === undefined && height === undefined) {
-            this.initializedWithCheckeredTiles();
-        }
     }
 
     initialize(): void {
@@ -155,13 +150,15 @@ export class OverworldMap implements GameObject {
     draw(g: P5): void {
         for (let i = 0; i < this.tilesX; i++) {
             for (let j = 0; j < this.tilesY; j++) {
-                if (i * TILE_WIDTH < g.width && j * TILE_HEIGHT < g.height) {
+                if (i * GAME_DATA.tileWidth < g.width && j * GAME_DATA.tileHeight < g.height) {
                     let index = i + j * this.tilesX;
                     this.tiles[index].draw(g);
                 }
             }
         }
     }
+
+    resize(g: P5): void {}
 
     joypadDown(): void {}
     joypadUp(): void {}
@@ -184,6 +181,7 @@ export class OverworldState extends BaseState {
         g.background(0);
         this.map.draw(g);
     }
+    resize(g: P5): void {}
     joypadDown(): void {}
     joypadUp(): void {}
 }

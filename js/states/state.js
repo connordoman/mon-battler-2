@@ -5,6 +5,7 @@ const main_1 = require("../main");
 class BaseState {
     constructor() {
         this.phase = 0;
+        this.lastPhase = -1;
         this.timer = 0;
     }
     onEnter() {

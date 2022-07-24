@@ -25,6 +25,7 @@ export class SplashScreenState extends BaseState {
         }
         this.timer++;
     }
+    resize(g: P5): void {}
 
     joypadDown() {
         //super.keyPressed(key);

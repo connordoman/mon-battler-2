@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
+exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
 const P5 = require("p5");
 const state_1 = require("./state");
 const Color = require("../color");
@@ -10,14 +10,12 @@ exports.TILE_GRASS = "GRASS";
 exports.TILE_WATER = "WATER";
 exports.TILE_PIXELS_X = 16;
 exports.TILE_PIXELS_Y = 16;
-exports.TILE_WIDTH = exports.TILE_PIXELS_X * main_1.PIXEL_WIDTH;
-exports.TILE_HEIGHT = exports.TILE_PIXELS_Y * main_1.PIXEL_HEIGHT;
 class MapTile {
     constructor(mapX, mapY, tile) {
         this.mapX = mapX;
         this.mapY = mapY;
         this.tile = tile;
-        this.sprite = new P5.Image(exports.TILE_WIDTH, exports.TILE_WIDTH);
+        this.sprite = new P5.Image(main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
         this.frames = [];
         this.frameNum = 0;
         this.animated = false;
@@ -25,8 +23,8 @@ class MapTile {
     }
     initialize() {
         this.sprite.loadPixels();
-        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.pixelWidth) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.pixelHeight) {
                 MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
             }
         }
@@ -42,21 +40,22 @@ class MapTile {
         this.timer++;
     }
     draw(g) {
-        g.image(this.sprite, this.mapX * exports.TILE_WIDTH, this.mapY * exports.TILE_HEIGHT);
+        g.image(this.sprite, this.mapX * main_1.GAME_DATA.tileWidth, this.mapY * main_1.GAME_DATA.tileHeight);
     }
+    resize(g) { }
     joypadDown() { }
     joypadUp() { }
     get frameTime() {
-        return Math.floor(main_1.FRAME_RATE / this.frames.length);
+        return Math.floor(main_1.GAME_DATA.frameRate / this.frames.length);
     }
     static get blankTile() {
         let tile = new MapTile(0, 0, "blank");
         return tile;
     }
     static setPixelAt(image, x, y, color) {
-        for (let i = 0; i < main_1.PIXEL_WIDTH; i++) {
-            for (let j = 0; j < main_1.PIXEL_HEIGHT; j++) {
-                let index = (x * main_1.PIXEL_WIDTH + i + (y * main_1.PIXEL_HEIGHT + j) * exports.TILE_PIXELS_X) * 4;
+        for (let i = 0; i < main_1.pixelWidth; i++) {
+            for (let j = 0; j < main_1.pixelHeight; j++) {
+                let index = (x * main_1.pixelWidth + i + (y * main_1.pixelHeight + j) * exports.TILE_PIXELS_X) * 4;
                 image.pixels[index] = color[0];
                 image.pixels[index + 1] = color[1];
                 image.pixels[index + 2] = color[2];
@@ -66,9 +65,9 @@ class MapTile {
     }
     static checkeredTile(x, y) {
         let tile = new MapTile(x, y, "checkered");
-        let image = new P5.Image(exports.TILE_WIDTH, exports.TILE_HEIGHT);
-        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+        let image = new P5.Image(main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.pixelWidth) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.pixelHeight) {
                 let index = (i + j * exports.TILE_PIXELS_X) * 4;
                 if (index % 2 === 0) {
                     MapTile.setPixelAt(image, i, j, Color.BLACK);
@@ -98,9 +97,6 @@ class OverworldMap {
             this.tilesY = height;
         }
         this.tiles = [];
-        if (width === undefined && height === undefined) {
-            this.initializedWithCheckeredTiles();
-        }
     }
     initialize() {
         for (let i = 0; i < this.tilesX; i++) {
@@ -126,13 +122,14 @@ class OverworldMap {
     draw(g) {
         for (let i = 0; i < this.tilesX; i++) {
             for (let j = 0; j < this.tilesY; j++) {
-                if (i * exports.TILE_WIDTH < g.width && j * exports.TILE_HEIGHT < g.height) {
+                if (i * main_1.GAME_DATA.tileWidth < g.width && j * main_1.GAME_DATA.tileHeight < g.height) {
                     let index = i + j * this.tilesX;
                     this.tiles[index].draw(g);
                 }
             }
         }
     }
+    resize(g) { }
     joypadDown() { }
     joypadUp() { }
 }
@@ -150,6 +147,7 @@ class OverworldState extends state_1.BaseState {
         g.background(0);
         this.map.draw(g);
     }
+    resize(g) { }
     joypadDown() { }
     joypadUp() { }
 }

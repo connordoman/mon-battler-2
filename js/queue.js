@@ -28,7 +28,7 @@ class Queue {
     }
     peek() {
         if (this.size === 0) {
-            return null;
+            return undefined;
         }
         return this.queue[0];
     }
@@ -38,6 +38,9 @@ class Queue {
     clear() {
         this.queue = [];
         this.size = 0;
+    }
+    get array() {
+        return this.queue.splice(0, this.size - 1);
     }
 }
 exports.Queue = Queue;
@@ -86,9 +89,6 @@ class CircularQueue {
         return frontItem;
     }
     peek() {
-        if (this.isEmpty()) {
-            return null;
-        }
         return this.queue[this.front];
     }
     isEmpty() {

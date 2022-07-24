@@ -82,6 +82,11 @@ class Triangle extends Polygon {
         this.x1 = this.x2 = this.x3 = this.y1 = this.y2 = this.y3 = 0;
         this.computeGeometry();
     }
+    setSize(size) {
+        this.width = size;
+        this.height = size * Math.sqrt(3 / 4);
+        this.computeGeometry();
+    }
     computeGeometry() {
         let a = (this.width / 2) * Math.tan(Math.PI / 6);
         let c = this.height - a;

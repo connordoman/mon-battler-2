@@ -1,7 +1,7 @@
 import * as P5 from "p5";
 import * as Color from "../color";
 import { Rectangle, Triangle, Vector } from "../geometry";
-import { GAME_DATA, TEXT_SIZE, TILE_HEIGHT, TILE_WIDTH, gPrint } from "../main";
+import { GAME_DATA, gPrint, HEIGHT, pixelWidth, pixelHeight, WIDTH } from "../main";
 import { BaseState } from "./state";
 
 export const EN_CONTINUE = "Press any key to continue...";
@@ -11,16 +11,20 @@ export class TextBox extends Rectangle {
     static: boolean;
     textColor: Color.Color;
     lineSize: number;
+    posRatio: Vector;
+    dimRatio: Vector;
 
     seen: boolean;
 
     constructor(msg: string, x: number, y: number, w: number, h: number) {
         super(x, y, w, h);
+        this.posRatio = new Vector(x / WIDTH(), y / HEIGHT());
+        this.dimRatio = new Vector(w / WIDTH(), h / HEIGHT());
         this.msg = msg.trim();
         this.static = false;
         this.color = Color.WHITE;
         this.textColor = Color.SLATE;
-        this.lineSize = w - 2 * TILE_WIDTH;
+        this.lineSize = w - 2 * GAME_DATA.tileHeight;
 
         this.seen = false;
     }
@@ -32,8 +36,8 @@ export class TextBox extends Rectangle {
     }
 
     update(g: P5): void {
-        if (g.textSize() !== TEXT_SIZE) {
-            g.textSize(TEXT_SIZE);
+        if (g.textSize() !== GAME_DATA.textSize) {
+            g.textSize(GAME_DATA.textSize);
         }
     }
 
@@ -43,14 +47,48 @@ export class TextBox extends Rectangle {
 
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
-        g.strokeWeight(4);
-        g.rect(4, 4, this.width - 8, this.height - 8, 8);
+        g.strokeWeight(2 * pixelWidth);
+        g.rect(
+            2 * pixelWidth,
+            2 * pixelHeight,
+            this.width - 4 * pixelWidth,
+            this.height - 4 * pixelHeight,
+            GAME_DATA.tileHeight / 4
+        );
 
-        g.fill(g.color(this.textColor));
         g.noStroke();
+        g.fill(g.color(this.textColor));
         g.textAlign(g.LEFT, g.TOP);
-        g.text(this.msg, TILE_WIDTH, TILE_HEIGHT * 0.48);
+
+        if (this.static && this.msg.indexOf("\n") < 0) {
+            g.text(
+                this.msg,
+                GAME_DATA.tileWidth,
+                this.height / 2 - (GAME_DATA.textSize * this.msg.split("\n").length) / 2
+            );
+        } else {
+            g.text(this.msg, GAME_DATA.tileWidth, GAME_DATA.tileHeight * 0.48);
+        }
+
         g.pop();
+    }
+
+    resize() {
+        if (this.width !== this.dimRatio.x * WIDTH()) {
+            this.width = this.dimRatio.x * WIDTH();
+        }
+        if (this.height !== this.dimRatio.y * HEIGHT()) {
+            this.height = this.dimRatio.y * HEIGHT();
+        }
+        if (this.x !== this.posRatio.x * WIDTH()) {
+            this.x = this.posRatio.x * WIDTH();
+        }
+        if (this.y !== this.posRatio.y * HEIGHT()) {
+            this.y = this.posRatio.y * HEIGHT();
+        }
+
+        this.posRatio = new Vector(this.x / WIDTH(), this.y / HEIGHT());
+        this.dimRatio = new Vector(this.width / WIDTH(), this.height / HEIGHT());
     }
 }
 
@@ -80,8 +118,8 @@ export class TextBoxState extends BaseState {
         this.name = `TextBoxState: ${textbox.msg.slice(0, 17)}...`;
         this.textbox = textbox;
         this.textboxArrow = new TextBoxArrow(
-            textbox.x + textbox.width - TILE_WIDTH / 2,
-            textbox.y + textbox.height - TILE_HEIGHT / 1.5
+            textbox.x + textbox.width - GAME_DATA.tileWidth / 2,
+            textbox.y + textbox.height - GAME_DATA.tileHeight / 1.5
         );
         this.message = textbox.msg;
         this.typed = "";
@@ -171,6 +209,13 @@ export class TextBoxState extends BaseState {
             this.textboxArrow.draw(g);
         }
     }
+    resize(g: P5): void {
+        this.textbox.resize();
+        this.textboxArrow = new TextBoxArrow(
+            this.textbox.x + this.textbox.width - GAME_DATA.tileWidth / 2,
+            this.textbox.y + this.textbox.height - GAME_DATA.tileHeight / 1.5
+        );
+    }
 
     joypadDown(key: string): void {
         if (GAME_DATA.joypad.state.A || GAME_DATA.joypad.state.B) {
@@ -221,7 +266,7 @@ export class TextBoxArrow extends Triangle {
     timer: number;
     originY: number;
     constructor(x: number, y: number) {
-        super(x, y, TILE_WIDTH / 3);
+        super(x, y, GAME_DATA.tileWidth / 3);
         this.setAngle(Math.PI);
         this.offset = 0;
         this.timer = 0;

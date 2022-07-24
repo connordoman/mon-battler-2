@@ -1,7 +1,13 @@
 import * as P5 from "p5";
 import { Queue } from "./queue";
-import { GAME_DATA, gConvertRemToPixels, gPrint } from "./main";
-import { sortAndDeduplicateDiagnostics } from "typescript";
+import {
+    GAME_DATA,
+    gConvertRemToPixels,
+    gPrint,
+    ORIENTATION_DESKTOP,
+    ORIENTATION_LANDSCAPE,
+    ORIENTATION_PORTRAIT,
+} from "./main";
 const MAX_INPUTS = 10;
 
 export const ASCII_KEYS = {
@@ -32,23 +38,23 @@ export const JOYPAD_STATE: Joypad = {
     RIGHT: false,
 };
 
+export const JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
+export const KEYBOARD_KEYS = ["W", "S", "A", "D", "K", "L", "I", "O", "Q", "E", "ENTER", "BACKSPACE"];
+
 export const JOYPAD = {
-    A: "Z".charCodeAt(0),
-    B: "X".charCodeAt(0),
-    X: "C".charCodeAt(0),
-    Y: "V".charCodeAt(0),
-    L: "Q".charCodeAt(0),
-    R: "E".charCodeAt(0),
+    UP: KEYBOARD_KEYS[0].charCodeAt(0),
+    DOWN: KEYBOARD_KEYS[1].charCodeAt(0),
+    LEFT: KEYBOARD_KEYS[2].charCodeAt(0),
+    RIGHT: KEYBOARD_KEYS[3].charCodeAt(0),
+    A: KEYBOARD_KEYS[4].charCodeAt(0),
+    B: KEYBOARD_KEYS[5].charCodeAt(0),
+    X: KEYBOARD_KEYS[6].charCodeAt(0),
+    Y: KEYBOARD_KEYS[7].charCodeAt(0),
+    L: KEYBOARD_KEYS[8].charCodeAt(0),
+    R: KEYBOARD_KEYS[9].charCodeAt(0),
     START: ASCII_KEYS.enter,
     SELECT: ASCII_KEYS.backspace,
-    UP: "W".charCodeAt(0),
-    DOWN: "S".charCodeAt(0),
-    LEFT: "A".charCodeAt(0),
-    RIGHT: "D".charCodeAt(0),
 };
-
-export const JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
-export const KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 
 export type Joypad = {
     [index: string]: boolean;
@@ -71,6 +77,22 @@ export class JoypadController {
     keyTimer: number;
     inputQueue: Queue<string>;
     releaseQueue: Queue<string>;
+
+    static leftPadUp = document.createElement("span");
+    static leftPadDown = document.createElement("span");
+    static leftPadLeft = document.createElement("span");
+    static leftPadRight = document.createElement("span");
+
+    static rightPadX = document.createElement("span");
+    static rightPadB = document.createElement("span");
+    static rightPadY = document.createElement("span");
+    static rightPadA = document.createElement("span");
+
+    static centerPadStart = document.createElement("span");
+    static centerPadSelect = document.createElement("span");
+
+    static leftPad: HTMLTableElement = document.createElement("table");
+    static rightPad: HTMLTableElement = document.createElement("table");
 
     constructor() {
         this.state = {
@@ -176,88 +198,61 @@ export class JoypadController {
     }
 
     static deployJoypadHTML(g: P5): void {
-        let leftPad: HTMLTableElement;
-        let rightPad: HTMLTableElement;
         let gameArea: HTMLDivElement = document.getElementById("game-area") as HTMLDivElement;
         let canvas: HTMLCanvasElement = document.getElementById(GAME_DATA.canv.id()) as HTMLCanvasElement;
-
-        let leftPadUp = document.createElement("span");
-        let leftPadDown = document.createElement("span");
-        let leftPadLeft = document.createElement("span");
-        let leftPadRight = document.createElement("span");
-
-        let rightPadX = document.createElement("span");
-        let rightPadB = document.createElement("span");
-        let rightPadY = document.createElement("span");
-        let rightPadA = document.createElement("span");
-
-        let centerPadStart = document.createElement("span");
-        let centerPadSelect = document.createElement("span");
-
         // directional buttons
-        leftPadUp.id = `joypad-${JOYPAD.UP}`;
-        leftPadDown.id = `joypad-${JOYPAD.DOWN}`;
-        leftPadLeft.id = `joypad-${JOYPAD.LEFT}`;
-        leftPadRight.id = `joypad-${JOYPAD.RIGHT}`;
+        this.leftPadUp.id = `joypad-${JOYPAD.UP}`;
+        this.leftPadDown.id = `joypad-${JOYPAD.DOWN}`;
+        this.leftPadLeft.id = `joypad-${JOYPAD.LEFT}`;
+        this.leftPadRight.id = `joypad-${JOYPAD.RIGHT}`;
 
-        leftPadUp.innerHTML = "&uarr;";
-        leftPadDown.innerHTML = "&darr;";
-        leftPadLeft.innerHTML = "&larr;";
-        leftPadRight.innerHTML = "&rarr;";
+        this.leftPadUp.innerHTML = "&uarr;";
+        this.leftPadDown.innerHTML = "&darr;";
+        this.leftPadLeft.innerHTML = "&larr;";
+        this.leftPadRight.innerHTML = "&rarr;";
 
         // action buttons
-        rightPadX.id = `joypad-${JOYPAD.X}`;
-        rightPadB.id = `joypad-${JOYPAD.B}`;
-        rightPadY.id = `joypad-${JOYPAD.Y}`;
-        rightPadA.id = `joypad-${JOYPAD.A}`;
+        this.rightPadX.id = `joypad-${JOYPAD.X}`;
+        this.rightPadB.id = `joypad-${JOYPAD.B}`;
+        this.rightPadY.id = `joypad-${JOYPAD.Y}`;
+        this.rightPadA.id = `joypad-${JOYPAD.A}`;
 
-        rightPadX.innerHTML = "X";
-        rightPadB.innerHTML = "B";
-        rightPadY.innerHTML = "Y";
-        rightPadA.innerHTML = "A";
+        this.rightPadX.innerHTML = "X";
+        this.rightPadB.innerHTML = "B";
+        this.rightPadY.innerHTML = "Y";
+        this.rightPadA.innerHTML = "A";
 
         // option buttons
-        centerPadStart.id = `joypad-${JOYPAD.START}`;
-        centerPadSelect.id = `joypad-${JOYPAD.SELECT}`;
+        this.centerPadStart.id = `joypad-${JOYPAD.START}`;
+        this.centerPadSelect.id = `joypad-${JOYPAD.SELECT}`;
 
-        centerPadStart.innerHTML = "START";
-        centerPadSelect.innerHTML = "SELECT";
+        this.centerPadStart.innerHTML = "START";
+        this.centerPadSelect.innerHTML = "SELECT";
 
-        centerPadStart.classList.add("pad-button", "noselect", "center-button");
-        centerPadSelect.classList.add("pad-button", "noselect", "center-button");
+        this.centerPadStart.classList.add("pad-button", "noselect", "center-button");
+        this.centerPadSelect.classList.add("pad-button", "noselect", "center-button");
 
         // add action listeners to option buttons
-        JoypadController.prepareActionListeners(centerPadStart);
-        JoypadController.prepareActionListeners(centerPadSelect);
+        this.prepareActionListeners(this.centerPadStart);
+        this.prepareActionListeners(this.centerPadSelect);
 
         // prepare cross shaped tables
-        leftPad = JoypadController.createButtonsCross([leftPadUp, leftPadLeft, leftPadRight, leftPadDown]);
-        rightPad = JoypadController.createButtonsCross([rightPadX, rightPadY, rightPadA, rightPadB]);
+        this.leftPad = this.createButtonsCross([this.leftPadUp, this.leftPadLeft, this.leftPadRight, this.leftPadDown]);
+        this.rightPad = this.createButtonsCross([this.rightPadX, this.rightPadY, this.rightPadA, this.rightPadB]);
 
-        leftPad.classList.add("left");
-        rightPad.classList.add("right");
+        this.leftPad.classList.add("left");
+        this.rightPad.classList.add("right");
 
-        leftPad.id = "left-pad";
-        rightPad.id = "right-pad";
+        this.leftPad.id = "left-pad";
+        this.rightPad.id = "right-pad";
 
-        // position buttons according to game area
-        let rect = canvas.getBoundingClientRect();
-        let rem1 = gConvertRemToPixels(1);
-        gPrint(rect.top, rect.left, rect.bottom, rect.right);
-        centerPadStart.style.left = `${rect.right + rem1}px`;
-        centerPadSelect.style.right = `${rect.right + rem1}px`;
-
-        let botMargin = window.innerHeight - rect.bottom;
-        leftPad.style.bottom = `${botMargin}px`;
-        rightPad.style.bottom = `${botMargin}px`;
-        centerPadStart.style.bottom = `${botMargin}px`;
-        centerPadSelect.style.bottom = `${botMargin}px`;
+        JoypadController.repositionJoypad(canvas);
 
         // add controller to screen
-        gameArea.appendChild(leftPad);
-        gameArea.appendChild(centerPadSelect);
-        gameArea.appendChild(centerPadStart);
-        gameArea.appendChild(rightPad);
+        gameArea.appendChild(this.centerPadSelect);
+        gameArea.appendChild(this.centerPadStart);
+        gameArea.appendChild(this.leftPad);
+        gameArea.appendChild(this.rightPad);
     }
 
     static createButtonsCross(buttons: HTMLSpanElement[]): HTMLTableElement {
@@ -281,6 +276,43 @@ export class JoypadController {
             }
         }
         return table;
+    }
+
+    static repositionJoypad(canvas: HTMLCanvasElement): void {
+        // position buttons according to game area
+        let rect = canvas.getBoundingClientRect();
+        let rem1 = gConvertRemToPixels(1);
+        gPrint(rect.top, rect.left, rect.bottom, rect.right);
+
+        this.centerPadStart.style.left = `${rect.right + rem1}px`;
+        this.centerPadSelect.style.right = `${rect.right + rem1}px`;
+
+        switch (GAME_DATA.orientation) {
+            case ORIENTATION_PORTRAIT:
+                this.leftPad.style.top = `${rect.bottom + rem1}px`;
+                this.leftPad.style.left = `${rem1}px`;
+                this.rightPad.style.top = `${rect.bottom + rem1}px`;
+                this.rightPad.style.right = `${rem1}px`;
+
+                this.centerPadStart.style.left = `${window.innerWidth / 2 + rem1}px`;
+                this.centerPadSelect.style.right = `${window.innerWidth / 2 + rem1}px`;
+                this.centerPadStart.style.top = `${rect.bottom + (window.innerHeight - rect.bottom) / 2 + rem1}px`;
+                this.centerPadSelect.style.top = `${rect.bottom + (window.innerHeight - rect.bottom) / 2 + rem1}px`;
+                break;
+            case ORIENTATION_LANDSCAPE:
+                this.leftPad.style.bottom = `${gConvertRemToPixels(4)}px`;
+                this.rightPad.style.bottom = `${gConvertRemToPixels(4)}px`;
+                this.centerPadStart.style.bottom = `${rem1}px`;
+                this.centerPadSelect.style.bottom = `${rem1}px`;
+                break;
+            case ORIENTATION_DESKTOP:
+                let botMargin = window.innerHeight - rect.bottom;
+                this.leftPad.style.top = `${rect.bottom / 2}px`;
+                this.rightPad.style.top = `${rect.bottom / 2}px`;
+                this.centerPadStart.style.bottom = `${botMargin}px`;
+                this.centerPadSelect.style.bottom = `${botMargin}px`;
+                break;
+        }
     }
 
     private static prepareActionListeners(elem: HTMLElement): void {

@@ -14,7 +14,12 @@ class StateMachine {
         this.currentState().onEnter();
     }
     currentState() {
-        return this.states.peek();
+        if (this.states.peek() !== null) {
+            return this.states.peek();
+        }
+        else {
+            return new titlescreen_1.TitleScreenState();
+        }
     }
     exitState() {
         if (!this.states.isEmpty()) {
@@ -26,11 +31,13 @@ class StateMachine {
         return this.states.isEmpty();
     }
     stateArray() {
-        return this.states.bottomUp();
+        return this.states.array;
     }
     update(g) {
         if (!this.states.isEmpty()) {
-            this.currentState().update(g);
+            for (let s of this.states.array) {
+                s.update(g);
+            }
         }
         else {
             this.enterState(new titlescreen_1.TitleScreenState());
@@ -38,7 +45,14 @@ class StateMachine {
     }
     draw(g) {
         if (!this.states.isEmpty()) {
-            this.currentState().draw(g);
+            for (let s of this.states.array) {
+                s.draw(g);
+            }
+        }
+    }
+    resize(g) {
+        for (let s of this.states.array) {
+            s.resize(g);
         }
     }
     joypadDown() {

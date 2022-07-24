@@ -116,6 +116,11 @@ class Triangle extends Polygon {
         this.x1 = this.x2 = this.x3 = this.y1 = this.y2 = this.y3 = 0;
         this.computeGeometry();
     }
+    setSize(size) {
+        this.width = size;
+        this.height = size * Math.sqrt(3 / 4);
+        this.computeGeometry();
+    }
     computeGeometry() {
         let a = (this.width / 2) * Math.tan(Math.PI / 6);
         let c = this.height - a;
@@ -159,7 +164,7 @@ exports.Triangle = Triangle;
 },{"./color":1}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JoypadController = exports.KEYBOARD_KEYS = exports.JOYPAD_KEYS = exports.JOYPAD = exports.JOYPAD_STATE = exports.ASCII_KEYS = void 0;
+exports.JoypadController = exports.JOYPAD = exports.KEYBOARD_KEYS = exports.JOYPAD_KEYS = exports.JOYPAD_STATE = exports.ASCII_KEYS = void 0;
 const queue_1 = require("./queue");
 const main_1 = require("./main");
 const MAX_INPUTS = 10;
@@ -189,22 +194,22 @@ exports.JOYPAD_STATE = {
     LEFT: false,
     RIGHT: false,
 };
+exports.JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
+exports.KEYBOARD_KEYS = ["W", "S", "A", "D", "K", "L", "I", "O", "Q", "E", "ENTER", "BACKSPACE"];
 exports.JOYPAD = {
-    A: "Z".charCodeAt(0),
-    B: "X".charCodeAt(0),
-    X: "C".charCodeAt(0),
-    Y: "V".charCodeAt(0),
-    L: "Q".charCodeAt(0),
-    R: "E".charCodeAt(0),
+    UP: exports.KEYBOARD_KEYS[0].charCodeAt(0),
+    DOWN: exports.KEYBOARD_KEYS[1].charCodeAt(0),
+    LEFT: exports.KEYBOARD_KEYS[2].charCodeAt(0),
+    RIGHT: exports.KEYBOARD_KEYS[3].charCodeAt(0),
+    A: exports.KEYBOARD_KEYS[4].charCodeAt(0),
+    B: exports.KEYBOARD_KEYS[5].charCodeAt(0),
+    X: exports.KEYBOARD_KEYS[6].charCodeAt(0),
+    Y: exports.KEYBOARD_KEYS[7].charCodeAt(0),
+    L: exports.KEYBOARD_KEYS[8].charCodeAt(0),
+    R: exports.KEYBOARD_KEYS[9].charCodeAt(0),
     START: exports.ASCII_KEYS.enter,
     SELECT: exports.ASCII_KEYS.backspace,
-    UP: "W".charCodeAt(0),
-    DOWN: "S".charCodeAt(0),
-    LEFT: "A".charCodeAt(0),
-    RIGHT: "D".charCodeAt(0),
 };
-exports.JOYPAD_KEYS = ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "X", "Y", "L", "R", "START", "SELECT"];
-exports.KEYBOARD_KEYS = ["W", "S", "A", "D", "Z", "X", "C", "V", "Q", "E", "ENTER", "SHIFT"];
 class JoypadController {
     constructor() {
         this.state = Object.assign({}, exports.JOYPAD_STATE);
@@ -298,71 +303,49 @@ class JoypadController {
         return false;
     }
     static deployJoypadHTML(g) {
-        let leftPad;
-        let rightPad;
         let gameArea = document.getElementById("game-area");
         let canvas = document.getElementById(main_1.GAME_DATA.canv.id());
-        let leftPadUp = document.createElement("span");
-        let leftPadDown = document.createElement("span");
-        let leftPadLeft = document.createElement("span");
-        let leftPadRight = document.createElement("span");
-        let rightPadX = document.createElement("span");
-        let rightPadB = document.createElement("span");
-        let rightPadY = document.createElement("span");
-        let rightPadA = document.createElement("span");
-        let centerPadStart = document.createElement("span");
-        let centerPadSelect = document.createElement("span");
         // directional buttons
-        leftPadUp.id = `joypad-${exports.JOYPAD.UP}`;
-        leftPadDown.id = `joypad-${exports.JOYPAD.DOWN}`;
-        leftPadLeft.id = `joypad-${exports.JOYPAD.LEFT}`;
-        leftPadRight.id = `joypad-${exports.JOYPAD.RIGHT}`;
-        leftPadUp.innerHTML = "&uarr;";
-        leftPadDown.innerHTML = "&darr;";
-        leftPadLeft.innerHTML = "&larr;";
-        leftPadRight.innerHTML = "&rarr;";
+        this.leftPadUp.id = `joypad-${exports.JOYPAD.UP}`;
+        this.leftPadDown.id = `joypad-${exports.JOYPAD.DOWN}`;
+        this.leftPadLeft.id = `joypad-${exports.JOYPAD.LEFT}`;
+        this.leftPadRight.id = `joypad-${exports.JOYPAD.RIGHT}`;
+        this.leftPadUp.innerHTML = "&uarr;";
+        this.leftPadDown.innerHTML = "&darr;";
+        this.leftPadLeft.innerHTML = "&larr;";
+        this.leftPadRight.innerHTML = "&rarr;";
         // action buttons
-        rightPadX.id = `joypad-${exports.JOYPAD.X}`;
-        rightPadB.id = `joypad-${exports.JOYPAD.B}`;
-        rightPadY.id = `joypad-${exports.JOYPAD.Y}`;
-        rightPadA.id = `joypad-${exports.JOYPAD.A}`;
-        rightPadX.innerHTML = "X";
-        rightPadB.innerHTML = "B";
-        rightPadY.innerHTML = "Y";
-        rightPadA.innerHTML = "A";
+        this.rightPadX.id = `joypad-${exports.JOYPAD.X}`;
+        this.rightPadB.id = `joypad-${exports.JOYPAD.B}`;
+        this.rightPadY.id = `joypad-${exports.JOYPAD.Y}`;
+        this.rightPadA.id = `joypad-${exports.JOYPAD.A}`;
+        this.rightPadX.innerHTML = "X";
+        this.rightPadB.innerHTML = "B";
+        this.rightPadY.innerHTML = "Y";
+        this.rightPadA.innerHTML = "A";
         // option buttons
-        centerPadStart.id = `joypad-${exports.JOYPAD.START}`;
-        centerPadSelect.id = `joypad-${exports.JOYPAD.SELECT}`;
-        centerPadStart.innerHTML = "START";
-        centerPadSelect.innerHTML = "SELECT";
-        centerPadStart.classList.add("pad-button", "noselect", "center-button");
-        centerPadSelect.classList.add("pad-button", "noselect", "center-button");
+        this.centerPadStart.id = `joypad-${exports.JOYPAD.START}`;
+        this.centerPadSelect.id = `joypad-${exports.JOYPAD.SELECT}`;
+        this.centerPadStart.innerHTML = "START";
+        this.centerPadSelect.innerHTML = "SELECT";
+        this.centerPadStart.classList.add("pad-button", "noselect", "center-button");
+        this.centerPadSelect.classList.add("pad-button", "noselect", "center-button");
         // add action listeners to option buttons
-        JoypadController.prepareActionListeners(centerPadStart);
-        JoypadController.prepareActionListeners(centerPadSelect);
+        this.prepareActionListeners(this.centerPadStart);
+        this.prepareActionListeners(this.centerPadSelect);
         // prepare cross shaped tables
-        leftPad = JoypadController.createButtonsCross([leftPadUp, leftPadLeft, leftPadRight, leftPadDown]);
-        rightPad = JoypadController.createButtonsCross([rightPadX, rightPadY, rightPadA, rightPadB]);
-        leftPad.classList.add("left");
-        rightPad.classList.add("right");
-        leftPad.id = "left-pad";
-        rightPad.id = "right-pad";
-        // position buttons according to game area
-        let rect = canvas.getBoundingClientRect();
-        let rem1 = (0, main_1.gConvertRemToPixels)(1);
-        (0, main_1.gPrint)(rect.top, rect.left, rect.bottom, rect.right);
-        centerPadStart.style.left = `${rect.right + rem1}px`;
-        centerPadSelect.style.right = `${rect.right + rem1}px`;
-        let botMargin = window.innerHeight - rect.bottom;
-        leftPad.style.bottom = `${botMargin}px`;
-        rightPad.style.bottom = `${botMargin}px`;
-        centerPadStart.style.bottom = `${botMargin}px`;
-        centerPadSelect.style.bottom = `${botMargin}px`;
+        this.leftPad = this.createButtonsCross([this.leftPadUp, this.leftPadLeft, this.leftPadRight, this.leftPadDown]);
+        this.rightPad = this.createButtonsCross([this.rightPadX, this.rightPadY, this.rightPadA, this.rightPadB]);
+        this.leftPad.classList.add("left");
+        this.rightPad.classList.add("right");
+        this.leftPad.id = "left-pad";
+        this.rightPad.id = "right-pad";
+        JoypadController.repositionJoypad(canvas);
         // add controller to screen
-        gameArea.appendChild(leftPad);
-        gameArea.appendChild(centerPadSelect);
-        gameArea.appendChild(centerPadStart);
-        gameArea.appendChild(rightPad);
+        gameArea.appendChild(this.centerPadSelect);
+        gameArea.appendChild(this.centerPadStart);
+        gameArea.appendChild(this.leftPad);
+        gameArea.appendChild(this.rightPad);
     }
     static createButtonsCross(buttons) {
         let table = document.createElement("table");
@@ -384,6 +367,39 @@ class JoypadController {
             }
         }
         return table;
+    }
+    static repositionJoypad(canvas) {
+        // position buttons according to game area
+        let rect = canvas.getBoundingClientRect();
+        let rem1 = (0, main_1.gConvertRemToPixels)(1);
+        (0, main_1.gPrint)(rect.top, rect.left, rect.bottom, rect.right);
+        this.centerPadStart.style.left = `${rect.right + rem1}px`;
+        this.centerPadSelect.style.right = `${rect.right + rem1}px`;
+        switch (main_1.GAME_DATA.orientation) {
+            case main_1.ORIENTATION_PORTRAIT:
+                this.leftPad.style.top = `${rect.bottom + rem1}px`;
+                this.leftPad.style.left = `${rem1}px`;
+                this.rightPad.style.top = `${rect.bottom + rem1}px`;
+                this.rightPad.style.right = `${rem1}px`;
+                this.centerPadStart.style.left = `${window.innerWidth / 2 + rem1}px`;
+                this.centerPadSelect.style.right = `${window.innerWidth / 2 + rem1}px`;
+                this.centerPadStart.style.top = `${rect.bottom + (window.innerHeight - rect.bottom) / 2 + rem1}px`;
+                this.centerPadSelect.style.top = `${rect.bottom + (window.innerHeight - rect.bottom) / 2 + rem1}px`;
+                break;
+            case main_1.ORIENTATION_LANDSCAPE:
+                this.leftPad.style.bottom = `${(0, main_1.gConvertRemToPixels)(4)}px`;
+                this.rightPad.style.bottom = `${(0, main_1.gConvertRemToPixels)(4)}px`;
+                this.centerPadStart.style.bottom = `${rem1}px`;
+                this.centerPadSelect.style.bottom = `${rem1}px`;
+                break;
+            case main_1.ORIENTATION_DESKTOP:
+                let botMargin = window.innerHeight - rect.bottom;
+                this.leftPad.style.top = `${rect.bottom / 2}px`;
+                this.rightPad.style.top = `${rect.bottom / 2}px`;
+                this.centerPadStart.style.bottom = `${botMargin}px`;
+                this.centerPadSelect.style.bottom = `${botMargin}px`;
+                break;
+        }
     }
     static prepareActionListeners(elem) {
         elem.addEventListener("mousedown", (e) => {
@@ -475,26 +491,85 @@ class JoypadController {
     }
 }
 exports.JoypadController = JoypadController;
+JoypadController.leftPadUp = document.createElement("span");
+JoypadController.leftPadDown = document.createElement("span");
+JoypadController.leftPadLeft = document.createElement("span");
+JoypadController.leftPadRight = document.createElement("span");
+JoypadController.rightPadX = document.createElement("span");
+JoypadController.rightPadB = document.createElement("span");
+JoypadController.rightPadY = document.createElement("span");
+JoypadController.rightPadA = document.createElement("span");
+JoypadController.centerPadStart = document.createElement("span");
+JoypadController.centerPadSelect = document.createElement("span");
+JoypadController.leftPad = document.createElement("table");
+JoypadController.rightPad = document.createElement("table");
 
 },{"./main":4,"./queue":5}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.FRAME_RATE = exports.TEXT_SIZE = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.HEIGHT = exports.WIDTH = exports.PIXEL_HEIGHT = exports.PIXEL_WIDTH = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.GameData = exports.HEIGHT = exports.WIDTH = exports.ACTUAL_PIXEL_HEIGHT = exports.ACTUAL_PIXEL_WIDTH = exports.pixelHeight = exports.pixelWidth = exports.gOrientationStr = exports.ORIENTATION_DESKTOP = exports.ORIENTATION_LANDSCAPE = exports.ORIENTATION_PORTRAIT = exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.MAX_PIXEL = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
 const titlescreen_1 = require("./states/titlescreen");
 const Color = require("./color");
 const overworld_1 = require("./states/overworld");
 const joypad_1 = require("./joypad");
-exports.DEBUG = false;
-exports.PIXEL_WIDTH = 3;
-exports.PIXEL_HEIGHT = 3;
-exports.WIDTH = 240 * exports.PIXEL_WIDTH;
-exports.HEIGHT = 160 * exports.PIXEL_HEIGHT;
-exports.TILE_WIDTH = 16 * exports.PIXEL_WIDTH;
-exports.TILE_HEIGHT = 16 * exports.PIXEL_HEIGHT;
-exports.TEXT_SIZE = exports.PIXEL_HEIGHT * (53 / 5);
-exports.FRAME_RATE = 60;
+exports.DEBUG = true;
+exports.MAX_PIXEL = 3;
+exports.GAME_WIDTH = 240;
+exports.GAME_HEIGHT = 160;
+exports.ORIENTATION_PORTRAIT = 0;
+exports.ORIENTATION_LANDSCAPE = 1;
+exports.ORIENTATION_DESKTOP = 2;
+function gOrientationStr(orientation) {
+    switch (orientation) {
+        case exports.ORIENTATION_PORTRAIT:
+            return "portrait";
+        case exports.ORIENTATION_LANDSCAPE:
+            return "landscape";
+        case exports.ORIENTATION_DESKTOP:
+            return "desktop";
+        default:
+            return "unknown";
+    }
+}
+exports.gOrientationStr = gOrientationStr;
+exports.pixelWidth = 3;
+exports.pixelHeight = 3;
+const ACTUAL_PIXEL_WIDTH = (pixels) => {
+    if (pixels) {
+        return pixels * exports.pixelWidth;
+    }
+    return exports.GAME_WIDTH * exports.pixelWidth;
+};
+exports.ACTUAL_PIXEL_WIDTH = ACTUAL_PIXEL_WIDTH;
+const ACTUAL_PIXEL_HEIGHT = (pixels) => {
+    if (pixels) {
+        return pixels * exports.pixelHeight;
+    }
+    return exports.GAME_HEIGHT * exports.pixelHeight;
+};
+exports.ACTUAL_PIXEL_HEIGHT = ACTUAL_PIXEL_HEIGHT;
+const WIDTH = () => (0, exports.ACTUAL_PIXEL_WIDTH)();
+exports.WIDTH = WIDTH;
+const HEIGHT = () => (0, exports.ACTUAL_PIXEL_HEIGHT)();
+exports.HEIGHT = HEIGHT;
+class GameData {
+    constructor(canv, map, stateMachine, joypad) {
+        this.canv = canv;
+        this.map = map;
+        this.stateMachine = stateMachine;
+        this.joypad = joypad;
+        this.key = "";
+        this.keyCode = 0;
+        this.tileWidth = exports.pixelWidth * 16;
+        this.tileHeight = exports.pixelWidth * 16;
+        this.textSize = exports.pixelHeight * 10;
+        this.frameRate = 60;
+        this.orientation = exports.ORIENTATION_PORTRAIT;
+    }
+}
+exports.GameData = GameData;
 // debug print function
 function gPrint(...args) {
     if (exports.DEBUG) {
@@ -514,17 +589,33 @@ exports.GAME_DATA = {
     joypad: new joypad_1.JoypadController(),
     key: "",
     keyCode: 0,
+    tileWidth: exports.pixelWidth * 16,
+    tileHeight: exports.pixelHeight * 16,
+    textSize: exports.pixelHeight * 10,
+    frameRate: 60,
+    orientation: exports.ORIENTATION_PORTRAIT,
 };
 // main p5 logic
 const MONSTER_BATTLER_2 = (p5) => {
     let keyTimer = 0;
-    let fps = `${exports.FRAME_RATE}`;
+    let fps = `${exports.GAME_DATA.frameRate}`;
+    let reloadGameData = () => {
+        exports.GAME_DATA.textSize = exports.pixelHeight * 10;
+        exports.GAME_DATA.tileWidth = exports.pixelWidth * 16;
+        exports.GAME_DATA.tileHeight = exports.pixelHeight * 16;
+    };
     p5.setup = () => {
         gPrint("Monster Battler 2.0.0");
-        let canv = p5.createCanvas(exports.WIDTH, exports.HEIGHT);
+        let canv = p5.createCanvas((0, exports.WIDTH)(), (0, exports.HEIGHT)());
+        canv.id("game-canvas");
         canv.parent("game-area");
         exports.GAME_DATA.canv = canv;
-        p5.frameRate(exports.FRAME_RATE);
+        let maxWidth = exports.MAX_PIXEL * exports.GAME_WIDTH;
+        let maxHeight = exports.MAX_PIXEL * exports.GAME_HEIGHT;
+        if (window.innerWidth / maxWidth < 1 || window.innerHeight / maxHeight < 1) {
+            p5.windowResized();
+        }
+        p5.frameRate(exports.GAME_DATA.frameRate);
         p5.background(0);
         p5.frameRate(60);
         p5.stroke(255);
@@ -546,19 +637,21 @@ const MONSTER_BATTLER_2 = (p5) => {
         exports.GAME_DATA.joypad.update(p5);
         p5.noStroke();
         exports.GAME_DATA.stateMachine.draw(p5);
-        if (p5.frameCount % exports.FRAME_RATE == 0) {
+        if (p5.frameCount % exports.GAME_DATA.frameRate == 0) {
             fps = p5.frameRate().toFixed(2);
         }
+        // draw state stack on top of everything
         if (exports.DEBUG) {
             let states = exports.GAME_DATA.stateMachine.stateArray();
             p5.fill(Color.SLATE_GLASS);
-            p5.rect(0, 0, exports.WIDTH, exports.TEXT_SIZE + states.length * (exports.TEXT_SIZE / 2));
+            p5.rect(0, 0, (0, exports.WIDTH)(), exports.GAME_DATA.textSize + (states.length + 1) * (exports.GAME_DATA.textSize / 2));
             p5.fill(Color.OFF_WHITE);
-            p5.textSize(exports.TEXT_SIZE / 2);
+            p5.textSize(exports.GAME_DATA.textSize / 2);
             p5.textAlign(p5.LEFT, p5.TOP);
-            p5.text("FPS: " + fps, exports.TEXT_SIZE / 4, exports.TEXT_SIZE / 4 + (exports.TEXT_SIZE / 2) * states.length);
+            p5.text("FPS: " + fps, exports.GAME_DATA.textSize / 4, exports.GAME_DATA.textSize / 4 + (exports.GAME_DATA.textSize / 2) * states.length);
+            p5.text("Orientation: " + gOrientationStr(exports.GAME_DATA.orientation), exports.GAME_DATA.textSize / 4, exports.GAME_DATA.textSize / 4 + (exports.GAME_DATA.textSize / 2) * (states.length + 1));
             for (let i = 0; i < states.length; i++) {
-                p5.text(`${i}: ${states[i].name}`, exports.TEXT_SIZE / 4, exports.TEXT_SIZE / 4 + i * (exports.TEXT_SIZE / 2));
+                p5.text(`${i}: ${states[i].name}[${states[i].phase}]`, exports.GAME_DATA.textSize / 4, exports.GAME_DATA.textSize / 4 + i * (exports.GAME_DATA.textSize / 2));
             }
         }
     };
@@ -571,6 +664,61 @@ const MONSTER_BATTLER_2 = (p5) => {
         exports.GAME_DATA.joypad.releaseJoypadKey();
         exports.GAME_DATA.key = "";
         exports.GAME_DATA.keyCode = 0;
+    };
+    p5.windowResized = () => {
+        let maxWidth = exports.GAME_WIDTH * exports.MAX_PIXEL;
+        let maxHeight = exports.GAME_HEIGHT * exports.MAX_PIXEL;
+        let width = 0;
+        let height = 0;
+        let wRatio = window.innerWidth / maxWidth;
+        let hRatio = window.innerHeight / maxHeight;
+        if (wRatio < 1) {
+            hRatio = wRatio;
+            width = window.innerWidth;
+            height = wRatio * maxHeight;
+            exports.GAME_DATA.orientation = exports.ORIENTATION_PORTRAIT;
+        }
+        else if (hRatio < 1) {
+            wRatio = hRatio;
+            width = hRatio * maxWidth;
+            height = window.innerHeight;
+            exports.GAME_DATA.orientation = exports.ORIENTATION_LANDSCAPE;
+        }
+        else {
+            wRatio = 1;
+            hRatio = 1;
+            width = maxWidth;
+            height = maxHeight;
+            exports.GAME_DATA.orientation = exports.ORIENTATION_DESKTOP;
+        }
+        exports.pixelWidth = wRatio * exports.MAX_PIXEL;
+        exports.pixelHeight = hRatio * exports.MAX_PIXEL;
+        reloadGameData();
+        p5.resizeCanvas(width, height);
+        exports.GAME_DATA.stateMachine.resize(p5);
+        let gameCanv = document.getElementById(exports.GAME_DATA.canv.id());
+        let controls = document.getElementById("controls");
+        switch (exports.GAME_DATA.orientation) {
+            case exports.ORIENTATION_PORTRAIT:
+                if (controls)
+                    controls.style.display = "none";
+                if (gameCanv)
+                    gameCanv.style.margin = "2em";
+                break;
+            case exports.ORIENTATION_LANDSCAPE:
+                if (controls)
+                    controls.style.display = "none";
+                if (gameCanv)
+                    gameCanv.style.margin = "0";
+                break;
+            case exports.ORIENTATION_DESKTOP:
+                if (gameCanv)
+                    gameCanv.style.margin = "2em";
+                break;
+            default:
+                break;
+        }
+        joypad_1.JoypadController.repositionJoypad(gameCanv);
     };
 };
 exports.MONSTER_BATTLER_2 = MONSTER_BATTLER_2;
@@ -607,7 +755,7 @@ class Queue {
     }
     peek() {
         if (this.size === 0) {
-            return null;
+            return undefined;
         }
         return this.queue[0];
     }
@@ -617,6 +765,9 @@ class Queue {
     clear() {
         this.queue = [];
         this.size = 0;
+    }
+    get array() {
+        return this.queue.splice(0, this.size - 1);
     }
 }
 exports.Queue = Queue;
@@ -665,9 +816,6 @@ class CircularQueue {
         return frontItem;
     }
     peek() {
-        if (this.isEmpty()) {
-            return null;
-        }
         return this.queue[this.front];
     }
     isEmpty() {
@@ -745,10 +893,7 @@ class Stack {
         }
         return this.count;
     }
-    bottomUp() {
-        if (this.count === 0) {
-            return [];
-        }
+    get array() {
         return this.stack.slice(0);
     }
 }
@@ -771,7 +916,12 @@ class StateMachine {
         this.currentState().onEnter();
     }
     currentState() {
-        return this.states.peek();
+        if (this.states.peek() !== null) {
+            return this.states.peek();
+        }
+        else {
+            return new titlescreen_1.TitleScreenState();
+        }
     }
     exitState() {
         if (!this.states.isEmpty()) {
@@ -783,11 +933,13 @@ class StateMachine {
         return this.states.isEmpty();
     }
     stateArray() {
-        return this.states.bottomUp();
+        return this.states.array;
     }
     update(g) {
         if (!this.states.isEmpty()) {
-            this.currentState().update(g);
+            for (let s of this.states.array) {
+                s.update(g);
+            }
         }
         else {
             this.enterState(new titlescreen_1.TitleScreenState());
@@ -795,7 +947,14 @@ class StateMachine {
     }
     draw(g) {
         if (!this.states.isEmpty()) {
-            this.currentState().draw(g);
+            for (let s of this.states.array) {
+                s.draw(g);
+            }
+        }
+    }
+    resize(g) {
+        for (let s of this.states.array) {
+            s.resize(g);
         }
     }
     joypadDown() {
@@ -825,13 +984,14 @@ class MainMenuState extends state_1.BaseState {
         super();
         this.name = "MainMenuState";
         this.option = 0;
-        this.pointer = new geometry_1.Triangle(0, 0, 25);
+        this.pointer = new geometry_1.Triangle(0, 0, 8 * main_1.pixelWidth);
         this.pointer.setAngle(Math.PI / 2);
         this.pointer.color = Color.BLACK;
-        this.newGameBox = new textbox_1.TextBox("New Game", 0, 0, main_1.WIDTH, main_1.HEIGHT / 6);
-        this.continueBox = new textbox_1.TextBox("Continue", 0, this.newGameBox.height, main_1.WIDTH, main_1.HEIGHT / 6);
-        this.settingsBox = new textbox_1.TextBox("Settings", 0, this.continueBox.height + this.continueBox.y, main_1.WIDTH, main_1.HEIGHT / 6);
-        this.newGameBox.static = false;
+        this.newGameBox = new textbox_1.TextBox("New Game", 0, 0, (0, main_1.WIDTH)(), main_1.GAME_DATA.tileHeight * 2);
+        (0, main_1.gPrint)(this.newGameBox.msg.indexOf("\n"));
+        this.continueBox = new textbox_1.TextBox("Continue", 0, this.newGameBox.height, (0, main_1.WIDTH)(), this.newGameBox.height);
+        this.settingsBox = new textbox_1.TextBox("Settings", 0, this.continueBox.height + this.continueBox.y, (0, main_1.WIDTH)(), this.continueBox.height);
+        this.newGameBox.static = true;
         this.continueBox.static = true;
         this.settingsBox.static = true;
     }
@@ -845,7 +1005,7 @@ class MainMenuState extends state_1.BaseState {
         this.newGameBox.draw(g);
         this.continueBox.draw(g);
         this.settingsBox.draw(g);
-        let offset = 16 * main_1.PIXEL_HEIGHT;
+        let offset = main_1.GAME_DATA.tileHeight;
         let arrowX = offset / 2;
         let arrowY = 0;
         switch (this.option) {
@@ -895,6 +1055,12 @@ class MainMenuState extends state_1.BaseState {
             main_1.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
         }
     }
+    resize(g) {
+        this.newGameBox.resize();
+        this.continueBox.resize();
+        this.settingsBox.resize();
+        this.pointer.setSize(8 * main_1.pixelWidth);
+    }
     update(g) { }
     joypadUp() { }
 }
@@ -914,33 +1080,38 @@ class NewGameState extends state_1.BaseState {
     constructor() {
         super();
         this.name = "NewGameState";
-        let boxHeight = main_1.HEIGHT / 4;
-        this.textbox = new textbox_1.TextBox(exports.EN_NEW_GAME, 0, main_1.HEIGHT - boxHeight, main_1.WIDTH, boxHeight);
+        let boxHeight = (0, main_1.HEIGHT)() / 4;
+        this.textbox = new textbox_1.TextBox(exports.EN_NEW_GAME, 0, (0, main_1.HEIGHT)() - boxHeight, (0, main_1.WIDTH)(), boxHeight);
         this.textbox.static = false;
     }
     update(g) {
         this.timer++;
+        if (this.lastPhase === this.phase && main_1.GAME_DATA.stateMachine.currentState() === this) {
+            this.phase++;
+            this.timer = 0;
+        }
     }
     draw(g) {
         g.background(g.color(Color.DARK_RED));
         switch (this.phase) {
+            case this.lastPhase:
+                break;
             case 0:
                 // Welcome message
                 if (!this.textbox.seen) {
                     main_1.GAME_DATA.stateMachine.enterState(new textbox_1.TextBoxState(this.textbox));
+                    this.lastPhase = this.phase;
                 }
-                this.phase = 1;
                 break;
             case 1:
                 // Press any key to continue
-                this.textbox.reset(exports.EN_CONTINUE);
                 if (!this.textbox.seen) {
-                    let boxHeight = main_1.HEIGHT / 4;
-                    this.textbox = new textbox_1.PressAnyKeyTextbox(0, main_1.HEIGHT - boxHeight, main_1.WIDTH, boxHeight);
+                    this.textbox.reset(exports.EN_CONTINUE);
+                    let boxHeight = (0, main_1.HEIGHT)() / 4;
+                    this.textbox = new textbox_1.PressAnyKeyTextbox(0, (0, main_1.HEIGHT)() - boxHeight, (0, main_1.WIDTH)(), boxHeight);
                     main_1.GAME_DATA.stateMachine.enterState(new textbox_1.PressAnyKeyTextBoxState(this.textbox));
+                    this.lastPhase = this.phase;
                 }
-                this.phase = 2;
-                this.timer = 0;
                 break;
             case 2:
                 // Exit state
@@ -951,6 +1122,10 @@ class NewGameState extends state_1.BaseState {
                 break;
         }
     }
+    resize(g) {
+        this.textbox.x = 0;
+        this.textbox.y = (0, main_1.HEIGHT)() - this.textbox.height;
+    }
     joypadDown() { }
     joypadUp() { }
 }
@@ -959,7 +1134,7 @@ exports.NewGameState = NewGameState;
 },{"../color":1,"../main":4,"./state":11,"./textbox":12}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.TILE_HEIGHT = exports.TILE_WIDTH = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
+exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
 const P5 = require("p5");
 const state_1 = require("./state");
 const Color = require("../color");
@@ -969,14 +1144,12 @@ exports.TILE_GRASS = "GRASS";
 exports.TILE_WATER = "WATER";
 exports.TILE_PIXELS_X = 16;
 exports.TILE_PIXELS_Y = 16;
-exports.TILE_WIDTH = exports.TILE_PIXELS_X * main_1.PIXEL_WIDTH;
-exports.TILE_HEIGHT = exports.TILE_PIXELS_Y * main_1.PIXEL_HEIGHT;
 class MapTile {
     constructor(mapX, mapY, tile) {
         this.mapX = mapX;
         this.mapY = mapY;
         this.tile = tile;
-        this.sprite = new P5.Image(exports.TILE_WIDTH, exports.TILE_WIDTH);
+        this.sprite = new P5.Image(main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
         this.frames = [];
         this.frameNum = 0;
         this.animated = false;
@@ -984,8 +1157,8 @@ class MapTile {
     }
     initialize() {
         this.sprite.loadPixels();
-        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.pixelWidth) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.pixelHeight) {
                 MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
             }
         }
@@ -1001,21 +1174,22 @@ class MapTile {
         this.timer++;
     }
     draw(g) {
-        g.image(this.sprite, this.mapX * exports.TILE_WIDTH, this.mapY * exports.TILE_HEIGHT);
+        g.image(this.sprite, this.mapX * main_1.GAME_DATA.tileWidth, this.mapY * main_1.GAME_DATA.tileHeight);
     }
+    resize(g) { }
     joypadDown() { }
     joypadUp() { }
     get frameTime() {
-        return Math.floor(main_1.FRAME_RATE / this.frames.length);
+        return Math.floor(main_1.GAME_DATA.frameRate / this.frames.length);
     }
     static get blankTile() {
         let tile = new MapTile(0, 0, "blank");
         return tile;
     }
     static setPixelAt(image, x, y, color) {
-        for (let i = 0; i < main_1.PIXEL_WIDTH; i++) {
-            for (let j = 0; j < main_1.PIXEL_HEIGHT; j++) {
-                let index = (x * main_1.PIXEL_WIDTH + i + (y * main_1.PIXEL_HEIGHT + j) * exports.TILE_PIXELS_X) * 4;
+        for (let i = 0; i < main_1.pixelWidth; i++) {
+            for (let j = 0; j < main_1.pixelHeight; j++) {
+                let index = (x * main_1.pixelWidth + i + (y * main_1.pixelHeight + j) * exports.TILE_PIXELS_X) * 4;
                 image.pixels[index] = color[0];
                 image.pixels[index + 1] = color[1];
                 image.pixels[index + 2] = color[2];
@@ -1025,9 +1199,9 @@ class MapTile {
     }
     static checkeredTile(x, y) {
         let tile = new MapTile(x, y, "checkered");
-        let image = new P5.Image(exports.TILE_WIDTH, exports.TILE_HEIGHT);
-        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.PIXEL_WIDTH) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.PIXEL_HEIGHT) {
+        let image = new P5.Image(main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.pixelWidth) {
+            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.pixelHeight) {
                 let index = (i + j * exports.TILE_PIXELS_X) * 4;
                 if (index % 2 === 0) {
                     MapTile.setPixelAt(image, i, j, Color.BLACK);
@@ -1057,9 +1231,6 @@ class OverworldMap {
             this.tilesY = height;
         }
         this.tiles = [];
-        if (width === undefined && height === undefined) {
-            this.initializedWithCheckeredTiles();
-        }
     }
     initialize() {
         for (let i = 0; i < this.tilesX; i++) {
@@ -1085,13 +1256,14 @@ class OverworldMap {
     draw(g) {
         for (let i = 0; i < this.tilesX; i++) {
             for (let j = 0; j < this.tilesY; j++) {
-                if (i * exports.TILE_WIDTH < g.width && j * exports.TILE_HEIGHT < g.height) {
+                if (i * main_1.GAME_DATA.tileWidth < g.width && j * main_1.GAME_DATA.tileHeight < g.height) {
                     let index = i + j * this.tilesX;
                     this.tiles[index].draw(g);
                 }
             }
         }
     }
+    resize(g) { }
     joypadDown() { }
     joypadUp() { }
 }
@@ -1109,6 +1281,7 @@ class OverworldState extends state_1.BaseState {
         g.background(0);
         this.map.draw(g);
     }
+    resize(g) { }
     joypadDown() { }
     joypadUp() { }
 }
@@ -1122,6 +1295,7 @@ const main_1 = require("../main");
 class BaseState {
     constructor() {
         this.phase = 0;
+        this.lastPhase = -1;
         this.timer = 0;
     }
     onEnter() {
@@ -1148,11 +1322,13 @@ exports.EN_CONTINUE = "Press any key to continue...";
 class TextBox extends geometry_1.Rectangle {
     constructor(msg, x, y, w, h) {
         super(x, y, w, h);
+        this.posRatio = new geometry_1.Vector(x / (0, main_1.WIDTH)(), y / (0, main_1.HEIGHT)());
+        this.dimRatio = new geometry_1.Vector(w / (0, main_1.WIDTH)(), h / (0, main_1.HEIGHT)());
         this.msg = msg.trim();
         this.static = false;
         this.color = Color.WHITE;
         this.textColor = Color.SLATE;
-        this.lineSize = w - 2 * main_1.TILE_WIDTH;
+        this.lineSize = w - 2 * main_1.GAME_DATA.tileHeight;
         this.seen = false;
     }
     reset(msg) {
@@ -1161,8 +1337,8 @@ class TextBox extends geometry_1.Rectangle {
         this.seen = false;
     }
     update(g) {
-        if (g.textSize() !== main_1.TEXT_SIZE) {
-            g.textSize(main_1.TEXT_SIZE);
+        if (g.textSize() !== main_1.GAME_DATA.textSize) {
+            g.textSize(main_1.GAME_DATA.textSize);
         }
     }
     draw(g) {
@@ -1170,13 +1346,34 @@ class TextBox extends geometry_1.Rectangle {
         g.translate(this.x, this.y);
         g.fill(g.color(this.color));
         g.stroke(g.color(12, 35, 68));
-        g.strokeWeight(4);
-        g.rect(4, 4, this.width - 8, this.height - 8, 8);
-        g.fill(g.color(this.textColor));
+        g.strokeWeight(2 * main_1.pixelWidth);
+        g.rect(2 * main_1.pixelWidth, 2 * main_1.pixelHeight, this.width - 4 * main_1.pixelWidth, this.height - 4 * main_1.pixelHeight, main_1.GAME_DATA.tileHeight / 4);
         g.noStroke();
+        g.fill(g.color(this.textColor));
         g.textAlign(g.LEFT, g.TOP);
-        g.text(this.msg, main_1.TILE_WIDTH, main_1.TILE_HEIGHT * 0.48);
+        if (this.static && this.msg.indexOf("\n") < 0) {
+            g.text(this.msg, main_1.GAME_DATA.tileWidth, this.height / 2 - (main_1.GAME_DATA.textSize * this.msg.split("\n").length) / 2);
+        }
+        else {
+            g.text(this.msg, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight * 0.48);
+        }
         g.pop();
+    }
+    resize() {
+        if (this.width !== this.dimRatio.x * (0, main_1.WIDTH)()) {
+            this.width = this.dimRatio.x * (0, main_1.WIDTH)();
+        }
+        if (this.height !== this.dimRatio.y * (0, main_1.HEIGHT)()) {
+            this.height = this.dimRatio.y * (0, main_1.HEIGHT)();
+        }
+        if (this.x !== this.posRatio.x * (0, main_1.WIDTH)()) {
+            this.x = this.posRatio.x * (0, main_1.WIDTH)();
+        }
+        if (this.y !== this.posRatio.y * (0, main_1.HEIGHT)()) {
+            this.y = this.posRatio.y * (0, main_1.HEIGHT)();
+        }
+        this.posRatio = new geometry_1.Vector(this.x / (0, main_1.WIDTH)(), this.y / (0, main_1.HEIGHT)());
+        this.dimRatio = new geometry_1.Vector(this.width / (0, main_1.WIDTH)(), this.height / (0, main_1.HEIGHT)());
     }
 }
 exports.TextBox = TextBox;
@@ -1191,7 +1388,7 @@ class TextBoxState extends state_1.BaseState {
         super();
         this.name = `TextBoxState: ${textbox.msg.slice(0, 17)}...`;
         this.textbox = textbox;
-        this.textboxArrow = new TextBoxArrow(textbox.x + textbox.width - main_1.TILE_WIDTH / 2, textbox.y + textbox.height - main_1.TILE_HEIGHT / 1.5);
+        this.textboxArrow = new TextBoxArrow(textbox.x + textbox.width - main_1.GAME_DATA.tileWidth / 2, textbox.y + textbox.height - main_1.GAME_DATA.tileHeight / 1.5);
         this.message = textbox.msg;
         this.typed = "";
         this.timer = 0;
@@ -1267,6 +1464,10 @@ class TextBoxState extends state_1.BaseState {
             this.textboxArrow.draw(g);
         }
     }
+    resize(g) {
+        this.textbox.resize();
+        this.textboxArrow = new TextBoxArrow(this.textbox.x + this.textbox.width - main_1.GAME_DATA.tileWidth / 2, this.textbox.y + this.textbox.height - main_1.GAME_DATA.tileHeight / 1.5);
+    }
     joypadDown(key) {
         if (main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B) {
             if (this.wrappable) {
@@ -1310,7 +1511,7 @@ class PressAnyKeyTextBoxState extends TextBoxState {
 exports.PressAnyKeyTextBoxState = PressAnyKeyTextBoxState;
 class TextBoxArrow extends geometry_1.Triangle {
     constructor(x, y) {
-        super(x, y, main_1.TILE_WIDTH / 3);
+        super(x, y, main_1.GAME_DATA.tileWidth / 3);
         this.setAngle(Math.PI);
         this.offset = 0;
         this.timer = 0;
@@ -1351,11 +1552,11 @@ class TitleScreenState extends state_1.BaseState {
     draw(g) {
         g.background(0);
         g.fill(255);
-        g.textSize(32);
+        g.textSize(main_1.GAME_DATA.textSize * 2);
         g.textAlign(g.CENTER, g.CENTER);
         g.text("MONSTER BATTLER", g.width / 2, g.height / 2);
         if (this.timer % 60 < 30) {
-            g.textSize(16);
+            g.textSize(main_1.GAME_DATA.textSize);
             g.text("Press A to start", g.width / 2, g.height * 0.75);
         }
         this.timer++;
@@ -1363,11 +1564,12 @@ class TitleScreenState extends state_1.BaseState {
             g.push();
             g.strokeWeight(1);
             g.stroke(255, 0, 0);
-            g.line(main_1.WIDTH / 2, 0, main_1.WIDTH / 2, main_1.HEIGHT);
-            g.line(0, main_1.HEIGHT / 2, main_1.WIDTH, main_1.HEIGHT / 2);
+            g.line((0, main_1.WIDTH)() / 2, 0, (0, main_1.WIDTH)() / 2, (0, main_1.HEIGHT)());
+            g.line(0, (0, main_1.HEIGHT)() / 2, (0, main_1.WIDTH)(), (0, main_1.HEIGHT)() / 2);
             g.pop();
         }
     }
+    resize(g) { }
     joypadDown(key) {
         (0, main_1.gPrint)("Checking buttons on title screen...");
         if ((main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B || main_1.GAME_DATA.joypad.state.START) === true) {

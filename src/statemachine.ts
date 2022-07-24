@@ -4,6 +4,7 @@ import { TitleScreenState } from "./states/titlescreen";
 import { State } from "./states/state";
 import { GAME_DATA, GameObject, DEBUG } from "./main";
 import { ASCII_KEYS } from "./joypad";
+import { Queue } from "./queue";
 
 export class StateMachine implements GameObject {
     states: Stack<State>;
@@ -17,8 +18,12 @@ export class StateMachine implements GameObject {
         this.currentState().onEnter();
     }
 
-    currentState() {
-        return this.states.peek();
+    currentState(): State {
+        if (this.states.peek() !== null) {
+            return this.states.peek() as State;
+        } else {
+            return new TitleScreenState();
+        }
     }
 
     exitState() {
@@ -33,12 +38,14 @@ export class StateMachine implements GameObject {
     }
 
     stateArray(): State[] {
-        return this.states.bottomUp();
+        return this.states.array;
     }
 
     update(g: P5) {
         if (!this.states.isEmpty()) {
-            this.currentState().update(g);
+            for (let s of this.states.array) {
+                s.update(g);
+            }
         } else {
             this.enterState(new TitleScreenState());
         }
@@ -46,7 +53,14 @@ export class StateMachine implements GameObject {
 
     draw(g: P5): void {
         if (!this.states.isEmpty()) {
-            this.currentState().draw(g);
+            for (let s of this.states.array) {
+                s.draw(g);
+            }
+        }
+    }
+    resize(g: P5): void {
+        for (let s of this.states.array) {
+            s.resize(g);
         }
     }
 

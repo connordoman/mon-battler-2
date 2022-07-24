@@ -22,6 +22,7 @@ class SplashScreenState extends state_1.BaseState {
         }
         this.timer++;
     }
+    resize(g) { }
     joypadDown() {
         //super.keyPressed(key);
         main_1.GAME_DATA.stateMachine.exitState();

@@ -33,10 +33,7 @@ class Stack {
         }
         return this.count;
     }
-    bottomUp() {
-        if (this.count === 0) {
-            return [];
-        }
+    get array() {
         return this.stack.slice(0);
     }
 }

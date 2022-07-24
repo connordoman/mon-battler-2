@@ -40,10 +40,7 @@ export class Stack<T> {
         return this.count;
     }
 
-    bottomUp(): Array<T> {
-        if (this.count === 0) {
-            return [];
-        }
+    get array() {
         return this.stack.slice(0);
     }
 }

@@ -125,6 +125,12 @@ export class Triangle extends Polygon {
         this.computeGeometry();
     }
 
+    setSize(size: number) {
+        this.width = size;
+        this.height = size * Math.sqrt(3 / 4);
+        this.computeGeometry();
+    }
+
     computeGeometry(): void {
         let a = (this.width / 2) * Math.tan(Math.PI / 6);
         let c = this.height - a;
