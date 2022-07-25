@@ -5,6 +5,7 @@ body {
     margin: 0;
     padding: 0;
     background: rgba(64, 64, 64, 1);
+    overflow-y: hidden;
 }
 
 #game-area {

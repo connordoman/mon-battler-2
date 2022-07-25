@@ -94,6 +94,8 @@ export class JoypadController {
     static leftPad: HTMLTableElement = document.createElement("table");
     static rightPad: HTMLTableElement = document.createElement("table");
 
+    static buttonPressed: boolean = false;
+
     constructor() {
         this.state = {
             ...JOYPAD_STATE,
@@ -330,25 +332,38 @@ export class JoypadController {
         elem.addEventListener("touchend", (e) => {
             JoypadController.onScreenKeyRelease(e);
         });
+        elem.addEventListener("touchmove", (e) => {
+            // absorb touch moved event
+        });
     }
 
     private static onScreenKeyPress(e: MouseEvent | TouchEvent): void {
-        let jkey = parseInt((e.target as HTMLTableCellElement).id.slice(7));
+        let button = e.target as HTMLElement;
+
+        if (button.classList.contains("active")) return;
+
+        let jkey = parseInt(button.id.slice(7));
         if (jkey) {
             GAME_DATA.key = String.fromCharCode(jkey);
             GAME_DATA.keyCode = jkey;
             GAME_DATA.joypad.pressJoypadKey();
             gPrint("Pressed: " + String.fromCharCode(jkey));
+            button.classList.add("active");
         }
     }
 
     private static onScreenKeyRelease(e: MouseEvent | TouchEvent): void {
-        let jkey = (e.target as HTMLTableCellElement).id.slice(7);
+        let button = e.target as HTMLElement;
+
+        if (!button.classList.contains("active")) return;
+
+        let jkey = button.id.slice(7);
         if (jkey) {
             GAME_DATA.joypad.releaseJoypadKey();
             GAME_DATA.key = "";
             GAME_DATA.keyCode = 0;
             gPrint("Released: " + jkey);
+            button.classList.remove("active");
         }
     }
 

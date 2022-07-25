@@ -252,23 +252,34 @@ class JoypadController {
         elem.addEventListener("touchend", (e) => {
             JoypadController.onScreenKeyRelease(e);
         });
+        elem.addEventListener("touchmove", (e) => {
+            // absorb touch moved event
+        });
     }
     static onScreenKeyPress(e) {
-        let jkey = parseInt(e.target.id.slice(7));
+        let button = e.target;
+        if (button.classList.contains("active"))
+            return;
+        let jkey = parseInt(button.id.slice(7));
         if (jkey) {
             main_1.GAME_DATA.key = String.fromCharCode(jkey);
             main_1.GAME_DATA.keyCode = jkey;
             main_1.GAME_DATA.joypad.pressJoypadKey();
             (0, main_1.gPrint)("Pressed: " + String.fromCharCode(jkey));
+            button.classList.add("active");
         }
     }
     static onScreenKeyRelease(e) {
-        let jkey = e.target.id.slice(7);
+        let button = e.target;
+        if (!button.classList.contains("active"))
+            return;
+        let jkey = button.id.slice(7);
         if (jkey) {
             main_1.GAME_DATA.joypad.releaseJoypadKey();
             main_1.GAME_DATA.key = "";
             main_1.GAME_DATA.keyCode = 0;
             (0, main_1.gPrint)("Released: " + jkey);
+            button.classList.remove("active");
         }
     }
     static deployControlsTable() {
@@ -339,3 +350,4 @@ JoypadController.centerPadStart = document.createElement("span");
 JoypadController.centerPadSelect = document.createElement("span");
 JoypadController.leftPad = document.createElement("table");
 JoypadController.rightPad = document.createElement("table");
+JoypadController.buttonPressed = false;

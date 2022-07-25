@@ -106,7 +106,7 @@ export const GAME_DATA: GameData = {
     tileHeight: pixelHeight * 16,
     textSize: pixelHeight * 10,
     frameRate: 60,
-    orientation: ORIENTATION_PORTRAIT,
+    orientation: ORIENTATION_DESKTOP,
 };
 
 // main p5 logic
@@ -170,31 +170,29 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         // draw state stack on top of everything
         if (DEBUG) {
             let states = GAME_DATA.stateMachine.stateArray();
+            let overlayString = "";
+
+            overlayString += "Orientation: " + gOrientationStr(GAME_DATA.orientation);
+            overlayString += "\n";
+            overlayString += "FPS: " + fps;
+            overlayString += "\n";
+            overlayString += "-------------";
+            overlayString += "\n";
+            overlayString += "State Stack: ";
+
+            let i = 0;
+            for (let s of states) {
+                overlayString += `\n${i++}: ${s.name}[${s.phase}]`;
+            }
+
+            let maxBoxHeight = (GAME_DATA.textSize / 2) * overlayString.split("\n").length;
 
             p5.fill(Color.SLATE_GLASS);
-            p5.rect(0, 0, WIDTH(), GAME_DATA.textSize + (states.length + 1) * (GAME_DATA.textSize / 2));
+            p5.rect(0, 0, WIDTH(), GAME_DATA.textSize + maxBoxHeight);
             p5.fill(Color.OFF_WHITE);
             p5.textSize(GAME_DATA.textSize / 2);
             p5.textAlign(p5.LEFT, p5.TOP);
-            p5.text(
-                "FPS: " + fps,
-                GAME_DATA.textSize / 4,
-                GAME_DATA.textSize / 4 + (GAME_DATA.textSize / 2) * states.length
-            );
-
-            p5.text(
-                "Orientation: " + gOrientationStr(GAME_DATA.orientation),
-                GAME_DATA.textSize / 4,
-                GAME_DATA.textSize / 4 + (GAME_DATA.textSize / 2) * (states.length + 1)
-            );
-
-            for (let i = 0; i < states.length; i++) {
-                p5.text(
-                    `${i}: ${states[i].name}[${states[i].phase}]`,
-                    GAME_DATA.textSize / 4,
-                    GAME_DATA.textSize / 4 + i * (GAME_DATA.textSize / 2)
-                );
-            }
+            p5.text(overlayString, GAME_DATA.textSize / 4, GAME_DATA.textSize / 4);
         }
     };
 

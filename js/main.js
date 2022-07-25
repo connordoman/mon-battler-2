@@ -86,7 +86,7 @@ exports.GAME_DATA = {
     tileHeight: exports.pixelHeight * 16,
     textSize: exports.pixelHeight * 10,
     frameRate: 60,
-    orientation: exports.ORIENTATION_PORTRAIT,
+    orientation: exports.ORIENTATION_DESKTOP,
 };
 // main p5 logic
 const MONSTER_BATTLER_2 = (p5) => {
@@ -136,16 +136,25 @@ const MONSTER_BATTLER_2 = (p5) => {
         // draw state stack on top of everything
         if (exports.DEBUG) {
             let states = exports.GAME_DATA.stateMachine.stateArray();
+            let overlayString = "";
+            overlayString += "Orientation: " + gOrientationStr(exports.GAME_DATA.orientation);
+            overlayString += "\n";
+            overlayString += "FPS: " + fps;
+            overlayString += "\n";
+            overlayString += "-------------";
+            overlayString += "\n";
+            overlayString += "State Stack: ";
+            let i = 0;
+            for (let s of states) {
+                overlayString += `\n${i++}: ${s.name}[${s.phase}]`;
+            }
+            let maxBoxHeight = (exports.GAME_DATA.textSize / 2) * overlayString.split("\n").length;
             p5.fill(Color.SLATE_GLASS);
-            p5.rect(0, 0, (0, exports.WIDTH)(), exports.GAME_DATA.textSize + (states.length + 1) * (exports.GAME_DATA.textSize / 2));
+            p5.rect(0, 0, (0, exports.WIDTH)(), exports.GAME_DATA.textSize + maxBoxHeight);
             p5.fill(Color.OFF_WHITE);
             p5.textSize(exports.GAME_DATA.textSize / 2);
             p5.textAlign(p5.LEFT, p5.TOP);
-            p5.text("FPS: " + fps, exports.GAME_DATA.textSize / 4, exports.GAME_DATA.textSize / 4 + (exports.GAME_DATA.textSize / 2) * states.length);
-            p5.text("Orientation: " + gOrientationStr(exports.GAME_DATA.orientation), exports.GAME_DATA.textSize / 4, exports.GAME_DATA.textSize / 4 + (exports.GAME_DATA.textSize / 2) * (states.length + 1));
-            for (let i = 0; i < states.length; i++) {
-                p5.text(`${i}: ${states[i].name}[${states[i].phase}]`, exports.GAME_DATA.textSize / 4, exports.GAME_DATA.textSize / 4 + i * (exports.GAME_DATA.textSize / 2));
-            }
+            p5.text(overlayString, exports.GAME_DATA.textSize / 4, exports.GAME_DATA.textSize / 4);
         }
     };
     p5.keyPressed = () => {
