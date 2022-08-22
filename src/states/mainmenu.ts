@@ -6,6 +6,7 @@ import { Triangle, Vector } from "../geometry";
 import { TextBox } from "./textbox";
 import { NewGameState } from "./newgame";
 import * as Color from "../color";
+import { FadeInState } from "./fade";
 
 export class MainMenuState extends BaseState {
     name: string;
@@ -88,11 +89,10 @@ export class MainMenuState extends BaseState {
                     break;
                 case 1:
                     // Continue
-                    // this.parent.exitState();
                     break;
                 case 2:
                     // Settings
-                    // this.parent.exitState();
+
                     break;
                 default:
                     break;

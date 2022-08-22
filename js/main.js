@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gConvertRemToPixels = exports.gPrint = exports.GameData = exports.HEIGHT = exports.WIDTH = exports.ACTUAL_PIXEL_HEIGHT = exports.ACTUAL_PIXEL_WIDTH = exports.pixelHeight = exports.pixelWidth = exports.gOrientationStr = exports.ORIENTATION_DESKTOP = exports.ORIENTATION_LANDSCAPE = exports.ORIENTATION_PORTRAIT = exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.MAX_PIXEL = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gGetPixelsFromRem = exports.gPrint = exports.GameData = exports.HEIGHT = exports.WIDTH = exports.ACTUAL_PIXEL_HEIGHT = exports.ACTUAL_PIXEL_WIDTH = exports.pixelHeight = exports.pixelWidth = exports.gOrientationStr = exports.ORIENTATION_DESKTOP = exports.ORIENTATION_LANDSCAPE = exports.ORIENTATION_PORTRAIT = exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.MAX_PIXEL = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
-const titlescreen_1 = require("./states/titlescreen");
 const Color = require("./color");
 const overworld_1 = require("./states/overworld");
 const joypad_1 = require("./joypad");
-exports.DEBUG = true;
-exports.MAX_PIXEL = 3;
+const splashscreen_1 = require("./states/splashscreen");
+exports.DEBUG = false;
+exports.MAX_PIXEL = 2;
 exports.GAME_WIDTH = 240;
 exports.GAME_HEIGHT = 160;
 exports.ORIENTATION_PORTRAIT = 0;
@@ -27,8 +27,8 @@ function gOrientationStr(orientation) {
     }
 }
 exports.gOrientationStr = gOrientationStr;
-exports.pixelWidth = 3;
-exports.pixelHeight = 3;
+exports.pixelWidth = exports.MAX_PIXEL;
+exports.pixelHeight = exports.MAX_PIXEL;
 const ACTUAL_PIXEL_WIDTH = (pixels) => {
     if (pixels) {
         return pixels * exports.pixelWidth;
@@ -71,10 +71,10 @@ function gPrint(...args) {
 }
 exports.gPrint = gPrint;
 // get pixels from css rem units
-function gConvertRemToPixels(rem) {
+function gGetPixelsFromRem(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
-exports.gConvertRemToPixels = gConvertRemToPixels;
+exports.gGetPixelsFromRem = gGetPixelsFromRem;
 exports.GAME_DATA = {
     canv: new P5.Element("canvas"),
     map: new overworld_1.OverworldMap(),
@@ -115,7 +115,8 @@ const MONSTER_BATTLER_2 = (p5) => {
         p5.strokeWeight(1);
         p5.textFont("monospace");
         exports.GAME_DATA.stateMachine = new statemachine_1.StateMachine();
-        exports.GAME_DATA.stateMachine.enterState(new titlescreen_1.TitleScreenState());
+        exports.GAME_DATA.stateMachine.enterState(new splashscreen_1.SplashScreenState());
+        // GAME_DATA.map.initializeFromArray(MAP_PALET_TOWN);
         joypad_1.JoypadController.deployJoypadHTML(p5);
         joypad_1.JoypadController.deployControlsTable();
     };

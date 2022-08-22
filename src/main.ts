@@ -1,13 +1,13 @@
 import * as P5 from "p5";
 import { StateMachine } from "./statemachine";
-import { TitleScreenState } from "./states/titlescreen";
 import * as Color from "./color";
-import { OverworldMap } from "./states/overworld";
+import { MAP_PALET_TOWN, OverworldMap } from "./states/overworld";
 import { JoypadController } from "./joypad";
+import { SplashScreenState } from "./states/splashscreen";
 
-export const DEBUG: boolean = true;
+export const DEBUG: boolean = false;
 
-export const MAX_PIXEL: number = 3;
+export const MAX_PIXEL: number = 2;
 export const GAME_WIDTH: number = 240;
 export const GAME_HEIGHT: number = 160;
 
@@ -28,8 +28,8 @@ export function gOrientationStr(orientation: number): string {
     }
 }
 
-export let pixelWidth: number = 3;
-export let pixelHeight: number = 3;
+export let pixelWidth: number = MAX_PIXEL;
+export let pixelHeight: number = MAX_PIXEL;
 
 export const ACTUAL_PIXEL_WIDTH = (pixels?: number): number => {
     if (pixels) {
@@ -91,7 +91,7 @@ export function gPrint(...args: any[]): void {
 }
 
 // get pixels from css rem units
-export function gConvertRemToPixels(rem: number): number {
+export function gGetPixelsFromRem(rem: number): number {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 
@@ -143,7 +143,9 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         p5.textFont("monospace");
 
         GAME_DATA.stateMachine = new StateMachine();
-        GAME_DATA.stateMachine.enterState(new TitleScreenState());
+        GAME_DATA.stateMachine.enterState(new SplashScreenState());
+
+        // GAME_DATA.map.initializeFromArray(MAP_PALET_TOWN);
 
         JoypadController.deployJoypadHTML(p5);
         JoypadController.deployControlsTable();

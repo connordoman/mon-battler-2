@@ -4,10 +4,17 @@ import { BaseState } from "./state";
 import { PressAnyKeyTextbox, TextBox, TextBoxState, PressAnyKeyTextBoxState } from "./textbox";
 import * as Color from "../color";
 import { getTextOfJSDocComment } from "typescript";
+import { OverworldState } from "./overworld";
+import { FadeInState } from "./fade";
 
 export const EN_NEW_GAME =
     "Hello! It's nice to see you. Welcome to the world of monster battling. We are going to start you off with a new game.";
-export const EN_CONTINUE = "Press any key to continue...";
+export const EN_ANY_KEY = "Press any key to continue...";
+
+export const PHASE_FADE_IN: number = 0;
+export const PHASE_NEW_GAME: number = 1;
+export const PHASE_ANY_KEY: number = 2;
+export const PHASE_OVERWORLD: number = 3;
 
 export class NewGameState extends BaseState {
     name: string;
@@ -23,43 +30,45 @@ export class NewGameState extends BaseState {
     update(g: P5): void {
         this.timer++;
 
-        if (this.lastPhase === this.phase && GAME_DATA.stateMachine.currentState() === this) {
-            this.phase++;
-            this.timer = 0;
+        this.advancePhase();
+
+        switch (this.phase) {
+            case this.lastPhase:
+                break;
+            case PHASE_FADE_IN:
+                GAME_DATA.stateMachine.enterState(new FadeInState(this));
+                this.setNextPhase(PHASE_NEW_GAME);
+                break;
+            case PHASE_NEW_GAME:
+                // Welcome message
+                if (this.timer === 120 && !this.textbox.seen) {
+                    GAME_DATA.stateMachine.enterState(new TextBoxState(this.textbox));
+                    this.setNextPhase(PHASE_ANY_KEY);
+                }
+                break;
+            case PHASE_ANY_KEY:
+                // Press any key to continue
+                if (!this.textbox.seen) {
+                    this.textbox.reset(EN_ANY_KEY);
+                    let boxHeight = HEIGHT() / 4;
+                    this.textbox = new PressAnyKeyTextbox(0, HEIGHT() - boxHeight, WIDTH(), boxHeight);
+                    GAME_DATA.stateMachine.enterState(new PressAnyKeyTextBoxState(this.textbox));
+                    this.setNextPhase(PHASE_OVERWORLD);
+                }
+                break;
+            case PHASE_OVERWORLD:
+                // Exit state
+                //if (this.timer === 60) {
+                GAME_DATA.stateMachine.exitState();
+                GAME_DATA.stateMachine.enterState(new OverworldState(GAME_DATA.map));
+            //}
+            default:
+                break;
         }
     }
 
     draw(g: P5): void {
         g.background(g.color(Color.DARK_RED));
-
-        switch (this.phase) {
-            case this.lastPhase:
-                break;
-            case 0:
-                // Welcome message
-                if (!this.textbox.seen) {
-                    GAME_DATA.stateMachine.enterState(new TextBoxState(this.textbox));
-                    this.lastPhase = this.phase;
-                }
-                break;
-            case 1:
-                // Press any key to continue
-                if (!this.textbox.seen) {
-                    this.textbox.reset(EN_CONTINUE);
-                    let boxHeight = HEIGHT() / 4;
-                    this.textbox = new PressAnyKeyTextbox(0, HEIGHT() - boxHeight, WIDTH(), boxHeight);
-                    GAME_DATA.stateMachine.enterState(new PressAnyKeyTextBoxState(this.textbox));
-                    this.lastPhase = this.phase;
-                }
-                break;
-            case 2:
-                // Exit state
-                if (this.timer === 60) {
-                    GAME_DATA.stateMachine.exitState();
-                }
-            default:
-                break;
-        }
     }
     resize(g: P5): void {
         this.textbox.x = 0;

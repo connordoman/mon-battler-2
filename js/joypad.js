@@ -207,7 +207,7 @@ class JoypadController {
     static repositionJoypad(canvas) {
         // position buttons according to game area
         let rect = canvas.getBoundingClientRect();
-        let rem1 = (0, main_1.gConvertRemToPixels)(1);
+        let rem1 = (0, main_1.gGetPixelsFromRem)(1);
         (0, main_1.gPrint)(rect.top, rect.left, rect.bottom, rect.right);
         this.centerPadStart.style.left = `${rect.right + rem1}px`;
         this.centerPadSelect.style.right = `${rect.right + rem1}px`;
@@ -223,8 +223,8 @@ class JoypadController {
                 this.centerPadSelect.style.top = `${rect.bottom + (window.innerHeight - rect.bottom) / 2 + rem1}px`;
                 break;
             case main_1.ORIENTATION_LANDSCAPE:
-                this.leftPad.style.bottom = `${(0, main_1.gConvertRemToPixels)(4)}px`;
-                this.rightPad.style.bottom = `${(0, main_1.gConvertRemToPixels)(4)}px`;
+                this.leftPad.style.bottom = `${(0, main_1.gGetPixelsFromRem)(4)}px`;
+                this.rightPad.style.bottom = `${(0, main_1.gGetPixelsFromRem)(4)}px`;
                 this.centerPadStart.style.bottom = `${rem1}px`;
                 this.centerPadSelect.style.bottom = `${rem1}px`;
                 break;

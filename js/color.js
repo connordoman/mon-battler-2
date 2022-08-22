@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getP5Color = exports.SLATE = exports.SLATE_GLASS = exports.OFF_WHITE = exports.DARK_BLUE = exports.DARK_GREEN = exports.DARK_RED = exports.LIGHT_MAGENTA = exports.LIGHT_CYAN = exports.LIGHT_YELLOW = exports.LIGHT_RED = exports.LIGHT_BLUE = exports.LIGHT_GREEN = exports.DARK_GRAY = exports.LIGHT_GRAY = exports.GRAY = exports.TRANSPARENT = exports.MAGENTA = exports.CYAN = exports.YELLOW = exports.BLUE = exports.GREEN = exports.RED = exports.BLACK = exports.WHITE = void 0;
+exports.getP5Color = exports.SLATE = exports.SLATE_GLASS = exports.OFF_WHITE = exports.DARK_BLUE = exports.DARK_GREEN = exports.DARK_RED = exports.LIGHT_MAGENTA = exports.LIGHT_CYAN = exports.LIGHT_YELLOW = exports.LIGHT_RED = exports.LIGHT_BLUE = exports.LIGHT_GREEN = exports.DARK_GRAY = exports.LIGHT_GRAY = exports.BROWN = exports.GRAY = exports.TRANSPARENT_WHITE = exports.TRANSPARENT = exports.MAGENTA = exports.CYAN = exports.YELLOW = exports.BLUE = exports.GREEN = exports.RED = exports.BLACK = exports.WHITE = void 0;
 exports.WHITE = [255, 255, 255, 255];
 exports.BLACK = [0, 0, 0, 255];
 exports.RED = [255, 0, 0, 255];
@@ -10,7 +10,9 @@ exports.YELLOW = [255, 255, 0, 255];
 exports.CYAN = [0, 255, 255, 255];
 exports.MAGENTA = [255, 0, 255, 255];
 exports.TRANSPARENT = [0, 0, 0, 0];
+exports.TRANSPARENT_WHITE = [255, 255, 255, 0];
 exports.GRAY = [128, 128, 128, 255];
+exports.BROWN = [123, 63, 0, 255];
 exports.LIGHT_GRAY = [192, 192, 192, 255];
 exports.DARK_GRAY = [64, 64, 64, 255];
 exports.LIGHT_GREEN = [155, 188, 15, 255];

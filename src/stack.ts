@@ -36,6 +36,8 @@ export class Stack<T> {
     size() {
         if (this.stack === undefined) {
             return 0;
+        } else if (this.count < 0) {
+            return (this.count = 0);
         }
         return this.count;
     }

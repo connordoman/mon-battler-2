@@ -5,9 +5,13 @@ const stack_1 = require("./stack");
 const titlescreen_1 = require("./states/titlescreen");
 const main_1 = require("./main");
 const joypad_1 = require("./joypad");
+const fade_1 = require("./states/fade");
 class StateMachine {
     constructor() {
         this.states = new stack_1.Stack();
+    }
+    get fading() {
+        return main_1.GAME_DATA.stateMachine.currentState() instanceof fade_1.FadeState;
     }
     enterState(state) {
         this.states.push(state);
@@ -21,10 +25,13 @@ class StateMachine {
             return new titlescreen_1.TitleScreenState();
         }
     }
-    exitState() {
+    exitState(into) {
         if (!this.states.isEmpty()) {
             this.currentState().onExit();
             this.states.pop();
+            if (into) {
+                this.enterState(into);
+            }
         }
     }
     noStates() {
@@ -35,12 +42,16 @@ class StateMachine {
     }
     update(g) {
         if (!this.states.isEmpty()) {
-            for (let s of this.states.array) {
-                s.update(g);
+            let arr = this.states.array;
+            for (let s = 0; s < arr.length; s++) {
+                if (this.fading && s === arr.length - 2) {
+                    continue;
+                }
+                arr[s].update(g);
             }
         }
         else {
-            this.enterState(new titlescreen_1.TitleScreenState());
+            //this.enterState(new TitleScreenState());
         }
     }
     draw(g) {

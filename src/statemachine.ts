@@ -2,15 +2,20 @@ import * as P5 from "p5";
 import { Stack } from "./stack";
 import { TitleScreenState } from "./states/titlescreen";
 import { State } from "./states/state";
-import { GAME_DATA, GameObject, DEBUG } from "./main";
+import { GAME_DATA, GameObject, DEBUG, gPrint } from "./main";
 import { ASCII_KEYS } from "./joypad";
 import { Queue } from "./queue";
+import { FadeState } from "./states/fade";
 
 export class StateMachine implements GameObject {
     states: Stack<State>;
 
     constructor() {
         this.states = new Stack<State>();
+    }
+
+    get fading(): boolean {
+        return GAME_DATA.stateMachine.currentState() instanceof FadeState;
     }
 
     enterState(state: State) {
@@ -26,10 +31,13 @@ export class StateMachine implements GameObject {
         }
     }
 
-    exitState() {
+    exitState(into?: State) {
         if (!this.states.isEmpty()) {
             this.currentState().onExit();
             this.states.pop();
+            if (into) {
+                this.enterState(into);
+            }
         }
     }
 
@@ -43,11 +51,15 @@ export class StateMachine implements GameObject {
 
     update(g: P5) {
         if (!this.states.isEmpty()) {
-            for (let s of this.states.array) {
-                s.update(g);
+            let arr = this.states.array;
+            for (let s = 0; s < arr.length; s++) {
+                if (this.fading && s === arr.length - 2) {
+                    continue;
+                }
+                arr[s].update(g);
             }
         } else {
-            this.enterState(new TitleScreenState());
+            //this.enterState(new TitleScreenState());
         }
     }
 

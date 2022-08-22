@@ -2,7 +2,7 @@ import * as P5 from "p5";
 import { Queue } from "./queue";
 import {
     GAME_DATA,
-    gConvertRemToPixels,
+    gGetPixelsFromRem,
     gPrint,
     ORIENTATION_DESKTOP,
     ORIENTATION_LANDSCAPE,
@@ -283,7 +283,7 @@ export class JoypadController {
     static repositionJoypad(canvas: HTMLCanvasElement): void {
         // position buttons according to game area
         let rect = canvas.getBoundingClientRect();
-        let rem1 = gConvertRemToPixels(1);
+        let rem1 = gGetPixelsFromRem(1);
         gPrint(rect.top, rect.left, rect.bottom, rect.right);
 
         this.centerPadStart.style.left = `${rect.right + rem1}px`;
@@ -302,8 +302,8 @@ export class JoypadController {
                 this.centerPadSelect.style.top = `${rect.bottom + (window.innerHeight - rect.bottom) / 2 + rem1}px`;
                 break;
             case ORIENTATION_LANDSCAPE:
-                this.leftPad.style.bottom = `${gConvertRemToPixels(4)}px`;
-                this.rightPad.style.bottom = `${gConvertRemToPixels(4)}px`;
+                this.leftPad.style.bottom = `${gGetPixelsFromRem(4)}px`;
+                this.rightPad.style.bottom = `${gGetPixelsFromRem(4)}px`;
                 this.centerPadStart.style.bottom = `${rem1}px`;
                 this.centerPadSelect.style.bottom = `${rem1}px`;
                 break;

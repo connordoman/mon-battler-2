@@ -1,19 +1,36 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
+exports.OverworldState = exports.OverworldMap = exports.MapTile = exports.MAP_PALET_TOWN = exports.TILE_PIXELS_Y = exports.TILE_PIXELS_X = exports.TILE_SHRUB = exports.TILE_STONE = exports.TILE_SAND = exports.TILE_WATER = exports.TILE_GRASS = exports.TILE_BLANK = void 0;
 const P5 = require("p5");
 const state_1 = require("./state");
 const Color = require("../color");
 const main_1 = require("../main");
-exports.TILE_BLANK = "BLANK";
-exports.TILE_GRASS = "GRASS";
-exports.TILE_WATER = "WATER";
+const camera_1 = require("../camera");
+exports.TILE_BLANK = 0;
+exports.TILE_GRASS = 1;
+exports.TILE_WATER = 2;
+exports.TILE_SAND = 3;
+exports.TILE_STONE = 4;
+exports.TILE_SHRUB = 5;
 exports.TILE_PIXELS_X = 16;
 exports.TILE_PIXELS_Y = 16;
+exports.MAP_PALET_TOWN = [
+    [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+];
 class MapTile {
     constructor(mapX, mapY, tile) {
         this.mapX = mapX;
         this.mapY = mapY;
+        this.x = mapX * main_1.GAME_DATA.tileWidth;
+        this.y = mapY * main_1.GAME_DATA.tileHeight;
         this.tile = tile;
         this.sprite = new P5.Image(main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
         this.frames = [];
@@ -22,12 +39,13 @@ class MapTile {
         this.timer = 0;
     }
     initialize() {
-        this.sprite.loadPixels();
-        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.pixelWidth) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.pixelHeight) {
+        /*this.sprite.loadPixels();
+
+        for (let i = 0; i < TILE_PIXELS_X; i += pixelWidth) {
+            for (let j = 0; j < TILE_PIXELS_Y; j += pixelHeight) {
                 MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
             }
-        }
+        }*/
     }
     addFrame(frame) {
         this.frames.push(frame);
@@ -40,7 +58,23 @@ class MapTile {
         this.timer++;
     }
     draw(g) {
-        g.image(this.sprite, this.mapX * main_1.GAME_DATA.tileWidth, this.mapY * main_1.GAME_DATA.tileHeight);
+        switch (this.tile) {
+            case exports.TILE_GRASS:
+                g.fill(Color.DARK_GREEN);
+                g.rect(this.x, this.y, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+                break;
+            case exports.TILE_SHRUB:
+                g.fill(Color.DARK_GREEN);
+                g.rect(this.x, this.y, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+                g.fill(Color.BROWN);
+                g.circle(this.x + main_1.GAME_DATA.tileWidth / 2, this.y + main_1.GAME_DATA.tileHeight / 2, main_1.GAME_DATA.tileWidth / 2);
+            case exports.TILE_WATER:
+                g.fill(Color.BLUE);
+                g.rect(this.x, this.y, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+                break;
+            default:
+                break;
+        }
     }
     resize(g) { }
     joypadDown() { }
@@ -49,36 +83,24 @@ class MapTile {
         return Math.floor(main_1.GAME_DATA.frameRate / this.frames.length);
     }
     static get blankTile() {
-        let tile = new MapTile(0, 0, "blank");
+        let tile = new MapTile(0, 0, exports.TILE_BLANK);
         return tile;
     }
-    static setPixelAt(image, x, y, color) {
-        for (let i = 0; i < main_1.pixelWidth; i++) {
-            for (let j = 0; j < main_1.pixelHeight; j++) {
-                let index = (x * main_1.pixelWidth + i + (y * main_1.pixelHeight + j) * exports.TILE_PIXELS_X) * 4;
-                image.pixels[index] = color[0];
-                image.pixels[index + 1] = color[1];
-                image.pixels[index + 2] = color[2];
-                image.pixels[index + 3] = color[3];
-            }
+    toString() {
+        switch (this.tile) {
+            case exports.TILE_GRASS:
+                return "GRASS";
+            case exports.TILE_WATER:
+                return "WATER";
+            case exports.TILE_SAND:
+                return "SAND";
+            case exports.TILE_STONE:
+                return "STONE";
+            case exports.TILE_SHRUB:
+                return "SHRUB";
+            default:
+                return "BLANK";
         }
-    }
-    static checkeredTile(x, y) {
-        let tile = new MapTile(x, y, "checkered");
-        let image = new P5.Image(main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
-        for (let i = 0; i < exports.TILE_PIXELS_X; i += main_1.pixelWidth) {
-            for (let j = 0; j < exports.TILE_PIXELS_Y; j += main_1.pixelHeight) {
-                let index = (i + j * exports.TILE_PIXELS_X) * 4;
-                if (index % 2 === 0) {
-                    MapTile.setPixelAt(image, i, j, Color.BLACK);
-                }
-                else {
-                    MapTile.setPixelAt(image, i, j, Color.WHITE);
-                }
-            }
-        }
-        tile.sprite = image;
-        return tile;
     }
 }
 exports.MapTile = MapTile;
@@ -101,37 +123,33 @@ class OverworldMap {
     initialize() {
         for (let i = 0; i < this.tilesX; i++) {
             for (let j = 0; j < this.tilesY; j++) {
-                let index = i + j * this.tilesX;
-                this.tiles[index] = MapTile.blankTile;
+                this.tiles[i][j] = MapTile.blankTile;
             }
         }
     }
-    initializedWithCheckeredTiles() {
-        for (let i = 0; i < this.tilesX; i++) {
-            for (let j = 0; j < this.tilesY; j++) {
-                let index = i + j * this.tilesX;
-                this.tiles[index] = MapTile.checkeredTile(i, j);
+    initializeFromArray(mapData) {
+        let maxWidth = 0;
+        let row = [];
+        let tCount = 0;
+        for (let i = 0; i < mapData.length; i++) {
+            if (mapData[i].length > maxWidth) {
+                maxWidth = mapData[i].length;
             }
-        }
-    }
-    update(g) {
-        for (let tile of this.tiles) {
-            tile.update(g);
-        }
-    }
-    draw(g) {
-        for (let i = 0; i < this.tilesX; i++) {
-            for (let j = 0; j < this.tilesY; j++) {
-                if (i * main_1.GAME_DATA.tileWidth < g.width && j * main_1.GAME_DATA.tileHeight < g.height) {
-                    let index = i + j * this.tilesX;
-                    this.tiles[index].draw(g);
-                }
+            for (let j = 0; j < mapData[i].length; j++) {
+                let tile = new MapTile(j, i, mapData[i][j]);
+                row.push(tile);
+                tCount++;
+                console.log("Adding " + tile.toString() + " at " + j + ", " + i);
             }
+            this.tiles.push(row);
         }
+        console.log(`Tiles length: ${tCount}`);
+        this.tilesX = maxWidth;
+        this.tilesY = mapData.length;
     }
-    resize(g) { }
-    joypadDown() { }
-    joypadUp() { }
+    tileAt(x, y) {
+        return this.tiles[x][y];
+    }
 }
 exports.OverworldMap = OverworldMap;
 class OverworldState extends state_1.BaseState {
@@ -139,15 +157,18 @@ class OverworldState extends state_1.BaseState {
         super();
         this.name = "OverworldState";
         this.map = map;
+        this.camera = new camera_1.Camera(0, 0);
     }
     update(g) {
-        this.map.update(g);
+        this.camera.update(g);
     }
     draw(g) {
         g.background(0);
-        this.map.draw(g);
+        this.camera.draw(g);
     }
-    resize(g) { }
+    resize(g) {
+        this.camera.resize(g);
+    }
     joypadDown() { }
     joypadUp() { }
 }

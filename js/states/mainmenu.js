@@ -69,11 +69,9 @@ class MainMenuState extends state_1.BaseState {
                     break;
                 case 1:
                     // Continue
-                    // this.parent.exitState();
                     break;
                 case 2:
                     // Settings
-                    // this.parent.exitState();
                     break;
                 default:
                     break;

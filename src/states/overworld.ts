@@ -1,18 +1,36 @@
 import * as P5 from "p5";
 import { BaseState } from "./state";
 import * as Color from "../color";
-import { GAME_DATA, GameObject, pixelHeight, pixelWidth } from "../main";
+import { GAME_DATA, GameObject, pixelHeight, pixelWidth, gPrint } from "../main";
+import { Camera } from "../camera";
 
-export const TILE_BLANK: string = "BLANK";
-export const TILE_GRASS: string = "GRASS";
-export const TILE_WATER: string = "WATER";
+export const TILE_BLANK: number = 0;
+export const TILE_GRASS: number = 1;
+export const TILE_WATER: number = 2;
+export const TILE_SAND: number = 3;
+export const TILE_STONE: number = 4;
+export const TILE_SHRUB: number = 5;
 export const TILE_PIXELS_X: number = 16;
 export const TILE_PIXELS_Y: number = 16;
 
+export const MAP_PALET_TOWN: number[][] = [
+    [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
+    [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+];
+
 export class MapTile implements GameObject {
+    x: number;
+    y: number;
     mapX: number;
     mapY: number;
-    tile: string;
+    tile: number;
     sprite: P5.Image;
 
     frames: P5.Image[];
@@ -20,9 +38,11 @@ export class MapTile implements GameObject {
     animated: boolean;
     timer: number;
 
-    constructor(mapX: number, mapY: number, tile: string) {
+    constructor(mapX: number, mapY: number, tile: number) {
         this.mapX = mapX;
         this.mapY = mapY;
+        this.x = mapX * GAME_DATA.tileWidth;
+        this.y = mapY * GAME_DATA.tileHeight;
         this.tile = tile;
         this.sprite = new P5.Image(GAME_DATA.tileWidth, GAME_DATA.tileHeight);
 
@@ -33,13 +53,13 @@ export class MapTile implements GameObject {
     }
 
     initialize() {
-        this.sprite.loadPixels();
+        /*this.sprite.loadPixels();
 
         for (let i = 0; i < TILE_PIXELS_X; i += pixelWidth) {
             for (let j = 0; j < TILE_PIXELS_Y; j += pixelHeight) {
                 MapTile.setPixelAt(this.sprite, i, j, Color.BLACK);
             }
-        }
+        }*/
     }
 
     addFrame(frame: P5.Image) {
@@ -56,7 +76,23 @@ export class MapTile implements GameObject {
     }
 
     draw(g: P5): void {
-        g.image(this.sprite, this.mapX * GAME_DATA.tileWidth, this.mapY * GAME_DATA.tileHeight);
+        switch (this.tile) {
+            case TILE_GRASS:
+                g.fill(Color.DARK_GREEN);
+                g.rect(this.x, this.y, GAME_DATA.tileWidth, GAME_DATA.tileHeight);
+                break;
+            case TILE_SHRUB:
+                g.fill(Color.DARK_GREEN);
+                g.rect(this.x, this.y, GAME_DATA.tileWidth, GAME_DATA.tileHeight);
+                g.fill(Color.BROWN);
+                g.circle(this.x + GAME_DATA.tileWidth / 2, this.y + GAME_DATA.tileHeight / 2, GAME_DATA.tileWidth / 2);
+            case TILE_WATER:
+                g.fill(Color.BLUE);
+                g.rect(this.x, this.y, GAME_DATA.tileWidth, GAME_DATA.tileHeight);
+                break;
+            default:
+                break;
+        }
     }
     resize(g: P5): void {}
 
@@ -69,44 +105,32 @@ export class MapTile implements GameObject {
     }
 
     static get blankTile(): MapTile {
-        let tile = new MapTile(0, 0, "blank");
+        let tile = new MapTile(0, 0, TILE_BLANK);
         return tile;
     }
 
-    static setPixelAt(image: P5.Image, x: number, y: number, color: Color.Color) {
-        for (let i = 0; i < pixelWidth; i++) {
-            for (let j = 0; j < pixelHeight; j++) {
-                let index = (x * pixelWidth + i + (y * pixelHeight + j) * TILE_PIXELS_X) * 4;
-                image.pixels[index] = color[0];
-                image.pixels[index + 1] = color[1];
-                image.pixels[index + 2] = color[2];
-                image.pixels[index + 3] = color[3];
-            }
+    toString(): string {
+        switch (this.tile) {
+            case TILE_GRASS:
+                return "GRASS";
+            case TILE_WATER:
+                return "WATER";
+            case TILE_SAND:
+                return "SAND";
+            case TILE_STONE:
+                return "STONE";
+            case TILE_SHRUB:
+                return "SHRUB";
+            default:
+                return "BLANK";
         }
-    }
-
-    static checkeredTile(x: number, y: number): MapTile {
-        let tile = new MapTile(x, y, "checkered");
-        let image = new P5.Image(GAME_DATA.tileWidth, GAME_DATA.tileHeight);
-        for (let i = 0; i < TILE_PIXELS_X; i += pixelWidth) {
-            for (let j = 0; j < TILE_PIXELS_Y; j += pixelHeight) {
-                let index = (i + j * TILE_PIXELS_X) * 4;
-                if (index % 2 === 0) {
-                    MapTile.setPixelAt(image, i, j, Color.BLACK);
-                } else {
-                    MapTile.setPixelAt(image, i, j, Color.WHITE);
-                }
-            }
-        }
-        tile.sprite = image;
-        return tile;
     }
 }
 
-export class OverworldMap implements GameObject {
+export class OverworldMap {
     tilesX: number;
     tilesY: number;
-    tiles: MapTile[];
+    tiles: MapTile[][];
 
     constructor(width?: number, height?: number) {
         if (width === undefined) {
@@ -126,62 +150,59 @@ export class OverworldMap implements GameObject {
     initialize(): void {
         for (let i = 0; i < this.tilesX; i++) {
             for (let j = 0; j < this.tilesY; j++) {
-                let index = i + j * this.tilesX;
-                this.tiles[index] = MapTile.blankTile;
+                this.tiles[i][j] = MapTile.blankTile;
             }
         }
     }
 
-    initializedWithCheckeredTiles(): void {
-        for (let i = 0; i < this.tilesX; i++) {
-            for (let j = 0; j < this.tilesY; j++) {
-                let index = i + j * this.tilesX;
-                this.tiles[index] = MapTile.checkeredTile(i, j);
+    initializeFromArray(mapData: number[][]): void {
+        let maxWidth = 0;
+        let row: MapTile[] = [];
+        let tCount = 0;
+        for (let i = 0; i < mapData.length; i++) {
+            if (mapData[i].length > maxWidth) {
+                maxWidth = mapData[i].length;
             }
-        }
-    }
-
-    update(g: P5): void {
-        for (let tile of this.tiles) {
-            tile.update(g);
-        }
-    }
-
-    draw(g: P5): void {
-        for (let i = 0; i < this.tilesX; i++) {
-            for (let j = 0; j < this.tilesY; j++) {
-                if (i * GAME_DATA.tileWidth < g.width && j * GAME_DATA.tileHeight < g.height) {
-                    let index = i + j * this.tilesX;
-                    this.tiles[index].draw(g);
-                }
+            for (let j = 0; j < mapData[i].length; j++) {
+                let tile = new MapTile(j, i, mapData[i][j]);
+                row.push(tile);
+                tCount++;
+                console.log("Adding " + tile.toString() + " at " + j + ", " + i);
             }
+            this.tiles.push(row);
         }
+        console.log(`Tiles length: ${tCount}`);
+        this.tilesX = maxWidth;
+        this.tilesY = mapData.length;
     }
 
-    resize(g: P5): void {}
-
-    joypadDown(): void {}
-    joypadUp(): void {}
+    tileAt(x: number, y: number): MapTile {
+        return this.tiles[x][y];
+    }
 }
 
 export class OverworldState extends BaseState {
     name: string;
     map: OverworldMap;
+    camera: Camera;
 
     constructor(map: OverworldMap) {
         super();
         this.name = "OverworldState";
         this.map = map;
+        this.camera = new Camera(0, 0);
     }
 
     update(g: P5): void {
-        this.map.update(g);
+        this.camera.update(g);
     }
     draw(g: P5): void {
         g.background(0);
-        this.map.draw(g);
+        this.camera.draw(g);
     }
-    resize(g: P5): void {}
+    resize(g: P5): void {
+        this.camera.resize(g);
+    }
     joypadDown(): void {}
     joypadUp(): void {}
 }
