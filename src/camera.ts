@@ -1,8 +1,9 @@
 import * as P5 from "p5";
-import { GameObject, gPrint, HEIGHT, WIDTH } from "./main";
+import { ACTUAL_PIXEL_HEIGHT, GameObject, GAME_DATA, gPrint, HEIGHT, WIDTH } from "./main";
 import { Rectangle } from "./geometry";
-import { MapTile, MAP_PALET_TOWN, OverworldMap } from "./states/overworld";
+import { MapTile, MAP_PALET_TOWN, OverworldMap, TILE_PIXELS_Y } from "./states/overworld";
 import { Queue } from "./queue";
+import { JOYPAD } from "./joypad";
 
 export class Camera extends Rectangle implements GameObject {
     offsetX: number;
@@ -35,10 +36,11 @@ export class Camera extends Rectangle implements GameObject {
     }
 
     update(g: P5): void {
-        if (this.map.tiles.length == 0) {
+        if (this.map.tiles.length == 0 || this.drawQueue.size > 0) {
             return;
         }
 
+        let count = 0;
         for (let row of this.map.tiles) {
             for (let tile of row) {
                 if (
@@ -51,18 +53,17 @@ export class Camera extends Rectangle implements GameObject {
                     this.drawQueue.push(tile);
                 }
             }
+            count++;
         }
 
         this.updateCount++;
     }
     draw(g: P5): void {
-        gPrint(`Drawing ${this.drawQueue.size} tiles...`);
         while (this.drawQueue.isEmpty() === false) {
             this.drawQueue.pop().draw(g);
             //break;
         }
-        gPrint(`${this.drawQueue.size} tiles remaining.`);
-        this.drawQueue.clear();
+        //this.drawQueue.clear();
         console.log(this.updateCount + " update(s).");
         this.updateCount = 0;
     }
@@ -70,6 +71,19 @@ export class Camera extends Rectangle implements GameObject {
         this.width = WIDTH();
         this.height = HEIGHT();
     }
-    joypadDown(key: string): void {}
+    joypadDown(key: string): void {
+        if (GAME_DATA.joypad.state.UP) {
+            this.move(0, -GAME_DATA.tileHeight);
+        }
+        if (GAME_DATA.joypad.state.DOWN) {
+            this.move(0, GAME_DATA.tileHeight);
+        }
+        if (GAME_DATA.joypad.state.LEFT) {
+            this.move(-GAME_DATA.tileWidth, 0);
+        }
+        if (GAME_DATA.joypad.state.RIGHT) {
+            this.move(GAME_DATA.tileWidth, 0);
+        }
+    }
     joypadUp(key: string): void {}
 }

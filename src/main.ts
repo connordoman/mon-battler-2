@@ -2,10 +2,10 @@ import * as P5 from "p5";
 import { StateMachine } from "./statemachine";
 import * as Color from "./color";
 import { MAP_PALET_TOWN, OverworldMap } from "./states/overworld";
-import { JoypadController } from "./joypad";
+import { ASCII_KEYS, JoypadController } from "./joypad";
 import { SplashScreenState } from "./states/splashscreen";
 
-export const DEBUG: boolean = false;
+export const DEBUG: boolean = true;
 
 export const MAX_PIXEL: number = 2;
 export const GAME_WIDTH: number = 240;
@@ -42,6 +42,20 @@ export const ACTUAL_PIXEL_HEIGHT = (pixels?: number): number => {
         return pixels * pixelHeight;
     }
     return GAME_HEIGHT * pixelHeight;
+};
+
+export const GAME_DATA: GameData = {
+    canv: new P5.Element("canvas"),
+    map: new OverworldMap(),
+    stateMachine: new StateMachine(),
+    joypad: new JoypadController(),
+    key: "",
+    keyCode: 0,
+    tileWidth: pixelWidth * 16,
+    tileHeight: pixelHeight * 16,
+    textSize: pixelHeight * 10,
+    frameRate: 60,
+    orientation: ORIENTATION_DESKTOP,
 };
 export const WIDTH = () => ACTUAL_PIXEL_WIDTH();
 export const HEIGHT = () => ACTUAL_PIXEL_HEIGHT();
@@ -95,19 +109,39 @@ export function gGetPixelsFromRem(rem: number): number {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 
-export const GAME_DATA: GameData = {
-    canv: new P5.Element("canvas"),
-    map: new OverworldMap(),
-    stateMachine: new StateMachine(),
-    joypad: new JoypadController(),
-    key: "",
-    keyCode: 0,
-    tileWidth: pixelWidth * 16,
-    tileHeight: pixelHeight * 16,
-    textSize: pixelHeight * 10,
-    frameRate: 60,
-    orientation: ORIENTATION_DESKTOP,
-};
+// current key string
+export function gGetKeyString(): string {
+    let k: string;
+    switch (GAME_DATA.keyCode) {
+        case ASCII_KEYS.escape:
+            k = "ESCAPE";
+            break;
+        case ASCII_KEYS.enter:
+            k = "ENTER";
+            break;
+        case ASCII_KEYS.backspace:
+            k = "BACKSPACE";
+            break;
+        case ASCII_KEYS.delete:
+            k = "DELETE";
+            break;
+        case ASCII_KEYS.up:
+            k = "UP";
+            break;
+        case ASCII_KEYS.down:
+            k = "DOWN";
+            break;
+        case ASCII_KEYS.left:
+            k = "LEFT";
+            break;
+        case ASCII_KEYS.right:
+            k = "RIGHT";
+            break;
+        default:
+            k = GAME_DATA.key;
+    }
+    return `${k}, ${GAME_DATA.keyCode}`;
+}
 
 // main p5 logic
 export const MONSTER_BATTLER_2 = (p5: P5) => {
@@ -199,6 +233,11 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
     };
 
     p5.keyPressed = () => {
+        if (p5.keyCode === p5.ESCAPE) {
+            console.log("Exiting...");
+            p5.noLoop();
+        }
+
         GAME_DATA.key = p5.key;
         GAME_DATA.keyCode = p5.keyCode;
         GAME_DATA.joypad.pressJoypadKey();

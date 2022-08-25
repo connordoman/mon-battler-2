@@ -130,20 +130,17 @@ class OverworldMap {
     initializeFromArray(mapData) {
         let maxWidth = 0;
         let row = [];
-        let tCount = 0;
         for (let i = 0; i < mapData.length; i++) {
+            row = [];
             if (mapData[i].length > maxWidth) {
                 maxWidth = mapData[i].length;
             }
             for (let j = 0; j < mapData[i].length; j++) {
                 let tile = new MapTile(j, i, mapData[i][j]);
                 row.push(tile);
-                tCount++;
-                console.log("Adding " + tile.toString() + " at " + j + ", " + i);
             }
             this.tiles.push(row);
         }
-        console.log(`Tiles length: ${tCount}`);
         this.tilesX = maxWidth;
         this.tilesY = mapData.length;
     }

@@ -24,9 +24,10 @@ class Camera extends geometry_1.Rectangle {
         this.y = y;
     }
     update(g) {
-        if (this.map.tiles.length == 0) {
+        if (this.map.tiles.length == 0 || this.drawQueue.size > 0) {
             return;
         }
+        let count = 0;
         for (let row of this.map.tiles) {
             for (let tile of row) {
                 if (tile.x >= this.x &&
@@ -37,17 +38,16 @@ class Camera extends geometry_1.Rectangle {
                     this.drawQueue.push(tile);
                 }
             }
+            count++;
         }
         this.updateCount++;
     }
     draw(g) {
-        (0, main_1.gPrint)(`Drawing ${this.drawQueue.size} tiles...`);
         while (this.drawQueue.isEmpty() === false) {
             this.drawQueue.pop().draw(g);
             //break;
         }
-        (0, main_1.gPrint)(`${this.drawQueue.size} tiles remaining.`);
-        this.drawQueue.clear();
+        //this.drawQueue.clear();
         console.log(this.updateCount + " update(s).");
         this.updateCount = 0;
     }
@@ -55,7 +55,20 @@ class Camera extends geometry_1.Rectangle {
         this.width = (0, main_1.WIDTH)();
         this.height = (0, main_1.HEIGHT)();
     }
-    joypadDown(key) { }
+    joypadDown(key) {
+        if (main_1.GAME_DATA.joypad.state.UP) {
+            this.move(0, -main_1.GAME_DATA.tileHeight);
+        }
+        if (main_1.GAME_DATA.joypad.state.DOWN) {
+            this.move(0, main_1.GAME_DATA.tileHeight);
+        }
+        if (main_1.GAME_DATA.joypad.state.LEFT) {
+            this.move(-main_1.GAME_DATA.tileWidth, 0);
+        }
+        if (main_1.GAME_DATA.joypad.state.RIGHT) {
+            this.move(main_1.GAME_DATA.tileWidth, 0);
+        }
+    }
     joypadUp(key) { }
 }
 exports.Camera = Camera;

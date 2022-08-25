@@ -265,7 +265,7 @@ class JoypadController {
             main_1.GAME_DATA.key = String.fromCharCode(jkey);
             main_1.GAME_DATA.keyCode = jkey;
             main_1.GAME_DATA.joypad.pressJoypadKey();
-            (0, main_1.gPrint)("Pressed: " + String.fromCharCode(jkey));
+            (0, main_1.gPrint)("Pressed: " + (0, main_1.gGetKeyString)());
             button.classList.add("active");
         }
     }
@@ -275,10 +275,10 @@ class JoypadController {
             return;
         let jkey = button.id.slice(7);
         if (jkey) {
+            (0, main_1.gPrint)("Released: " + (0, main_1.gGetKeyString)());
             main_1.GAME_DATA.joypad.releaseJoypadKey();
             main_1.GAME_DATA.key = "";
             main_1.GAME_DATA.keyCode = 0;
-            (0, main_1.gPrint)("Released: " + jkey);
             button.classList.remove("active");
         }
     }

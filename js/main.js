@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gGetPixelsFromRem = exports.gPrint = exports.GameData = exports.HEIGHT = exports.WIDTH = exports.ACTUAL_PIXEL_HEIGHT = exports.ACTUAL_PIXEL_WIDTH = exports.pixelHeight = exports.pixelWidth = exports.gOrientationStr = exports.ORIENTATION_DESKTOP = exports.ORIENTATION_LANDSCAPE = exports.ORIENTATION_PORTRAIT = exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.MAX_PIXEL = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.gGetKeyString = exports.gGetPixelsFromRem = exports.gPrint = exports.GameData = exports.HEIGHT = exports.WIDTH = exports.GAME_DATA = exports.ACTUAL_PIXEL_HEIGHT = exports.ACTUAL_PIXEL_WIDTH = exports.pixelHeight = exports.pixelWidth = exports.gOrientationStr = exports.ORIENTATION_DESKTOP = exports.ORIENTATION_LANDSCAPE = exports.ORIENTATION_PORTRAIT = exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.MAX_PIXEL = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
 const Color = require("./color");
 const overworld_1 = require("./states/overworld");
 const joypad_1 = require("./joypad");
 const splashscreen_1 = require("./states/splashscreen");
-exports.DEBUG = false;
+exports.DEBUG = true;
 exports.MAX_PIXEL = 2;
 exports.GAME_WIDTH = 240;
 exports.GAME_HEIGHT = 160;
@@ -43,6 +43,19 @@ const ACTUAL_PIXEL_HEIGHT = (pixels) => {
     return exports.GAME_HEIGHT * exports.pixelHeight;
 };
 exports.ACTUAL_PIXEL_HEIGHT = ACTUAL_PIXEL_HEIGHT;
+exports.GAME_DATA = {
+    canv: new P5.Element("canvas"),
+    map: new overworld_1.OverworldMap(),
+    stateMachine: new statemachine_1.StateMachine(),
+    joypad: new joypad_1.JoypadController(),
+    key: "",
+    keyCode: 0,
+    tileWidth: exports.pixelWidth * 16,
+    tileHeight: exports.pixelHeight * 16,
+    textSize: exports.pixelHeight * 10,
+    frameRate: 60,
+    orientation: exports.ORIENTATION_DESKTOP,
+};
 const WIDTH = () => (0, exports.ACTUAL_PIXEL_WIDTH)();
 exports.WIDTH = WIDTH;
 const HEIGHT = () => (0, exports.ACTUAL_PIXEL_HEIGHT)();
@@ -75,19 +88,37 @@ function gGetPixelsFromRem(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 exports.gGetPixelsFromRem = gGetPixelsFromRem;
-exports.GAME_DATA = {
-    canv: new P5.Element("canvas"),
-    map: new overworld_1.OverworldMap(),
-    stateMachine: new statemachine_1.StateMachine(),
-    joypad: new joypad_1.JoypadController(),
-    key: "",
-    keyCode: 0,
-    tileWidth: exports.pixelWidth * 16,
-    tileHeight: exports.pixelHeight * 16,
-    textSize: exports.pixelHeight * 10,
-    frameRate: 60,
-    orientation: exports.ORIENTATION_DESKTOP,
-};
+// current key string
+function gGetKeyString() {
+    let k;
+    switch (exports.GAME_DATA.keyCode) {
+        case joypad_1.ASCII_KEYS.enter:
+            k = "ENTER";
+            break;
+        case joypad_1.ASCII_KEYS.backspace:
+            k = "BACKSPACE";
+            break;
+        case joypad_1.ASCII_KEYS.delete:
+            k = "DELETE";
+            break;
+        case joypad_1.ASCII_KEYS.up:
+            k = "UP";
+            break;
+        case joypad_1.ASCII_KEYS.down:
+            k = "DOWN";
+            break;
+        case joypad_1.ASCII_KEYS.left:
+            k = "LEFT";
+            break;
+        case joypad_1.ASCII_KEYS.right:
+            k = "RIGHT";
+            break;
+        default:
+            k = exports.GAME_DATA.key;
+    }
+    return `${k}, ${exports.GAME_DATA.keyCode}`;
+}
+exports.gGetKeyString = gGetKeyString;
 // main p5 logic
 const MONSTER_BATTLER_2 = (p5) => {
     let keyTimer = 0;
@@ -159,6 +190,10 @@ const MONSTER_BATTLER_2 = (p5) => {
         }
     };
     p5.keyPressed = () => {
+        if (p5.keyCode === p5.ESCAPE) {
+            console.log("Exiting...");
+            p5.noLoop();
+        }
         exports.GAME_DATA.key = p5.key;
         exports.GAME_DATA.keyCode = p5.keyCode;
         exports.GAME_DATA.joypad.pressJoypadKey();

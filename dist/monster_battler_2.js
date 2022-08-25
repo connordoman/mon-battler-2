@@ -25,9 +25,10 @@ class Camera extends geometry_1.Rectangle {
         this.y = y;
     }
     update(g) {
-        if (this.map.tiles.length == 0) {
+        if (this.map.tiles.length == 0 || this.drawQueue.size > 0) {
             return;
         }
+        let count = 0;
         for (let row of this.map.tiles) {
             for (let tile of row) {
                 if (tile.x >= this.x &&
@@ -38,17 +39,16 @@ class Camera extends geometry_1.Rectangle {
                     this.drawQueue.push(tile);
                 }
             }
+            count++;
         }
         this.updateCount++;
     }
     draw(g) {
-        (0, main_1.gPrint)(`Drawing ${this.drawQueue.size} tiles...`);
         while (this.drawQueue.isEmpty() === false) {
             this.drawQueue.pop().draw(g);
             //break;
         }
-        (0, main_1.gPrint)(`${this.drawQueue.size} tiles remaining.`);
-        this.drawQueue.clear();
+        //this.drawQueue.clear();
         console.log(this.updateCount + " update(s).");
         this.updateCount = 0;
     }
@@ -56,7 +56,20 @@ class Camera extends geometry_1.Rectangle {
         this.width = (0, main_1.WIDTH)();
         this.height = (0, main_1.HEIGHT)();
     }
-    joypadDown(key) { }
+    joypadDown(key) {
+        if (main_1.GAME_DATA.joypad.state.UP) {
+            this.move(0, -main_1.GAME_DATA.tileHeight);
+        }
+        if (main_1.GAME_DATA.joypad.state.DOWN) {
+            this.move(0, main_1.GAME_DATA.tileHeight);
+        }
+        if (main_1.GAME_DATA.joypad.state.LEFT) {
+            this.move(-main_1.GAME_DATA.tileWidth, 0);
+        }
+        if (main_1.GAME_DATA.joypad.state.RIGHT) {
+            this.move(main_1.GAME_DATA.tileWidth, 0);
+        }
+    }
     joypadUp(key) { }
 }
 exports.Camera = Camera;
@@ -513,7 +526,7 @@ class JoypadController {
             main_1.GAME_DATA.key = String.fromCharCode(jkey);
             main_1.GAME_DATA.keyCode = jkey;
             main_1.GAME_DATA.joypad.pressJoypadKey();
-            (0, main_1.gPrint)("Pressed: " + String.fromCharCode(jkey));
+            (0, main_1.gPrint)("Pressed: " + (0, main_1.gGetKeyString)());
             button.classList.add("active");
         }
     }
@@ -523,10 +536,10 @@ class JoypadController {
             return;
         let jkey = button.id.slice(7);
         if (jkey) {
+            (0, main_1.gPrint)("Released: " + (0, main_1.gGetKeyString)());
             main_1.GAME_DATA.joypad.releaseJoypadKey();
             main_1.GAME_DATA.key = "";
             main_1.GAME_DATA.keyCode = 0;
-            (0, main_1.gPrint)("Released: " + jkey);
             button.classList.remove("active");
         }
     }
@@ -603,14 +616,14 @@ JoypadController.buttonPressed = false;
 },{"./main":6,"./queue":7}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONSTER_BATTLER_2 = exports.GAME_DATA = exports.gGetPixelsFromRem = exports.gPrint = exports.GameData = exports.HEIGHT = exports.WIDTH = exports.ACTUAL_PIXEL_HEIGHT = exports.ACTUAL_PIXEL_WIDTH = exports.pixelHeight = exports.pixelWidth = exports.gOrientationStr = exports.ORIENTATION_DESKTOP = exports.ORIENTATION_LANDSCAPE = exports.ORIENTATION_PORTRAIT = exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.MAX_PIXEL = exports.DEBUG = void 0;
+exports.MONSTER_BATTLER_2 = exports.gGetKeyString = exports.gGetPixelsFromRem = exports.gPrint = exports.GameData = exports.HEIGHT = exports.WIDTH = exports.GAME_DATA = exports.ACTUAL_PIXEL_HEIGHT = exports.ACTUAL_PIXEL_WIDTH = exports.pixelHeight = exports.pixelWidth = exports.gOrientationStr = exports.ORIENTATION_DESKTOP = exports.ORIENTATION_LANDSCAPE = exports.ORIENTATION_PORTRAIT = exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.MAX_PIXEL = exports.DEBUG = void 0;
 const P5 = require("p5");
 const statemachine_1 = require("./statemachine");
 const Color = require("./color");
 const overworld_1 = require("./states/overworld");
 const joypad_1 = require("./joypad");
 const splashscreen_1 = require("./states/splashscreen");
-exports.DEBUG = false;
+exports.DEBUG = true;
 exports.MAX_PIXEL = 2;
 exports.GAME_WIDTH = 240;
 exports.GAME_HEIGHT = 160;
@@ -646,6 +659,19 @@ const ACTUAL_PIXEL_HEIGHT = (pixels) => {
     return exports.GAME_HEIGHT * exports.pixelHeight;
 };
 exports.ACTUAL_PIXEL_HEIGHT = ACTUAL_PIXEL_HEIGHT;
+exports.GAME_DATA = {
+    canv: new P5.Element("canvas"),
+    map: new overworld_1.OverworldMap(),
+    stateMachine: new statemachine_1.StateMachine(),
+    joypad: new joypad_1.JoypadController(),
+    key: "",
+    keyCode: 0,
+    tileWidth: exports.pixelWidth * 16,
+    tileHeight: exports.pixelHeight * 16,
+    textSize: exports.pixelHeight * 10,
+    frameRate: 60,
+    orientation: exports.ORIENTATION_DESKTOP,
+};
 const WIDTH = () => (0, exports.ACTUAL_PIXEL_WIDTH)();
 exports.WIDTH = WIDTH;
 const HEIGHT = () => (0, exports.ACTUAL_PIXEL_HEIGHT)();
@@ -678,19 +704,37 @@ function gGetPixelsFromRem(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 exports.gGetPixelsFromRem = gGetPixelsFromRem;
-exports.GAME_DATA = {
-    canv: new P5.Element("canvas"),
-    map: new overworld_1.OverworldMap(),
-    stateMachine: new statemachine_1.StateMachine(),
-    joypad: new joypad_1.JoypadController(),
-    key: "",
-    keyCode: 0,
-    tileWidth: exports.pixelWidth * 16,
-    tileHeight: exports.pixelHeight * 16,
-    textSize: exports.pixelHeight * 10,
-    frameRate: 60,
-    orientation: exports.ORIENTATION_DESKTOP,
-};
+// current key string
+function gGetKeyString() {
+    let k;
+    switch (exports.GAME_DATA.keyCode) {
+        case joypad_1.ASCII_KEYS.enter:
+            k = "ENTER";
+            break;
+        case joypad_1.ASCII_KEYS.backspace:
+            k = "BACKSPACE";
+            break;
+        case joypad_1.ASCII_KEYS.delete:
+            k = "DELETE";
+            break;
+        case joypad_1.ASCII_KEYS.up:
+            k = "UP";
+            break;
+        case joypad_1.ASCII_KEYS.down:
+            k = "DOWN";
+            break;
+        case joypad_1.ASCII_KEYS.left:
+            k = "LEFT";
+            break;
+        case joypad_1.ASCII_KEYS.right:
+            k = "RIGHT";
+            break;
+        default:
+            k = exports.GAME_DATA.key;
+    }
+    return `${k}, ${exports.GAME_DATA.keyCode}`;
+}
+exports.gGetKeyString = gGetKeyString;
 // main p5 logic
 const MONSTER_BATTLER_2 = (p5) => {
     let keyTimer = 0;
@@ -762,6 +806,10 @@ const MONSTER_BATTLER_2 = (p5) => {
         }
     };
     p5.keyPressed = () => {
+        if (p5.keyCode === p5.ESCAPE) {
+            console.log("Exiting...");
+            p5.noLoop();
+        }
         exports.GAME_DATA.key = p5.key;
         exports.GAME_DATA.keyCode = p5.keyCode;
         exports.GAME_DATA.joypad.pressJoypadKey();
@@ -1471,20 +1519,17 @@ class OverworldMap {
     initializeFromArray(mapData) {
         let maxWidth = 0;
         let row = [];
-        let tCount = 0;
         for (let i = 0; i < mapData.length; i++) {
+            row = [];
             if (mapData[i].length > maxWidth) {
                 maxWidth = mapData[i].length;
             }
             for (let j = 0; j < mapData[i].length; j++) {
                 let tile = new MapTile(j, i, mapData[i][j]);
                 row.push(tile);
-                tCount++;
-                console.log("Adding " + tile.toString() + " at " + j + ", " + i);
             }
             this.tiles.push(row);
         }
-        console.log(`Tiles length: ${tCount}`);
         this.tilesX = maxWidth;
         this.tilesY = mapData.length;
     }

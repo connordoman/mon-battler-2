@@ -2,6 +2,7 @@ import * as P5 from "p5";
 import { Queue } from "./queue";
 import {
     GAME_DATA,
+    gGetKeyString,
     gGetPixelsFromRem,
     gPrint,
     ORIENTATION_DESKTOP,
@@ -347,7 +348,7 @@ export class JoypadController {
             GAME_DATA.key = String.fromCharCode(jkey);
             GAME_DATA.keyCode = jkey;
             GAME_DATA.joypad.pressJoypadKey();
-            gPrint("Pressed: " + String.fromCharCode(jkey));
+            gPrint("Pressed: " + gGetKeyString());
             button.classList.add("active");
         }
     }
@@ -359,10 +360,10 @@ export class JoypadController {
 
         let jkey = button.id.slice(7);
         if (jkey) {
+            gPrint("Released: " + gGetKeyString());
             GAME_DATA.joypad.releaseJoypadKey();
             GAME_DATA.key = "";
             GAME_DATA.keyCode = 0;
-            gPrint("Released: " + jkey);
             button.classList.remove("active");
         }
     }
