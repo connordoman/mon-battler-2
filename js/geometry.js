@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Triangle = exports.Circle = exports.Rectangle = exports.Polygon = exports.Vector = void 0;
 const Color = require("./color");
+const main_1 = require("./main");
 class Vector {
     constructor(x, y) {
         this.x = x;
@@ -55,11 +56,29 @@ exports.Polygon = Polygon;
 class Rectangle extends Polygon {
     constructor(x, y, width, height) {
         super(x, y, width, height);
+        this.posRatio = new Vector(x / (0, main_1.WIDTH)(), y / (0, main_1.HEIGHT)());
+        this.dimRatio = new Vector(width / (0, main_1.WIDTH)(), height / (0, main_1.HEIGHT)());
     }
     update(g) { }
     draw(g) {
-        g.fill(g.color(this.color));
-        g.rect(this.x, this.y, this.width, this.height);
+        g.p.fill(g.p.color(this.color));
+        g.p.rect(this.x, this.y, this.width, this.height);
+    }
+    resizeAndReposition() {
+        if (this.width !== this.dimRatio.x * (0, main_1.WIDTH)()) {
+            this.width = this.dimRatio.x * (0, main_1.WIDTH)();
+        }
+        if (this.height !== this.dimRatio.y * (0, main_1.HEIGHT)()) {
+            this.height = this.dimRatio.y * (0, main_1.HEIGHT)();
+        }
+        if (this.x !== this.posRatio.x * (0, main_1.WIDTH)()) {
+            this.x = this.posRatio.x * (0, main_1.WIDTH)();
+        }
+        if (this.y !== this.posRatio.y * (0, main_1.HEIGHT)()) {
+            this.y = this.posRatio.y * (0, main_1.HEIGHT)();
+        }
+        this.posRatio = new Vector(this.x / (0, main_1.WIDTH)(), this.y / (0, main_1.HEIGHT)());
+        this.dimRatio = new Vector(this.width / (0, main_1.WIDTH)(), this.height / (0, main_1.HEIGHT)());
     }
 }
 exports.Rectangle = Rectangle;
@@ -69,8 +88,8 @@ class Circle extends Polygon {
     }
     update(g) { }
     draw(g) {
-        g.fill(g.color(this.color));
-        g.ellipse(this.x, this.y, this.width, this.height);
+        g.p.fill(g.p.color(this.color));
+        g.p.ellipse(this.x, this.y, this.width, this.height);
     }
 }
 exports.Circle = Circle;
@@ -109,20 +128,20 @@ class Triangle extends Polygon {
     }
     update(g) { }
     draw(g) {
-        g.push();
+        g.p.push();
         // Rotating is easier with p5 because I dont wanna do math (yet)
-        g.translate(this.x, this.y);
-        g.rotate(this.angle);
-        g.fill(g.color(this.color));
-        g.beginShape();
+        g.p.translate(this.x, this.y);
+        g.p.rotate(this.angle);
+        g.p.fill(g.p.color(this.color));
+        g.p.beginShape();
         // lower right point
-        g.vertex(this.x1, this.y1);
+        g.p.vertex(this.x1, this.y1);
         // top point
-        g.vertex(this.x2, this.y2);
+        g.p.vertex(this.x2, this.y2);
         // lower left point
-        g.vertex(this.x3, this.y3);
-        g.endShape(g.CLOSE);
-        g.pop();
+        g.p.vertex(this.x3, this.y3);
+        g.p.endShape(g.p.CLOSE);
+        g.p.pop();
     }
 }
 exports.Triangle = Triangle;

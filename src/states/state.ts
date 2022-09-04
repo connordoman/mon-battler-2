@@ -1,5 +1,5 @@
 import * as P5 from "p5";
-import { GameObject, GAME_DATA, gPrint } from "../main";
+import { GameData, GameObject, gPrint } from "../main";
 
 export interface State extends GameObject {
     name: string;
@@ -23,15 +23,18 @@ export abstract class BaseState implements State {
         this.nextPhase = 0;
         this.timer = 0;
     }
-    abstract update(g: P5): void;
 
-    abstract draw(g: P5): void;
+    abstract init(g: GameData): void;
 
-    abstract resize(g: P5): void;
+    abstract update(g: GameData): void;
 
-    abstract joypadDown(key: string): void;
+    abstract draw(g: GameData): void;
 
-    abstract joypadUp(key: string): void;
+    abstract resize(g: GameData): void;
+
+    abstract joypadDown(g: GameData): void;
+
+    abstract joypadUp(g: GameData): void;
 
     onEnter() {
         gPrint(`State "${this.name}" entered`);
@@ -50,8 +53,8 @@ export abstract class BaseState implements State {
         this.phase = this.nextPhase;
     }
 
-    advancePhase(): boolean {
-        if (this.lastPhase === this.phase && GAME_DATA.stateMachine.currentState() === this) {
+    advancePhase(g: GameData): boolean {
+        if (this.lastPhase === this.phase && g.stateMachine.currentState() === this) {
             this.setPhase();
             this.timer = 0;
             return true;

@@ -17,11 +17,12 @@ class FadeState extends state_1.BaseState {
         else {
             this.fadeSlate.color = Color.BLACK;
         }
-        this.duration = main_1.GAME_DATA.frameRate;
+        this.duration = 60;
     }
     get amt() {
         return this.timer / this.duration;
     }
+    init(g) { }
     update(g) {
         if (this.timer % 3 == 0) {
             let sig;
@@ -33,21 +34,21 @@ class FadeState extends state_1.BaseState {
                 // fade in
                 sig = Functions.fadeDownSigmoid(this.amt);
             }
-            this.fadeSlate.color[3] = g.map(sig, 0, 1, 0, 255);
+            this.fadeSlate.color[3] = g.p.map(sig, 0, 1, 0, 255);
             //gPrint(`${this.name}: ${this.fadeSlate.color[3] / 255}, ${this.fadeUpState}`);
         }
         if (this.timer >= this.duration) {
             if (this.fadeOutState) {
                 // this is fade out
-                main_1.GAME_DATA.stateMachine.exitState(); // exit fade
-                main_1.GAME_DATA.stateMachine.exitState(); // exit underlying state
-                main_1.GAME_DATA.stateMachine.enterState(this.into); // enter new state
-                //GAME_DATA.stateMachine.exitState();
+                g.stateMachine.exitState(); // exit fade
+                g.stateMachine.exitState(); // exit underlying state
+                g.stateMachine.enterState(this.into); // enter new state
+                //g.stateMachine.exitState();
             }
             else {
                 // this is fade in
-                main_1.GAME_DATA.stateMachine.exitState();
-                // GAME_DATA.stateMachine.enterState(this.into);
+                g.stateMachine.exitState();
+                // g.stateMachine.enterState(this.into);
             }
         }
         this.timer++;
@@ -57,8 +58,8 @@ class FadeState extends state_1.BaseState {
         this.fadeSlate.draw(g);
     }
     resize(g) { }
-    joypadDown(key) { }
-    joypadUp(key) { }
+    joypadDown(g) { }
+    joypadUp(g) { }
 }
 exports.FadeState = FadeState;
 class FadeInState extends FadeState {

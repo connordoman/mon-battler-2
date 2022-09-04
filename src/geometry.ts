@@ -1,5 +1,6 @@
 import * as P5 from "p5";
 import * as Color from "./color";
+import { GameData, HEIGHT, WIDTH } from "./main";
 
 export class Vector {
     x: number;
@@ -44,8 +45,8 @@ export class Vector {
 }
 
 export interface Shape {
-    update(g: P5): void;
-    draw(g: P5): void;
+    update(g: GameData): void;
+    draw(g: GameData): void;
 }
 
 export abstract class Polygon implements Shape {
@@ -76,20 +77,43 @@ export abstract class Polygon implements Shape {
         return new Vector(this.x, this.y);
     }
 
-    abstract update(g: P5): void;
-    abstract draw(g: P5): void;
+    abstract update(g: GameData): void;
+    abstract draw(g: GameData): void;
 }
 
 export class Rectangle extends Polygon {
+    posRatio: Vector;
+    dimRatio: Vector;
+
     constructor(x: number, y: number, width: number, height: number) {
         super(x, y, width, height);
+        this.posRatio = new Vector(x / WIDTH(), y / HEIGHT());
+        this.dimRatio = new Vector(width / WIDTH(), height / HEIGHT());
     }
 
-    update(g: P5) {}
+    update(g: GameData) {}
 
-    draw(g: P5) {
-        g.fill(g.color(this.color));
-        g.rect(this.x, this.y, this.width, this.height);
+    draw(g: GameData) {
+        g.p.fill(g.p.color(this.color));
+        g.p.rect(this.x, this.y, this.width, this.height);
+    }
+
+    resizeAndReposition() {
+        if (this.width !== this.dimRatio.x * WIDTH()) {
+            this.width = this.dimRatio.x * WIDTH();
+        }
+        if (this.height !== this.dimRatio.y * HEIGHT()) {
+            this.height = this.dimRatio.y * HEIGHT();
+        }
+        if (this.x !== this.posRatio.x * WIDTH()) {
+            this.x = this.posRatio.x * WIDTH();
+        }
+        if (this.y !== this.posRatio.y * HEIGHT()) {
+            this.y = this.posRatio.y * HEIGHT();
+        }
+
+        this.posRatio = new Vector(this.x / WIDTH(), this.y / HEIGHT());
+        this.dimRatio = new Vector(this.width / WIDTH(), this.height / HEIGHT());
     }
 }
 
@@ -98,11 +122,11 @@ export class Circle extends Polygon {
         super(x, y, radius * 2, radius * 2);
     }
 
-    update(g: P5): void {}
+    update(g: GameData): void {}
 
-    draw(g: P5): void {
-        g.fill(g.color(this.color));
-        g.ellipse(this.x, this.y, this.width, this.height);
+    draw(g: GameData): void {
+        g.p.fill(g.p.color(this.color));
+        g.p.ellipse(this.x, this.y, this.width, this.height);
     }
 }
 
@@ -155,24 +179,24 @@ export class Triangle extends Polygon {
         this.angle -= Math.PI / 3;
     }
 
-    update(g: P5): void {}
+    update(g: GameData): void {}
 
-    draw(g: P5): void {
-        g.push();
+    draw(g: GameData): void {
+        g.p.push();
         // Rotating is easier with p5 because I dont wanna do math (yet)
-        g.translate(this.x, this.y);
-        g.rotate(this.angle);
+        g.p.translate(this.x, this.y);
+        g.p.rotate(this.angle);
 
-        g.fill(g.color(this.color));
+        g.p.fill(g.p.color(this.color));
 
-        g.beginShape();
+        g.p.beginShape();
         // lower right point
-        g.vertex(this.x1, this.y1);
+        g.p.vertex(this.x1, this.y1);
         // top point
-        g.vertex(this.x2, this.y2);
+        g.p.vertex(this.x2, this.y2);
         // lower left point
-        g.vertex(this.x3, this.y3);
-        g.endShape(g.CLOSE);
-        g.pop();
+        g.p.vertex(this.x3, this.y3);
+        g.p.endShape(g.p.CLOSE);
+        g.p.pop();
     }
 }

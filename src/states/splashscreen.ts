@@ -1,5 +1,5 @@
 import * as P5 from "p5";
-import { GAME_DATA, HEIGHT, WIDTH } from "../main";
+import { GameData, HEIGHT, WIDTH } from "../main";
 import { FadeInState, FadeOutState } from "./fade";
 import { BaseState } from "./state";
 import { TitleScreenState } from "./titlescreen";
@@ -15,49 +15,50 @@ export class SplashScreenState extends BaseState {
 
         this.timer = 0;
     }
+    init(g: GameData) {}
 
-    update(g: P5): void {
+    update(g: GameData): void {
         this.timer++;
 
-        this.advancePhase();
+        this.advancePhase(g);
 
         switch (this.phase) {
             case this.lastPhase:
                 break;
             case 0:
-                GAME_DATA.stateMachine.enterState(new FadeInState(this));
+                g.stateMachine.enterState(new FadeInState(this));
                 this.setNextPhase(1);
                 break;
             case 1:
                 if (this.timer === 120) {
-                    GAME_DATA.stateMachine.enterState(new FadeOutState(new TitleScreenState()));
+                    g.stateMachine.enterState(new FadeOutState(new TitleScreenState()));
                     this.setNextPhase(2);
                 }
                 break;
             case 2:
-                //GAME_DATA.stateMachine.exitState();
-                //GAME_DATA.stateMachine.enterState(new TitleScreenState());
+                //g.stateMachine.exitState();
+                //g.stateMachine.enterState(new TitleScreenState());
                 //g.fill(Color.BLACK);
                 // g.rect(0, 0, WIDTH(), HEIGHT());
                 //alert("pause");
                 break;
         }
     }
-    draw(g: P5) {
-        g.background(0);
+    draw(g: GameData) {
+        g.p.background(0);
         if (this.phase !== 2) {
-            g.fill(255);
-            g.textSize(GAME_DATA.textSize);
-            g.textAlign(g.CENTER, g.CENTER);
-            g.text("©2022 Connor Doman", g.width / 2, g.height / 2);
+            g.p.fill(255);
+            g.p.textSize(g.textSize);
+            g.p.textAlign(g.p.CENTER, g.p.CENTER);
+            g.p.text("©2022 Connor Doman", g.p.width / 2, g.p.height / 2);
         }
     }
-    resize(g: P5): void {}
+    resize(g: GameData): void {}
 
-    joypadDown() {
+    joypadDown(g: GameData) {
         //super.keyPressed(key);
-        GAME_DATA.stateMachine.exitState();
-        GAME_DATA.stateMachine.enterState(new TitleScreenState());
+        g.stateMachine.exitState();
+        g.stateMachine.enterState(new TitleScreenState());
     }
     joypadUp(): void {}
 }

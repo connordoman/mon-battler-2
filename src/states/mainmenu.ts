@@ -1,5 +1,5 @@
 import * as P5 from "p5";
-import { GAME_DATA, gPrint, HEIGHT, pixelHeight, pixelWidth, WIDTH } from "../main";
+import { GameData, gPrint, HEIGHT, pixelHeight, pixelWidth, WIDTH } from "../main";
 import { BaseState } from "./state";
 import { TitleScreenState } from "./titlescreen";
 import { Triangle, Vector } from "../geometry";
@@ -16,18 +16,19 @@ export class MainMenuState extends BaseState {
     continueBox: TextBox;
     settingsBox: TextBox;
 
-    constructor() {
+    constructor(g: GameData) {
         super();
         this.name = "MainMenuState";
         this.option = 0;
         this.pointer = new Triangle(0, 0, 8 * pixelWidth);
         this.pointer.setAngle(Math.PI / 2);
         this.pointer.color = Color.BLACK;
+        this.newGameBox = new TextBox(g, "New Game", 0, 0, WIDTH(), g.tileHeight * 2);
 
-        this.newGameBox = new TextBox("New Game", 0, 0, WIDTH(), GAME_DATA.tileHeight * 2);
         gPrint(this.newGameBox.msg.indexOf("\n"));
-        this.continueBox = new TextBox("Continue", 0, this.newGameBox.height, WIDTH(), this.newGameBox.height);
+        this.continueBox = new TextBox(g, "Continue", 0, this.newGameBox.height, WIDTH(), this.newGameBox.height);
         this.settingsBox = new TextBox(
+            g,
             "Settings",
             0,
             this.continueBox.height + this.continueBox.y,
@@ -39,10 +40,30 @@ export class MainMenuState extends BaseState {
         this.settingsBox.static = true;
     }
 
-    draw(g: P5) {
-        g.background(0);
-        g.fill(255);
-        g.textSize(32);
+    init(g: GameData) {
+        this.pointer.setAngle(Math.PI / 2);
+        this.pointer.color = Color.BLACK;
+        this.newGameBox = new TextBox(g, "New Game", 0, 0, WIDTH(), g.tileHeight * 2);
+
+        gPrint(this.newGameBox.msg.indexOf("\n"));
+        this.continueBox = new TextBox(g, "Continue", 0, this.newGameBox.height, WIDTH(), this.newGameBox.height);
+        this.settingsBox = new TextBox(
+            g,
+            "Settings",
+            0,
+            this.continueBox.height + this.continueBox.y,
+            WIDTH(),
+            this.continueBox.height
+        );
+        this.newGameBox.static = true;
+        this.continueBox.static = true;
+        this.settingsBox.static = true;
+    }
+
+    draw(g: GameData) {
+        g.p.background(0);
+        g.p.fill(255);
+        g.p.textSize(32);
 
         this.newGameBox.update(g);
         this.continueBox.update(g);
@@ -51,7 +72,7 @@ export class MainMenuState extends BaseState {
         this.continueBox.draw(g);
         this.settingsBox.draw(g);
 
-        let offset = GAME_DATA.tileHeight;
+        let offset = g.tileHeight;
         let arrowX = offset / 2;
         let arrowY = 0;
         switch (this.option) {
@@ -71,21 +92,21 @@ export class MainMenuState extends BaseState {
         this.pointer.draw(g);
     }
 
-    joypadDown() {
-        if (GAME_DATA.joypad.state.DOWN && this.option < 2) {
+    joypadDown(g: GameData) {
+        if (g.joypad.state.DOWN && this.option < 2) {
             this.option++;
         }
 
-        if (GAME_DATA.joypad.state.UP && this.option > 0) {
+        if (g.joypad.state.UP && this.option > 0) {
             this.option--;
         }
 
-        if (GAME_DATA.joypad.state.A) {
+        if (g.joypad.state.A) {
             switch (this.option) {
                 case 0:
                     // New Game
-                    GAME_DATA.stateMachine.exitState();
-                    GAME_DATA.stateMachine.enterState(new NewGameState());
+                    g.stateMachine.exitState();
+                    g.stateMachine.enterState(new NewGameState(g));
                     break;
                 case 1:
                     // Continue
@@ -99,18 +120,19 @@ export class MainMenuState extends BaseState {
             }
         }
 
-        if (GAME_DATA.joypad.state.B) {
-            GAME_DATA.stateMachine.exitState();
-            GAME_DATA.stateMachine.enterState(new TitleScreenState());
+        if (g.joypad.state.B) {
+            g.stateMachine.exitState();
+            g.stateMachine.enterState(new TitleScreenState());
         }
     }
-    resize(g: P5): void {
+
+    resize(g: GameData): void {
         this.newGameBox.resize();
         this.continueBox.resize();
         this.settingsBox.resize();
         this.pointer.setSize(8 * pixelWidth);
     }
-    update(g: P5): void {}
+    update(g: GameData): void {}
 
     joypadUp(): void {}
 }

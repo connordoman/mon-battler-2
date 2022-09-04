@@ -14,27 +14,28 @@ exports.PHASE_NEW_GAME = 1;
 exports.PHASE_ANY_KEY = 2;
 exports.PHASE_OVERWORLD = 3;
 class NewGameState extends state_1.BaseState {
-    constructor() {
+    constructor(g) {
         super();
         this.name = "NewGameState";
         let boxHeight = (0, main_1.HEIGHT)() / 4;
-        this.textbox = new textbox_1.TextBox(exports.EN_NEW_GAME, 0, (0, main_1.HEIGHT)() - boxHeight, (0, main_1.WIDTH)(), boxHeight);
+        this.textbox = new textbox_1.TextBox(g, exports.EN_NEW_GAME, 0, (0, main_1.HEIGHT)() - boxHeight, (0, main_1.WIDTH)(), boxHeight);
         this.textbox.static = false;
     }
+    init(g) { }
     update(g) {
         this.timer++;
-        this.advancePhase();
+        this.advancePhase(g);
         switch (this.phase) {
             case this.lastPhase:
                 break;
             case exports.PHASE_FADE_IN:
-                main_1.GAME_DATA.stateMachine.enterState(new fade_1.FadeInState(this));
+                g.stateMachine.enterState(new fade_1.FadeInState(this));
                 this.setNextPhase(exports.PHASE_NEW_GAME);
                 break;
             case exports.PHASE_NEW_GAME:
                 // Welcome message
                 if (this.timer === 120 && !this.textbox.seen) {
-                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.TextBoxState(this.textbox));
+                    g.stateMachine.enterState(new textbox_1.TextBoxState(g, this.textbox));
                     this.setNextPhase(exports.PHASE_ANY_KEY);
                 }
                 break;
@@ -43,23 +44,23 @@ class NewGameState extends state_1.BaseState {
                 if (!this.textbox.seen) {
                     this.textbox.reset(exports.EN_ANY_KEY);
                     let boxHeight = (0, main_1.HEIGHT)() / 4;
-                    this.textbox = new textbox_1.PressAnyKeyTextbox(0, (0, main_1.HEIGHT)() - boxHeight, (0, main_1.WIDTH)(), boxHeight);
-                    main_1.GAME_DATA.stateMachine.enterState(new textbox_1.PressAnyKeyTextBoxState(this.textbox));
+                    this.textbox = new textbox_1.PressAnyKeyTextbox(g, 0, (0, main_1.HEIGHT)() - boxHeight, (0, main_1.WIDTH)(), boxHeight);
+                    g.stateMachine.enterState(new textbox_1.PressAnyKeyTextBoxState(g, this.textbox));
                     this.setNextPhase(exports.PHASE_OVERWORLD);
                 }
                 break;
             case exports.PHASE_OVERWORLD:
                 // Exit state
                 //if (this.timer === 60) {
-                main_1.GAME_DATA.stateMachine.exitState();
-                main_1.GAME_DATA.stateMachine.enterState(new overworld_1.OverworldState(main_1.GAME_DATA.map));
+                g.stateMachine.exitState();
+                g.stateMachine.enterState(new overworld_1.OverworldState(g.map));
             //}
             default:
                 break;
         }
     }
     draw(g) {
-        g.background(g.color(Color.DARK_RED));
+        g.p.background(g.p.color(Color.DARK_RED));
     }
     resize(g) {
         this.textbox.x = 0;

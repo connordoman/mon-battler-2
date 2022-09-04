@@ -22,8 +22,8 @@ class BaseState {
     setPhase() {
         this.phase = this.nextPhase;
     }
-    advancePhase() {
-        if (this.lastPhase === this.phase && main_1.GAME_DATA.stateMachine.currentState() === this) {
+    advancePhase(g) {
+        if (this.lastPhase === this.phase && g.stateMachine.currentState() === this) {
             this.setPhase();
             this.timer = 0;
             return true;

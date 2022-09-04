@@ -1,8 +1,11 @@
 import * as P5 from "p5";
 import { BaseState } from "./state";
 import * as Color from "../color";
-import { GAME_DATA, GameObject, pixelHeight, pixelWidth, gPrint } from "../main";
+import { GameObject, pixelHeight, pixelWidth, gPrint, GameData } from "../main";
 import { Camera } from "../camera";
+import { Rectangle } from "../geometry";
+import { Queue } from "../queue";
+import { OverworldPlayer } from "../player";
 
 export const TILE_BLANK: number = 0;
 export const TILE_GRASS: number = 1;
@@ -25,11 +28,9 @@ export const MAP_PALET_TOWN: number[][] = [
     [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
 ];
 
-export class MapTile implements GameObject {
-    x: number;
-    y: number;
-    mapX: number;
-    mapY: number;
+export class MapTile extends Rectangle implements GameObject {
+    tileX: number;
+    tileY: number;
     tile: number;
     sprite: P5.Image;
 
@@ -38,13 +39,12 @@ export class MapTile implements GameObject {
     animated: boolean;
     timer: number;
 
-    constructor(mapX: number, mapY: number, tile: number) {
-        this.mapX = mapX;
-        this.mapY = mapY;
-        this.x = mapX * GAME_DATA.tileWidth;
-        this.y = mapY * GAME_DATA.tileHeight;
+    constructor(g: GameData, tilesX: number, tilesY: number, tile: number) {
+        super(tilesX * g.tileWidth, tilesY * g.tileHeight, g.tileWidth, g.tileHeight);
+        this.tileX = tilesX;
+        this.tileY = tilesY;
         this.tile = tile;
-        this.sprite = new P5.Image(GAME_DATA.tileWidth, GAME_DATA.tileHeight);
+        this.sprite = new P5.Image(g.tileWidth, g.tileHeight);
 
         this.frames = [];
         this.frameNum = 0;
@@ -66,8 +66,8 @@ export class MapTile implements GameObject {
         this.frames.push(frame);
     }
 
-    update(g: P5): void {
-        if (this.animated && this.timer % this.frameTime === 0 && this.frames.length > 1) {
+    update(g: GameData): void {
+        if (this.animated && this.timer % this.frameTime(g) === 0 && this.frames.length > 1) {
             this.frameNum = (this.frameNum + 1) % this.frames.length;
             this.sprite = this.frames[this.frameNum];
         }
@@ -75,38 +75,35 @@ export class MapTile implements GameObject {
         this.timer++;
     }
 
-    draw(g: P5): void {
+    draw(g: GameData): void {
         switch (this.tile) {
             case TILE_GRASS:
-                g.fill(Color.DARK_GREEN);
-                g.rect(this.x, this.y, GAME_DATA.tileWidth, GAME_DATA.tileHeight);
+                g.p.fill(Color.DARK_GREEN);
+                g.p.rect(this.x, this.y, g.tileWidth, g.tileHeight);
                 break;
             case TILE_SHRUB:
-                g.fill(Color.DARK_GREEN);
-                g.rect(this.x, this.y, GAME_DATA.tileWidth, GAME_DATA.tileHeight);
-                g.fill(Color.BROWN);
-                g.circle(this.x + GAME_DATA.tileWidth / 2, this.y + GAME_DATA.tileHeight / 2, GAME_DATA.tileWidth / 2);
+                g.p.fill(Color.DARK_GREEN);
+                g.p.rect(this.x, this.y, g.tileWidth, g.tileHeight);
+                g.p.fill(Color.BROWN);
+                g.p.circle(this.x + g.tileWidth / 2, this.y + g.tileHeight / 2, g.tileWidth / 2);
             case TILE_WATER:
-                g.fill(Color.BLUE);
-                g.rect(this.x, this.y, GAME_DATA.tileWidth, GAME_DATA.tileHeight);
+                g.p.fill(Color.BLUE);
+                g.p.rect(this.x, this.y, g.tileWidth, g.tileHeight);
                 break;
             default:
                 break;
         }
     }
-    resize(g: P5): void {}
+    resize(g: GameData): void {
+        this.resizeAndReposition();
+    }
 
     joypadDown(): void {}
 
     joypadUp(): void {}
 
-    private get frameTime(): number {
-        return Math.floor(GAME_DATA.frameRate / this.frames.length);
-    }
-
-    static get blankTile(): MapTile {
-        let tile = new MapTile(0, 0, TILE_BLANK);
-        return tile;
+    private frameTime(g: GameData): number {
+        return Math.floor(g.frameRate / this.frames.length);
     }
 
     toString(): string {
@@ -147,15 +144,7 @@ export class OverworldMap {
         this.tiles = [];
     }
 
-    initialize(): void {
-        for (let i = 0; i < this.tilesX; i++) {
-            for (let j = 0; j < this.tilesY; j++) {
-                this.tiles[i][j] = MapTile.blankTile;
-            }
-        }
-    }
-
-    initializeFromArray(mapData: number[][]): void {
+    initializeFromArray(g: GameData, mapData: number[][]): void {
         let maxWidth = 0;
         let row: MapTile[] = [];
         for (let i = 0; i < mapData.length; i++) {
@@ -164,7 +153,7 @@ export class OverworldMap {
                 maxWidth = mapData[i].length;
             }
             for (let j = 0; j < mapData[i].length; j++) {
-                let tile = new MapTile(j, i, mapData[i][j]);
+                let tile = new MapTile(g, j, i, mapData[i][j]);
                 row.push(tile);
             }
             this.tiles.push(row);
@@ -181,25 +170,55 @@ export class OverworldMap {
 export class OverworldState extends BaseState {
     name: string;
     map: OverworldMap;
-    camera: Camera;
+    player: OverworldPlayer;
 
-    constructor(map: OverworldMap) {
+    constructor(map?: OverworldMap) {
         super();
         this.name = "OverworldState";
-        this.map = map;
-        this.camera = new Camera(0, 0);
+        this.player = new OverworldPlayer();
+
+        if (map === undefined) {
+            this.map = new OverworldMap();
+        } else {
+            this.map = map;
+        }
     }
 
-    update(g: P5): void {
-        this.camera.update(g);
+    init(g: GameData) {}
+
+    update(g: GameData): void {
+        this.player.update(g);
+        g.camera.update(g);
+
+        // establish map tiles
+        if (this.map.tiles.length == 0 || g.camera.drawQueue.size > 0) {
+            return;
+        }
+
+        for (let row of this.map.tiles) {
+            for (let tile of row) {
+                let intersects = g.camera.intersects(tile);
+                gPrint(`${intersects}`);
+                if (intersects) {
+                    tile.update(g);
+                    g.camera.drawQueue.push(tile);
+                }
+            }
+        }
     }
-    draw(g: P5): void {
-        g.background(0);
-        this.camera.draw(g);
+    draw(g: GameData): void {
+        g.p.background(0);
+        this.player.draw(g);
+        g.camera.draw(g);
     }
-    resize(g: P5): void {
-        this.camera.resize(g);
+    resize(g: GameData): void {
+        g.camera.resize(g);
+        this.player.resize(g);
     }
-    joypadDown(): void {}
-    joypadUp(): void {}
+    joypadDown(g: GameData): void {
+        this.player.joypadDown(g);
+    }
+    joypadUp(g: GameData): void {
+        this.player.joypadUp(g);
+    }
 }

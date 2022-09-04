@@ -9,35 +9,36 @@ class TitleScreenState extends state_1.BaseState {
         super();
         this.name = "TitleScreenState";
     }
+    init(g) { }
     draw(g) {
-        g.background(0);
-        g.fill(255);
-        g.textSize(main_1.GAME_DATA.textSize * 2);
-        g.textAlign(g.CENTER, g.CENTER);
-        g.text("MONSTER BATTLER", g.width / 2, g.height / 2);
+        g.p.background(0);
+        g.p.fill(255);
+        g.p.textSize(g.textSize * 2);
+        g.p.textAlign(g.p.CENTER, g.p.CENTER);
+        g.p.text("MONSTER BATTLER", g.p.width / 2, g.p.height / 2);
         if (this.timer % 60 < 30) {
-            g.textSize(main_1.GAME_DATA.textSize);
-            g.text("Press A to start", g.width / 2, g.height * 0.75);
+            g.p.textSize(g.textSize);
+            g.p.text("Press A to start", g.p.width / 2, g.p.height * 0.75);
         }
         this.timer++;
         if (main_1.DEBUG) {
-            g.push();
-            g.strokeWeight(1);
-            g.stroke(255, 0, 0);
-            g.line((0, main_1.WIDTH)() / 2, 0, (0, main_1.WIDTH)() / 2, (0, main_1.HEIGHT)());
-            g.line(0, (0, main_1.HEIGHT)() / 2, (0, main_1.WIDTH)(), (0, main_1.HEIGHT)() / 2);
-            g.pop();
+            g.p.push();
+            g.p.strokeWeight(1);
+            g.p.stroke(255, 0, 0);
+            g.p.line((0, main_1.WIDTH)() / 2, 0, (0, main_1.WIDTH)() / 2, (0, main_1.HEIGHT)());
+            g.p.line(0, (0, main_1.HEIGHT)() / 2, (0, main_1.WIDTH)(), (0, main_1.HEIGHT)() / 2);
+            g.p.pop();
         }
     }
     resize(g) { }
-    joypadDown(key) {
+    joypadDown(g) {
         (0, main_1.gPrint)("Checking buttons on title screen...");
-        if ((main_1.GAME_DATA.joypad.state.A || main_1.GAME_DATA.joypad.state.B || main_1.GAME_DATA.joypad.state.START) === true) {
-            main_1.GAME_DATA.stateMachine.exitState();
-            main_1.GAME_DATA.stateMachine.enterState(new mainmenu_1.MainMenuState());
+        if ((g.joypad.state.A || g.joypad.state.B || g.joypad.state.START) === true) {
+            g.stateMachine.exitState();
+            g.stateMachine.enterState(new mainmenu_1.MainMenuState(g));
         }
     }
     update(g) { }
-    joypadUp(key) { }
+    joypadUp(g) { }
 }
 exports.TitleScreenState = TitleScreenState;

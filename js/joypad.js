@@ -58,12 +58,12 @@ class JoypadController {
         this.releaseQueue.clear();
         this.state = Object.assign({}, exports.JOYPAD_STATE);
     }
-    pressJoypadKey() {
+    pressJoypadKey(g) {
         if (this.keyTimer !== 0)
             return;
         // check for keycode
-        if (main_1.GAME_DATA.keyCode < 32) {
-            switch (main_1.GAME_DATA.keyCode) {
+        if (g.keyCode < 32) {
+            switch (g.keyCode) {
                 case exports.JOYPAD.START:
                     this.inputQueue.push("START");
                     return;
@@ -72,20 +72,20 @@ class JoypadController {
                     return;
             }
         }
-        main_1.GAME_DATA.key = main_1.GAME_DATA.key.toUpperCase();
+        g.key = g.key.toUpperCase();
         for (let i = 0; i < exports.KEYBOARD_KEYS.length; i++) {
-            if (exports.KEYBOARD_KEYS[i] === main_1.GAME_DATA.key && this.inputQueue.size < MAX_INPUTS) {
+            if (exports.KEYBOARD_KEYS[i] === g.key && this.inputQueue.size < MAX_INPUTS) {
                 this.inputQueue.push(exports.JOYPAD_KEYS[i]);
                 break;
             }
         }
     }
-    releaseJoypadKey() {
+    releaseJoypadKey(g) {
         if (this.keyTimer !== 0)
             return;
         // check for keycode
-        if (main_1.GAME_DATA.keyCode < 32) {
-            switch (main_1.GAME_DATA.keyCode) {
+        if (g.keyCode < 32) {
+            switch (g.keyCode) {
                 case exports.JOYPAD.START:
                     this.releaseQueue.push("START");
                     return;
@@ -94,9 +94,9 @@ class JoypadController {
                     return;
             }
         }
-        main_1.GAME_DATA.key = main_1.GAME_DATA.key.toUpperCase();
+        g.key = g.key.toUpperCase();
         for (let i = 0; i < exports.KEYBOARD_KEYS.length; i++) {
-            if (exports.KEYBOARD_KEYS[i] === main_1.GAME_DATA.key) {
+            if (exports.KEYBOARD_KEYS[i] === g.key) {
                 this.releaseQueue.push(exports.JOYPAD_KEYS[i]);
                 break;
             }
@@ -109,13 +109,13 @@ class JoypadController {
         else if (this.keyTimer !== 0) {
             this.keyTimer++;
         }
-        if (g.frameCount % 4 === 0) {
+        if (g.p.frameCount % 4 === 0) {
             // input pressed
             if (!this.inputQueue.isEmpty()) {
                 let jkey = this.inputQueue.pop();
                 if (jkey) {
                     this.state[jkey] = true;
-                    main_1.GAME_DATA.stateMachine.currentState().joypadDown(jkey);
+                    g.stateMachine.currentState().joypadDown(g);
                 }
                 (0, main_1.gPrint)("KeyDown: " + jkey, this.state);
             }
@@ -124,7 +124,7 @@ class JoypadController {
                 let jkey = this.releaseQueue.pop();
                 if (jkey) {
                     this.state[jkey] = false;
-                    main_1.GAME_DATA.stateMachine.currentState().joypadUp(jkey);
+                    g.stateMachine.currentState().joypadUp(g);
                 }
                 (0, main_1.gPrint)("KeyUp: " + jkey, this.state);
             }
@@ -140,7 +140,7 @@ class JoypadController {
     }
     static deployJoypadHTML(g) {
         let gameArea = document.getElementById("game-area");
-        let canvas = document.getElementById(main_1.GAME_DATA.canv.id());
+        let canvas = document.getElementById(g.canv.id());
         // directional buttons
         this.leftPadUp.id = `joypad-${exports.JOYPAD.UP}`;
         this.leftPadDown.id = `joypad-${exports.JOYPAD.DOWN}`;
@@ -167,23 +167,28 @@ class JoypadController {
         this.centerPadStart.classList.add("pad-button", "noselect", "center-button");
         this.centerPadSelect.classList.add("pad-button", "noselect", "center-button");
         // add action listeners to option buttons
-        this.prepareActionListeners(this.centerPadStart);
-        this.prepareActionListeners(this.centerPadSelect);
+        this.prepareActionListeners(g, this.centerPadStart);
+        this.prepareActionListeners(g, this.centerPadSelect);
         // prepare cross shaped tables
-        this.leftPad = this.createButtonsCross([this.leftPadUp, this.leftPadLeft, this.leftPadRight, this.leftPadDown]);
-        this.rightPad = this.createButtonsCross([this.rightPadX, this.rightPadY, this.rightPadA, this.rightPadB]);
+        this.leftPad = this.createButtonsCross(g, [
+            this.leftPadUp,
+            this.leftPadLeft,
+            this.leftPadRight,
+            this.leftPadDown,
+        ]);
+        this.rightPad = this.createButtonsCross(g, [this.rightPadX, this.rightPadY, this.rightPadA, this.rightPadB]);
         this.leftPad.classList.add("left");
         this.rightPad.classList.add("right");
         this.leftPad.id = "left-pad";
         this.rightPad.id = "right-pad";
-        JoypadController.repositionJoypad(canvas);
+        JoypadController.repositionJoypad(g, canvas);
         // add controller to screen
         gameArea.appendChild(this.centerPadSelect);
         gameArea.appendChild(this.centerPadStart);
         gameArea.appendChild(this.leftPad);
         gameArea.appendChild(this.rightPad);
     }
-    static createButtonsCross(buttons) {
+    static createButtonsCross(g, buttons) {
         let table = document.createElement("table");
         table.classList.add("button-pad", "noselect");
         for (let i = 0; i < 3; i++) {
@@ -195,7 +200,7 @@ class JoypadController {
                     let sp = buttons[(index - 1) / 2];
                     sp.className = "pad-button";
                     cell.appendChild(sp);
-                    JoypadController.prepareActionListeners(sp);
+                    JoypadController.prepareActionListeners(g, sp);
                 }
                 else {
                     cell.innerHTML = "&nbsp;";
@@ -204,14 +209,14 @@ class JoypadController {
         }
         return table;
     }
-    static repositionJoypad(canvas) {
+    static repositionJoypad(g, canvas) {
         // position buttons according to game area
         let rect = canvas.getBoundingClientRect();
         let rem1 = (0, main_1.gGetPixelsFromRem)(1);
         (0, main_1.gPrint)(rect.top, rect.left, rect.bottom, rect.right);
         this.centerPadStart.style.left = `${rect.right + rem1}px`;
         this.centerPadSelect.style.right = `${rect.right + rem1}px`;
-        switch (main_1.GAME_DATA.orientation) {
+        switch (g.orientation) {
             case main_1.ORIENTATION_PORTRAIT:
                 this.leftPad.style.top = `${rect.bottom + rem1}px`;
                 this.leftPad.style.left = `${rem1}px`;
@@ -237,48 +242,48 @@ class JoypadController {
                 break;
         }
     }
-    static prepareActionListeners(elem) {
+    static prepareActionListeners(g, elem) {
         elem.addEventListener("mousedown", (e) => {
-            JoypadController.onScreenKeyPress(e);
+            JoypadController.onScreenKeyPress(g, e);
         });
         elem.addEventListener("mouseup", (e) => {
-            JoypadController.onScreenKeyRelease(e);
+            JoypadController.onScreenKeyRelease(g, e);
         });
         elem.addEventListener("touchstart", (e) => {
             window.setTimeout(() => {
-                JoypadController.onScreenKeyPress(e);
+                JoypadController.onScreenKeyPress(g, e);
             }, 100);
         });
         elem.addEventListener("touchend", (e) => {
-            JoypadController.onScreenKeyRelease(e);
+            JoypadController.onScreenKeyRelease(g, e);
         });
         elem.addEventListener("touchmove", (e) => {
             // absorb touch moved event
         });
     }
-    static onScreenKeyPress(e) {
+    static onScreenKeyPress(g, e) {
         let button = e.target;
         if (button.classList.contains("active"))
             return;
         let jkey = parseInt(button.id.slice(7));
         if (jkey) {
-            main_1.GAME_DATA.key = String.fromCharCode(jkey);
-            main_1.GAME_DATA.keyCode = jkey;
-            main_1.GAME_DATA.joypad.pressJoypadKey();
-            (0, main_1.gPrint)("Pressed: " + (0, main_1.gGetKeyString)());
+            g.key = String.fromCharCode(jkey);
+            g.keyCode = jkey;
+            g.joypad.pressJoypadKey(g);
+            (0, main_1.gPrint)("Pressed: " + g.getKeyString());
             button.classList.add("active");
         }
     }
-    static onScreenKeyRelease(e) {
+    static onScreenKeyRelease(g, e) {
         let button = e.target;
         if (!button.classList.contains("active"))
             return;
         let jkey = button.id.slice(7);
         if (jkey) {
-            (0, main_1.gPrint)("Released: " + (0, main_1.gGetKeyString)());
-            main_1.GAME_DATA.joypad.releaseJoypadKey();
-            main_1.GAME_DATA.key = "";
-            main_1.GAME_DATA.keyCode = 0;
+            (0, main_1.gPrint)("Released: " + g.getKeyString());
+            g.joypad.releaseJoypadKey(g);
+            g.key = "";
+            g.keyCode = 0;
             button.classList.remove("active");
         }
     }

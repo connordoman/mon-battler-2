@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@types/node@^18.0.0":
-  version "18.0.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.0.0.tgz#67c7b724e1bcdd7a8821ce0d5ee184d3b4dd525a"
-  integrity sha512-cHlGmko4gWLVI27cGJntjs/Sj8th9aYwplmZFwmmgYQQvL5NUsgVJG7OddLvNfLqYS31KFN0s3qlaD9qCaxACA==
+"@types/node@^18.7.14":
+  version "18.7.14"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.7.14.tgz#0fe081752a3333392d00586d815485a17c2cf3c9"
+  integrity sha512-6bbDaETVi8oyIARulOE9qF1/Qdi/23z6emrUh0fNJRUmjznqrixD4MpGDdgOFk5Xb0m2H6Xu42JGdvAxaJR/wA==
 
 "@types/p5@^1.4.2":
   version "1.4.2"
@@ -937,10 +937,10 @@ os-browserify@~0.3.0:
   resolved "https://registry.yarnpkg.com/os-browserify/-/os-browserify-0.3.0.tgz#854373c7f5c2315914fc9bfc6bd8238fdda1ec27"
   integrity sha512-gjcpUc3clBf9+210TRaDWbf+rZZZEshZ+DlXMRCeAjp0xhTrnQsKHypIy1J3d5hKdUzj69t708EHtU8P6bUn0A==
 
-p5@^1.4.1:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/p5/-/p5-1.4.1.tgz#979739a576eb566225642b5d25cf7bb8945b70dd"
-  integrity sha512-3/X+qb0bK2Cg8nuZNpZZvzxkeUSRghOf0S+l8c+U8yIkUTVSbbcV0R8y96rx3InVBVhk8cH9kFC93VlZZElqSw==
+p5@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/p5/-/p5-1.4.2.tgz#c258fcf655ff75bd4e8b530607c9a96e6a556023"
+  integrity sha512-J5zqZ/l1NIbJSuNr/FH9nDYgBRg7/NubStNPnx1fQCMSAgxI6peKDHs9i5iaG9EuwbJzjuG6/5bX/D0lqqrP9A==
 
 pako@~1.0.5:
   version "1.0.11"

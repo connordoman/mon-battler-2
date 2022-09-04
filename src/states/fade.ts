@@ -1,5 +1,5 @@
 import * as P5 from "p5";
-import { GAME_DATA, GameObject, gPrint, HEIGHT, WIDTH } from "../main";
+import { GameData, GameObject, gPrint, HEIGHT, WIDTH } from "../main";
 import { Rectangle } from "../geometry";
 import { BaseState, State } from "./state";
 import * as Color from "../color";
@@ -21,14 +21,16 @@ export abstract class FadeState extends BaseState {
         } else {
             this.fadeSlate.color = Color.BLACK;
         }
-        this.duration = GAME_DATA.frameRate;
+        this.duration = 60;
     }
 
     get amt(): number {
         return this.timer / this.duration;
     }
 
-    update(g: P5): void {
+    init(g: GameData) {}
+
+    update(g: GameData): void {
         if (this.timer % 3 == 0) {
             let sig;
             if (this.fadeOutState) {
@@ -38,32 +40,32 @@ export abstract class FadeState extends BaseState {
                 // fade in
                 sig = Functions.fadeDownSigmoid(this.amt);
             }
-            this.fadeSlate.color[3] = g.map(sig, 0, 1, 0, 255);
+            this.fadeSlate.color[3] = g.p.map(sig, 0, 1, 0, 255);
             //gPrint(`${this.name}: ${this.fadeSlate.color[3] / 255}, ${this.fadeUpState}`);
         }
         if (this.timer >= this.duration) {
             if (this.fadeOutState) {
                 // this is fade out
-                GAME_DATA.stateMachine.exitState(); // exit fade
-                GAME_DATA.stateMachine.exitState(); // exit underlying state
-                GAME_DATA.stateMachine.enterState(this.into); // enter new state
-                //GAME_DATA.stateMachine.exitState();
+                g.stateMachine.exitState(); // exit fade
+                g.stateMachine.exitState(); // exit underlying state
+                g.stateMachine.enterState(this.into); // enter new state
+                //g.stateMachine.exitState();
             } else {
                 // this is fade in
-                GAME_DATA.stateMachine.exitState();
-                // GAME_DATA.stateMachine.enterState(this.into);
+                g.stateMachine.exitState();
+                // g.stateMachine.enterState(this.into);
             }
         }
 
         this.timer++;
         this.fadeSlate.update(g);
     }
-    draw(g: P5): void {
+    draw(g: GameData): void {
         this.fadeSlate.draw(g);
     }
-    resize(g: P5): void {}
-    joypadDown(key: string): void {}
-    joypadUp(key: string): void {}
+    resize(g: GameData): void {}
+    joypadDown(g: GameData): void {}
+    joypadUp(g: GameData): void {}
 }
 
 export class FadeInState extends FadeState {

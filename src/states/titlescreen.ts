@@ -1,5 +1,5 @@
 import * as P5 from "p5";
-import { DEBUG, WIDTH, HEIGHT, GAME_DATA, gPrint } from "../main";
+import { DEBUG, WIDTH, HEIGHT, gPrint, GameData } from "../main";
 import { MainMenuState } from "./mainmenu";
 import { BaseState } from "./state";
 
@@ -11,37 +11,38 @@ export class TitleScreenState extends BaseState {
         this.name = "TitleScreenState";
     }
 
-    draw(g: P5) {
-        g.background(0);
-        g.fill(255);
-        g.textSize(GAME_DATA.textSize * 2);
-        g.textAlign(g.CENTER, g.CENTER);
-        g.text("MONSTER BATTLER", g.width / 2, g.height / 2);
+    init(g: GameData): void {}
+    draw(g: GameData) {
+        g.p.background(0);
+        g.p.fill(255);
+        g.p.textSize(g.textSize * 2);
+        g.p.textAlign(g.p.CENTER, g.p.CENTER);
+        g.p.text("MONSTER BATTLER", g.p.width / 2, g.p.height / 2);
 
         if (this.timer % 60 < 30) {
-            g.textSize(GAME_DATA.textSize);
-            g.text("Press A to start", g.width / 2, g.height * 0.75);
+            g.p.textSize(g.textSize);
+            g.p.text("Press A to start", g.p.width / 2, g.p.height * 0.75);
         }
         this.timer++;
 
         if (DEBUG) {
-            g.push();
-            g.strokeWeight(1);
-            g.stroke(255, 0, 0);
-            g.line(WIDTH() / 2, 0, WIDTH() / 2, HEIGHT());
-            g.line(0, HEIGHT() / 2, WIDTH(), HEIGHT() / 2);
-            g.pop();
+            g.p.push();
+            g.p.strokeWeight(1);
+            g.p.stroke(255, 0, 0);
+            g.p.line(WIDTH() / 2, 0, WIDTH() / 2, HEIGHT());
+            g.p.line(0, HEIGHT() / 2, WIDTH(), HEIGHT() / 2);
+            g.p.pop();
         }
     }
 
-    resize(g: P5): void {}
-    joypadDown(key: string) {
+    resize(g: GameData): void {}
+    joypadDown(g: GameData) {
         gPrint("Checking buttons on title screen...");
-        if ((GAME_DATA.joypad.state.A || GAME_DATA.joypad.state.B || GAME_DATA.joypad.state.START) === true) {
-            GAME_DATA.stateMachine.exitState();
-            GAME_DATA.stateMachine.enterState(new MainMenuState());
+        if ((g.joypad.state.A || g.joypad.state.B || g.joypad.state.START) === true) {
+            g.stateMachine.exitState();
+            g.stateMachine.enterState(new MainMenuState(g));
         }
     }
-    update(g: P5): void {}
-    joypadUp(key: string): void {}
+    update(g: GameData): void {}
+    joypadUp(g: GameData): void {}
 }

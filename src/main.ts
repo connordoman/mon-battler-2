@@ -1,9 +1,10 @@
 import * as P5 from "p5";
 import { StateMachine } from "./statemachine";
 import * as Color from "./color";
-import { MAP_PALET_TOWN, OverworldMap } from "./states/overworld";
+import { MAP_PALET_TOWN, OverworldMap, OverworldState } from "./states/overworld";
 import { ASCII_KEYS, JoypadController } from "./joypad";
 import { SplashScreenState } from "./states/splashscreen";
+import { Camera } from "./camera";
 
 export const DEBUG: boolean = true;
 
@@ -43,26 +44,14 @@ export const ACTUAL_PIXEL_HEIGHT = (pixels?: number): number => {
     }
     return GAME_HEIGHT * pixelHeight;
 };
-
-export const GAME_DATA: GameData = {
-    canv: new P5.Element("canvas"),
-    map: new OverworldMap(),
-    stateMachine: new StateMachine(),
-    joypad: new JoypadController(),
-    key: "",
-    keyCode: 0,
-    tileWidth: pixelWidth * 16,
-    tileHeight: pixelHeight * 16,
-    textSize: pixelHeight * 10,
-    frameRate: 60,
-    orientation: ORIENTATION_DESKTOP,
-};
 export const WIDTH = () => ACTUAL_PIXEL_WIDTH();
 export const HEIGHT = () => ACTUAL_PIXEL_HEIGHT();
 
 export class GameData {
+    p: P5;
     canv: P5.Element;
     map: OverworldMap;
+    camera: Camera;
     stateMachine: StateMachine;
     joypad: JoypadController;
     key: string;
@@ -73,9 +62,11 @@ export class GameData {
     frameRate: number;
     orientation: number;
 
-    constructor(canv: P5.Element, map: OverworldMap, stateMachine: StateMachine, joypad: JoypadController) {
+    constructor(p: P5, canv: P5.Element, map: OverworldMap, stateMachine: StateMachine, joypad: JoypadController) {
+        this.p = p;
         this.canv = canv;
         this.map = map;
+        this.camera = new Camera(0, 0);
         this.stateMachine = stateMachine;
         this.joypad = joypad;
         this.key = "";
@@ -86,15 +77,50 @@ export class GameData {
         this.frameRate = 60;
         this.orientation = ORIENTATION_PORTRAIT;
     }
+
+    reloadGameData(): void {}
+
+    getKeyString(): string {
+        let k: string;
+        switch (this.keyCode) {
+            case ASCII_KEYS.escape:
+                k = "ESCAPE";
+                break;
+            case ASCII_KEYS.enter:
+                k = "ENTER";
+                break;
+            case ASCII_KEYS.backspace:
+                k = "BACKSPACE";
+                break;
+            case ASCII_KEYS.delete:
+                k = "DELETE";
+                break;
+            case ASCII_KEYS.up:
+                k = "UP";
+                break;
+            case ASCII_KEYS.down:
+                k = "DOWN";
+                break;
+            case ASCII_KEYS.left:
+                k = "LEFT";
+                break;
+            case ASCII_KEYS.right:
+                k = "RIGHT";
+                break;
+            default:
+                k = this.key;
+        }
+        return `${k}, ${this.keyCode}`;
+    }
 }
 
 // game object type
 export interface GameObject {
-    update(g: P5): void;
-    draw(g: P5): void;
-    resize(g: P5): void;
-    joypadDown(key: string): void;
-    joypadUp(key: string): void;
+    update(g: GameData): void;
+    draw(g: GameData): void;
+    resize(g: GameData): void;
+    joypadDown(g: GameData): void;
+    joypadUp(g: GameData): void;
 }
 
 // debug print function
@@ -109,49 +135,16 @@ export function gGetPixelsFromRem(rem: number): number {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 
-// current key string
-export function gGetKeyString(): string {
-    let k: string;
-    switch (GAME_DATA.keyCode) {
-        case ASCII_KEYS.escape:
-            k = "ESCAPE";
-            break;
-        case ASCII_KEYS.enter:
-            k = "ENTER";
-            break;
-        case ASCII_KEYS.backspace:
-            k = "BACKSPACE";
-            break;
-        case ASCII_KEYS.delete:
-            k = "DELETE";
-            break;
-        case ASCII_KEYS.up:
-            k = "UP";
-            break;
-        case ASCII_KEYS.down:
-            k = "DOWN";
-            break;
-        case ASCII_KEYS.left:
-            k = "LEFT";
-            break;
-        case ASCII_KEYS.right:
-            k = "RIGHT";
-            break;
-        default:
-            k = GAME_DATA.key;
-    }
-    return `${k}, ${GAME_DATA.keyCode}`;
-}
-
 // main p5 logic
 export const MONSTER_BATTLER_2 = (p5: P5) => {
     let keyTimer = 0;
-    let fps = `${GAME_DATA.frameRate}`;
+    let g: GameData;
+    let debugFrameRate: string;
 
-    let reloadGameData = () => {
-        GAME_DATA.textSize = pixelHeight * 10;
-        GAME_DATA.tileWidth = pixelWidth * 16;
-        GAME_DATA.tileHeight = pixelHeight * 16;
+    let reloadGameData = (g: GameData) => {
+        g.textSize = pixelHeight * 10;
+        g.tileWidth = pixelWidth * 16;
+        g.tileHeight = pixelHeight * 16;
     };
 
     p5.setup = () => {
@@ -160,7 +153,6 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
         let canv = p5.createCanvas(WIDTH(), HEIGHT());
         canv.id("game-canvas");
         canv.parent("game-area");
-        GAME_DATA.canv = canv;
 
         let maxWidth = MAX_PIXEL * GAME_WIDTH;
         let maxHeight = MAX_PIXEL * GAME_HEIGHT;
@@ -168,21 +160,38 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
             p5.windowResized();
         }
 
-        p5.frameRate(GAME_DATA.frameRate);
+        g = new GameData(p5, canv, new OverworldMap(), new StateMachine(), new JoypadController());
+        g.p = p5;
+        g.canv = canv;
+        g.map = new OverworldMap();
+        g.stateMachine = new StateMachine();
+        g.joypad = new JoypadController();
+        g.key = "";
+        g.keyCode = 0;
+        g.tileWidth = pixelWidth * 16;
+        g.tileHeight = pixelHeight * 16;
+        g.textSize = pixelHeight * 10;
+        g.frameRate = 60;
+        g.orientation = ORIENTATION_DESKTOP;
 
-        p5.background(0);
-        p5.frameRate(60);
-        p5.stroke(255);
-        p5.strokeWeight(1);
-        p5.textFont("monospace");
+        g.p.frameRate(g.frameRate);
+        g.p.background(0);
+        g.p.frameRate(60);
+        g.p.stroke(255);
+        g.p.strokeWeight(1);
+        g.p.textFont("monospace");
 
-        GAME_DATA.stateMachine = new StateMachine();
-        GAME_DATA.stateMachine.enterState(new SplashScreenState());
+        g.stateMachine = new StateMachine();
+        g.stateMachine.enterState(new OverworldState());
 
         // GAME_DATA.map.initializeFromArray(MAP_PALET_TOWN);
 
-        JoypadController.deployJoypadHTML(p5);
+        JoypadController.deployJoypadHTML(g);
         JoypadController.deployControlsTable();
+    };
+
+    let fpsString = () => {
+        return p5.frameRate().toFixed(2);
     };
 
     p5.draw = () => {
@@ -192,25 +201,25 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
             keyTimer = 0;
         }
 
-        GAME_DATA.stateMachine.update(p5);
-        GAME_DATA.joypad.update(p5);
+        g.stateMachine.update(g);
+        g.joypad.update(g);
 
-        p5.noStroke();
+        g.p.noStroke();
 
-        GAME_DATA.stateMachine.draw(p5);
-
-        if (p5.frameCount % GAME_DATA.frameRate == 0) {
-            fps = p5.frameRate().toFixed(2);
-        }
+        g.stateMachine.draw(g);
 
         // draw state stack on top of everything
         if (DEBUG) {
-            let states = GAME_DATA.stateMachine.stateArray();
+            if (g.p.frameCount % 30 === 0) {
+                debugFrameRate = fpsString();
+            }
+
+            let states = g.stateMachine.stateArray();
             let overlayString = "";
 
-            overlayString += "Orientation: " + gOrientationStr(GAME_DATA.orientation);
+            overlayString += "Orientation: " + gOrientationStr(g.orientation);
             overlayString += "\n";
-            overlayString += "FPS: " + fps;
+            overlayString += "FPS: " + debugFrameRate;
             overlayString += "\n";
             overlayString += "-------------";
             overlayString += "\n";
@@ -221,14 +230,14 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
                 overlayString += `\n${i++}: ${s.name}[${s.phase}]`;
             }
 
-            let maxBoxHeight = (GAME_DATA.textSize / 2) * overlayString.split("\n").length;
+            let maxBoxHeight = (g.textSize / 2) * overlayString.split("\n").length;
 
             p5.fill(Color.SLATE_GLASS);
-            p5.rect(0, 0, WIDTH(), GAME_DATA.textSize + maxBoxHeight);
+            p5.rect(0, 0, WIDTH(), g.textSize + maxBoxHeight);
             p5.fill(Color.OFF_WHITE);
-            p5.textSize(GAME_DATA.textSize / 2);
+            p5.textSize(g.textSize / 2);
             p5.textAlign(p5.LEFT, p5.TOP);
-            p5.text(overlayString, GAME_DATA.textSize / 4, GAME_DATA.textSize / 4);
+            p5.text(overlayString, g.textSize / 4, g.textSize / 4);
         }
     };
 
@@ -238,15 +247,15 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
             p5.noLoop();
         }
 
-        GAME_DATA.key = p5.key;
-        GAME_DATA.keyCode = p5.keyCode;
-        GAME_DATA.joypad.pressJoypadKey();
+        g.key = p5.key;
+        g.keyCode = p5.keyCode;
+        g.joypad.pressJoypadKey(g);
     };
 
     p5.keyReleased = () => {
-        GAME_DATA.joypad.releaseJoypadKey();
-        GAME_DATA.key = "";
-        GAME_DATA.keyCode = 0;
+        g.joypad.releaseJoypadKey(g);
+        g.key = "";
+        g.keyCode = 0;
     };
 
     p5.windowResized = () => {
@@ -261,30 +270,30 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
             hRatio = wRatio;
             width = window.innerWidth;
             height = wRatio * maxHeight;
-            GAME_DATA.orientation = ORIENTATION_PORTRAIT;
+            g.orientation = ORIENTATION_PORTRAIT;
         } else if (hRatio < 1) {
             wRatio = hRatio;
             width = hRatio * maxWidth;
             height = window.innerHeight;
-            GAME_DATA.orientation = ORIENTATION_LANDSCAPE;
+            g.orientation = ORIENTATION_LANDSCAPE;
         } else {
             wRatio = 1;
             hRatio = 1;
             width = maxWidth;
             height = maxHeight;
-            GAME_DATA.orientation = ORIENTATION_DESKTOP;
+            g.orientation = ORIENTATION_DESKTOP;
         }
 
         pixelWidth = wRatio * MAX_PIXEL;
         pixelHeight = hRatio * MAX_PIXEL;
 
-        reloadGameData();
+        g.reloadGameData();
         p5.resizeCanvas(width, height);
-        GAME_DATA.stateMachine.resize(p5);
+        g.stateMachine.resize(g);
 
-        let gameCanv = document.getElementById(GAME_DATA.canv.id()) as HTMLCanvasElement;
+        let gameCanv = document.getElementById(g.canv.id()) as HTMLCanvasElement;
         let controls = document.getElementById("controls") as HTMLTableElement;
-        switch (GAME_DATA.orientation) {
+        switch (g.orientation) {
             case ORIENTATION_PORTRAIT:
                 if (controls) controls.style.display = "none";
                 if (gameCanv) gameCanv.style.margin = "2em";
@@ -300,7 +309,7 @@ export const MONSTER_BATTLER_2 = (p5: P5) => {
                 break;
         }
 
-        JoypadController.repositionJoypad(gameCanv);
+        JoypadController.repositionJoypad(g, gameCanv);
     };
 };
 

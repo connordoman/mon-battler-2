@@ -11,7 +11,7 @@ class StateMachine {
         this.states = new stack_1.Stack();
     }
     get fading() {
-        return main_1.GAME_DATA.stateMachine.currentState() instanceof fade_1.FadeState;
+        return this.currentState() instanceof fade_1.FadeState;
     }
     enterState(state) {
         this.states.push(state);
@@ -66,9 +66,9 @@ class StateMachine {
             s.resize(g);
         }
     }
-    joypadDown() {
+    joypadDown(g) {
         if (main_1.DEBUG) {
-            if (main_1.GAME_DATA.keyCode === joypad_1.ASCII_KEYS.backspace) {
+            if (g.keyCode === joypad_1.ASCII_KEYS.backspace) {
                 this.exitState();
             }
         }

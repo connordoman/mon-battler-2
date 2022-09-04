@@ -1,7 +1,7 @@
 import * as P5 from "p5";
 import * as Color from "../color";
 import { Rectangle, Triangle, Vector } from "../geometry";
-import { GAME_DATA, gPrint, HEIGHT, pixelWidth, pixelHeight, WIDTH } from "../main";
+import { gPrint, HEIGHT, pixelWidth, pixelHeight, WIDTH, GameData } from "../main";
 import { BaseState } from "./state";
 
 export const EN_CONTINUE = "Press any key to continue...";
@@ -11,20 +11,16 @@ export class TextBox extends Rectangle {
     static: boolean;
     textColor: Color.Color;
     lineSize: number;
-    posRatio: Vector;
-    dimRatio: Vector;
 
     seen: boolean;
 
-    constructor(msg: string, x: number, y: number, w: number, h: number) {
+    constructor(g: GameData, msg: string, x: number, y: number, w: number, h: number) {
         super(x, y, w, h);
-        this.posRatio = new Vector(x / WIDTH(), y / HEIGHT());
-        this.dimRatio = new Vector(w / WIDTH(), h / HEIGHT());
         this.msg = msg.trim();
         this.static = false;
         this.color = Color.WHITE;
         this.textColor = Color.SLATE;
-        this.lineSize = w - 2 * GAME_DATA.tileHeight;
+        this.lineSize = w - 2 * g.tileHeight;
 
         this.seen = false;
     }
@@ -35,66 +31,48 @@ export class TextBox extends Rectangle {
         this.seen = false;
     }
 
-    update(g: P5): void {
-        if (g.textSize() !== GAME_DATA.textSize) {
-            g.textSize(GAME_DATA.textSize);
+    update(g: GameData): void {
+        if (g.p.textSize() !== g.textSize) {
+            g.p.textSize(g.textSize);
         }
     }
 
-    draw(g: P5): void {
-        g.push();
-        g.translate(this.x, this.y);
+    draw(g: GameData): void {
+        g.p.push();
+        g.p.translate(this.x, this.y);
 
-        g.fill(g.color(this.color));
-        g.stroke(g.color(12, 35, 68));
-        g.strokeWeight(2 * pixelWidth);
-        g.rect(
+        g.p.fill(g.p.color(this.color));
+        g.p.stroke(g.p.color(12, 35, 68));
+        g.p.strokeWeight(2 * pixelWidth);
+        g.p.rect(
             2 * pixelWidth,
             2 * pixelHeight,
             this.width - 4 * pixelWidth,
             this.height - 4 * pixelHeight,
-            GAME_DATA.tileHeight / 4
+            g.tileHeight / 4
         );
 
-        g.noStroke();
-        g.fill(g.color(this.textColor));
-        g.textAlign(g.LEFT, g.TOP);
+        g.p.noStroke();
+        g.p.fill(g.p.color(this.textColor));
+        g.p.textAlign(g.p.LEFT, g.p.TOP);
 
         if (this.static && this.msg.indexOf("\n") < 0) {
-            g.text(
-                this.msg,
-                GAME_DATA.tileWidth,
-                this.height / 2 - (GAME_DATA.textSize * this.msg.split("\n").length) / 2
-            );
+            g.p.text(this.msg, g.tileWidth, this.height / 2 - (g.textSize * this.msg.split("\n").length) / 2);
         } else {
-            g.text(this.msg, GAME_DATA.tileWidth, GAME_DATA.tileHeight * 0.48);
+            g.p.text(this.msg, g.tileWidth, g.tileHeight * 0.48);
         }
 
-        g.pop();
+        g.p.pop();
     }
 
     resize() {
-        if (this.width !== this.dimRatio.x * WIDTH()) {
-            this.width = this.dimRatio.x * WIDTH();
-        }
-        if (this.height !== this.dimRatio.y * HEIGHT()) {
-            this.height = this.dimRatio.y * HEIGHT();
-        }
-        if (this.x !== this.posRatio.x * WIDTH()) {
-            this.x = this.posRatio.x * WIDTH();
-        }
-        if (this.y !== this.posRatio.y * HEIGHT()) {
-            this.y = this.posRatio.y * HEIGHT();
-        }
-
-        this.posRatio = new Vector(this.x / WIDTH(), this.y / HEIGHT());
-        this.dimRatio = new Vector(this.width / WIDTH(), this.height / HEIGHT());
+        this.resizeAndReposition();
     }
 }
 
 export class PressAnyKeyTextbox extends TextBox {
-    constructor(x: number, y: number, w: number, h: number) {
-        super(EN_CONTINUE, x, y, w, h);
+    constructor(g: GameData, x: number, y: number, w: number, h: number) {
+        super(g, EN_CONTINUE, x, y, w, h);
     }
 }
 
@@ -113,13 +91,14 @@ export class TextBoxState extends BaseState {
     lineCount: number;
     charInterval: number;
 
-    constructor(textbox: TextBox) {
+    constructor(g: GameData, textbox: TextBox) {
         super();
         this.name = `TextBoxState: ${textbox.msg.slice(0, 17)}...`;
         this.textbox = textbox;
         this.textboxArrow = new TextBoxArrow(
-            textbox.x + textbox.width - GAME_DATA.tileWidth / 2,
-            textbox.y + textbox.height - GAME_DATA.tileHeight / 1.5
+            g,
+            textbox.x + textbox.width - g.tileWidth / 2,
+            textbox.y + textbox.height - g.tileHeight / 1.5
         );
         this.message = textbox.msg;
         this.typed = "";
@@ -132,14 +111,16 @@ export class TextBoxState extends BaseState {
         this.lineCount = 0;
         this.charInterval = 4;
 
-        GAME_DATA.joypad.clearKeys();
+        g.joypad.clearKeys();
     }
 
-    update(g: P5): void {
+    init(g: GameData) {}
+
+    update(g: GameData): void {
         this.textbox.update(g);
 
         if (this.textbox.seen) {
-            GAME_DATA.stateMachine.exitState();
+            g.stateMachine.exitState();
             return;
         }
 
@@ -159,7 +140,7 @@ export class TextBoxState extends BaseState {
                 let nextWord = this.words[this.wordCount];
                 let lines = this.typed.split("\n");
                 let newLine = lines[lines.length - 1] + " " + nextWord;
-                let lineLength = g.textWidth(newLine);
+                let lineLength = g.p.textWidth(newLine);
 
                 // gPrint(lines);
                 // gPrint("Current line + nextWord: " + newLine);
@@ -196,7 +177,7 @@ export class TextBoxState extends BaseState {
         }
         this.timer++;
     }
-    draw(g: P5): void {
+    draw(g: GameData): void {
         if (this.textbox.static) {
             this.textbox.msg = this.message;
             this.textbox.draw(g);
@@ -209,30 +190,31 @@ export class TextBoxState extends BaseState {
             this.textboxArrow.draw(g);
         }
     }
-    resize(g: P5): void {
+    resize(g: GameData): void {
         this.textbox.resize();
         this.textboxArrow = new TextBoxArrow(
-            this.textbox.x + this.textbox.width - GAME_DATA.tileWidth / 2,
-            this.textbox.y + this.textbox.height - GAME_DATA.tileHeight / 1.5
+            g,
+            this.textbox.x + this.textbox.width - g.tileWidth / 2,
+            this.textbox.y + this.textbox.height - g.tileHeight / 1.5
         );
     }
 
-    joypadDown(key: string): void {
-        if (GAME_DATA.joypad.state.A || GAME_DATA.joypad.state.B) {
+    joypadDown(g: GameData): void {
+        if (g.joypad.state.A || g.joypad.state.B) {
             if (this.wrappable) {
                 this.lineCount = 0;
                 this.typed = "";
                 this.typing = true;
                 this.wrappable = false;
             } else if (!this.typing) {
-                GAME_DATA.stateMachine.exitState();
+                g.stateMachine.exitState();
             } else {
                 this.charInterval = 1;
             }
         }
     }
 
-    joypadUp(key: string): void {
+    joypadUp(g: GameData): void {
         this.charInterval = 4;
     }
 }
@@ -240,23 +222,23 @@ export class TextBoxState extends BaseState {
 export class PressAnyKeyTextBoxState extends TextBoxState {
     closable: boolean;
 
-    constructor(textbox: TextBox) {
-        super(textbox);
+    constructor(g: GameData, textbox: TextBox) {
+        super(g, textbox);
         this.name = `PressAnyKeyTextboxState: ${textbox.msg.slice(0, 17)}...`;
         this.closable = false;
     }
 
-    joypadDown(key: string): void {
-        super.joypadDown(key);
+    joypadDown(g: GameData): void {
+        super.joypadDown(g);
         if (!this.closable && !this.typing) {
             this.closable = true;
         }
     }
 
-    joypadUp(key: string): void {
-        super.joypadUp(key);
+    joypadUp(g: GameData): void {
+        super.joypadUp(g);
         if (this.closable) {
-            GAME_DATA.stateMachine.exitState();
+            g.stateMachine.exitState();
         }
     }
 }
@@ -265,8 +247,8 @@ export class TextBoxArrow extends Triangle {
     offset: number;
     timer: number;
     originY: number;
-    constructor(x: number, y: number) {
-        super(x, y, GAME_DATA.tileWidth / 3);
+    constructor(g: GameData, x: number, y: number) {
+        super(x, y, g.tileWidth / 3);
         this.setAngle(Math.PI);
         this.offset = 0;
         this.timer = 0;
@@ -274,7 +256,7 @@ export class TextBoxArrow extends Triangle {
         this.originY = this.y;
     }
 
-    update(g: P5) {
+    update(g: GameData) {
         if (this.timer % 20 == 0) {
             if (this.offset > 2) {
                 this.position = new Vector(this.x, this.originY);
@@ -292,7 +274,7 @@ export class TextBoxArrow extends Triangle {
         this.timer++;
     }
 
-    draw(g: P5) {
+    draw(g: GameData) {
         super.draw(g);
     }
 }

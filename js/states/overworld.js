@@ -5,7 +5,8 @@ const P5 = require("p5");
 const state_1 = require("./state");
 const Color = require("../color");
 const main_1 = require("../main");
-const camera_1 = require("../camera");
+const geometry_1 = require("../geometry");
+const player_1 = require("../player");
 exports.TILE_BLANK = 0;
 exports.TILE_GRASS = 1;
 exports.TILE_WATER = 2;
@@ -25,14 +26,13 @@ exports.MAP_PALET_TOWN = [
     [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5],
     [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
 ];
-class MapTile {
-    constructor(mapX, mapY, tile) {
-        this.mapX = mapX;
-        this.mapY = mapY;
-        this.x = mapX * main_1.GAME_DATA.tileWidth;
-        this.y = mapY * main_1.GAME_DATA.tileHeight;
+class MapTile extends geometry_1.Rectangle {
+    constructor(g, tilesX, tilesY, tile) {
+        super(tilesX * g.tileWidth, tilesY * g.tileHeight, g.tileWidth, g.tileHeight);
+        this.tileX = tilesX;
+        this.tileY = tilesY;
         this.tile = tile;
-        this.sprite = new P5.Image(main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+        this.sprite = new P5.Image(g.tileWidth, g.tileHeight);
         this.frames = [];
         this.frameNum = 0;
         this.animated = false;
@@ -51,7 +51,7 @@ class MapTile {
         this.frames.push(frame);
     }
     update(g) {
-        if (this.animated && this.timer % this.frameTime === 0 && this.frames.length > 1) {
+        if (this.animated && this.timer % this.frameTime(g) === 0 && this.frames.length > 1) {
             this.frameNum = (this.frameNum + 1) % this.frames.length;
             this.sprite = this.frames[this.frameNum];
         }
@@ -60,31 +60,29 @@ class MapTile {
     draw(g) {
         switch (this.tile) {
             case exports.TILE_GRASS:
-                g.fill(Color.DARK_GREEN);
-                g.rect(this.x, this.y, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+                g.p.fill(Color.DARK_GREEN);
+                g.p.rect(this.x, this.y, g.tileWidth, g.tileHeight);
                 break;
             case exports.TILE_SHRUB:
-                g.fill(Color.DARK_GREEN);
-                g.rect(this.x, this.y, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
-                g.fill(Color.BROWN);
-                g.circle(this.x + main_1.GAME_DATA.tileWidth / 2, this.y + main_1.GAME_DATA.tileHeight / 2, main_1.GAME_DATA.tileWidth / 2);
+                g.p.fill(Color.DARK_GREEN);
+                g.p.rect(this.x, this.y, g.tileWidth, g.tileHeight);
+                g.p.fill(Color.BROWN);
+                g.p.circle(this.x + g.tileWidth / 2, this.y + g.tileHeight / 2, g.tileWidth / 2);
             case exports.TILE_WATER:
-                g.fill(Color.BLUE);
-                g.rect(this.x, this.y, main_1.GAME_DATA.tileWidth, main_1.GAME_DATA.tileHeight);
+                g.p.fill(Color.BLUE);
+                g.p.rect(this.x, this.y, g.tileWidth, g.tileHeight);
                 break;
             default:
                 break;
         }
     }
-    resize(g) { }
+    resize(g) {
+        this.resizeAndReposition();
+    }
     joypadDown() { }
     joypadUp() { }
-    get frameTime() {
-        return Math.floor(main_1.GAME_DATA.frameRate / this.frames.length);
-    }
-    static get blankTile() {
-        let tile = new MapTile(0, 0, exports.TILE_BLANK);
-        return tile;
+    frameTime(g) {
+        return Math.floor(g.frameRate / this.frames.length);
     }
     toString() {
         switch (this.tile) {
@@ -120,14 +118,7 @@ class OverworldMap {
         }
         this.tiles = [];
     }
-    initialize() {
-        for (let i = 0; i < this.tilesX; i++) {
-            for (let j = 0; j < this.tilesY; j++) {
-                this.tiles[i][j] = MapTile.blankTile;
-            }
-        }
-    }
-    initializeFromArray(mapData) {
+    initializeFromArray(g, mapData) {
         let maxWidth = 0;
         let row = [];
         for (let i = 0; i < mapData.length; i++) {
@@ -136,7 +127,7 @@ class OverworldMap {
                 maxWidth = mapData[i].length;
             }
             for (let j = 0; j < mapData[i].length; j++) {
-                let tile = new MapTile(j, i, mapData[i][j]);
+                let tile = new MapTile(g, j, i, mapData[i][j]);
                 row.push(tile);
             }
             this.tiles.push(row);
@@ -153,20 +144,47 @@ class OverworldState extends state_1.BaseState {
     constructor(map) {
         super();
         this.name = "OverworldState";
-        this.map = map;
-        this.camera = new camera_1.Camera(0, 0);
+        this.player = new player_1.OverworldPlayer();
+        if (map === undefined) {
+            this.map = new OverworldMap();
+        }
+        else {
+            this.map = map;
+        }
     }
+    init(g) { }
     update(g) {
-        this.camera.update(g);
+        this.player.update(g);
+        g.camera.update(g);
+        // establish map tiles
+        if (this.map.tiles.length == 0 || g.camera.drawQueue.size > 0) {
+            return;
+        }
+        for (let row of this.map.tiles) {
+            for (let tile of row) {
+                let intersects = g.camera.intersects(tile);
+                (0, main_1.gPrint)(`${intersects}`);
+                if (intersects) {
+                    tile.update(g);
+                    g.camera.drawQueue.push(tile);
+                }
+            }
+        }
     }
     draw(g) {
-        g.background(0);
-        this.camera.draw(g);
+        g.p.background(0);
+        this.player.draw(g);
+        g.camera.draw(g);
     }
     resize(g) {
-        this.camera.resize(g);
+        g.camera.resize(g);
+        this.player.resize(g);
     }
-    joypadDown() { }
-    joypadUp() { }
+    joypadDown(g) {
+        this.player.joypadDown(g);
+    }
+    joypadUp(g) {
+        this.player.joypadUp(g);
+    }
 }
 exports.OverworldState = OverworldState;

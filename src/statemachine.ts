@@ -2,7 +2,7 @@ import * as P5 from "p5";
 import { Stack } from "./stack";
 import { TitleScreenState } from "./states/titlescreen";
 import { State } from "./states/state";
-import { GAME_DATA, GameObject, DEBUG, gPrint } from "./main";
+import { GameObject, DEBUG, gPrint, GameData } from "./main";
 import { ASCII_KEYS } from "./joypad";
 import { Queue } from "./queue";
 import { FadeState } from "./states/fade";
@@ -15,7 +15,7 @@ export class StateMachine implements GameObject {
     }
 
     get fading(): boolean {
-        return GAME_DATA.stateMachine.currentState() instanceof FadeState;
+        return this.currentState() instanceof FadeState;
     }
 
     enterState(state: State) {
@@ -49,7 +49,7 @@ export class StateMachine implements GameObject {
         return this.states.array;
     }
 
-    update(g: P5) {
+    update(g: GameData) {
         if (!this.states.isEmpty()) {
             let arr = this.states.array;
             for (let s = 0; s < arr.length; s++) {
@@ -63,22 +63,22 @@ export class StateMachine implements GameObject {
         }
     }
 
-    draw(g: P5): void {
+    draw(g: GameData): void {
         if (!this.states.isEmpty()) {
             for (let s of this.states.array) {
                 s.draw(g);
             }
         }
     }
-    resize(g: P5): void {
+    resize(g: GameData): void {
         for (let s of this.states.array) {
             s.resize(g);
         }
     }
 
-    joypadDown(): void {
+    joypadDown(g: GameData): void {
         if (DEBUG) {
-            if (GAME_DATA.keyCode === ASCII_KEYS.backspace) {
+            if (g.keyCode === ASCII_KEYS.backspace) {
                 this.exitState();
             }
         }
